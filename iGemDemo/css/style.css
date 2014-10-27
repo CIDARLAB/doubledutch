@@ -1,0 +1,253 @@
+* {
+    margin: 0px;
+    padding: 0px;
+}
+html
+{
+    min-height: 100%;
+
+    position: relative;	
+}
+body
+{
+    min-height: 100%;
+
+    background-color: #f0f1ff;
+}
+
+
+.menuDiv
+{
+    background-color: #006887;	
+
+    width: 100%;
+}
+
+.mainBodyDiv
+{
+    min-height: 100%;
+    height: auto !important;
+    height: 100%;  
+}
+
+.footer
+{
+    height: 200px;
+}
+.nameHeader
+{
+    color: #ffffff;
+    font-size: 48px;
+    font-family: 'Allerta Stencil', sans-serif;
+    margin-bottom: 20px;
+
+    /*font-family: Impact, Charcoal, sans-serif;*/	 
+}
+
+
+.debugConsole
+{
+    background-color: #f0f1ff;
+}
+
+.queryBar
+{
+
+}
+.queryText
+{
+    border-radius: 4px;
+    font-size: 18px;
+    margin-bottom: 5px;  
+
+}
+
+.searchText
+{
+    vertical-align: middle;
+    border-radius: 4px;
+    font-size: 15px;
+
+}
+.queryResults
+{
+    font-size: 15px;
+}
+.headerlink{text-decoration:none; text-align:center; 
+
+    margin-left:4px;
+    margin-right:4px;  
+    padding:16px 8px; 
+    border:none; 
+
+    font:25px "Lucida Console", Monaco, monospace; 
+    font-weight:bold; 
+    color:#edffff; 
+    background:#006887; 
+    -webkit-box-shadow:0px 0px -20px #ffffff, inset 0px 0px -20px #ffffff; 
+    -moz-box-shadow: 0px 0px -20px #ffffff,  inset 0px 0px -20px #ffffff;  
+    box-shadow:0px 0px -20px #ffffff, inset 0px 0px -20px #ffffff;  
+
+    -webkit-transition: all 0.70s ease;
+    -moz-transition:  all 0.70s ease;
+    -o-transition:  all 0.70s ease;
+    transition:  all 0.70s ease;}
+    .headerlink:hover{
+        padding:16px 8px; 
+        border:none; 
+
+        font:25px "Lucida Console", Monaco, monospace; 
+        font-weight:bold; 
+        color:#453757; 
+        background:#f0f1ff; 
+        -webkit-box-shadow:0px 0px -20px #bababa, inset 0px 0px 1px #ffffff; 
+        -moz-box-shadow: 0px 0px -20px #bababa,  inset 0px 0px 1px #ffffff;  
+        box-shadow:0px 0px -20px #bababa, inset 0px 0px 1px #ffffff;  
+
+    }
+    .headerlink:active{
+        padding:16px 8px; 
+        border:none; 
+
+        font:25px "Lucida Console", Monaco, monospace; 
+        font-weight:bold; 
+        color:#edffff; 
+        background:#006887; 
+        -webkit-box-shadow:0px 0px -20px #bababa, inset 0px 0px -20px #ffffff; 
+        -moz-box-shadow: 0px 0px -20px #bababa,  inset 0px 0px -20px #ffffff;  
+        box-shadow:0px 0px -20px #bababa, inset 0px 0px -20px #ffffff;  
+
+    }
+
+
+
+
+    /*----- Tabs -----*/
+    .tabs {
+        width:100%;
+
+        display:inline-block;
+    }
+
+
+
+
+
+
+    /*Button CSS*/
+    .button{text-decoration:none; text-align:center; 
+        padding:8px 25px; 
+        border:solid 1px #004F72; 
+        -webkit-border-radius:4px;
+        -moz-border-radius:4px; 
+        border-radius: 4px; 
+        font:15px Arial, Helvetica, sans-serif; 
+        font-weight:bold; 
+        color:#E5FFFF; 
+        background-color:#3ba4c7; 
+        background-image: -moz-linear-gradient(top, #3ba4c7 0%, #1982a5 100%); 
+        background-image: -webkit-linear-gradient(top, #3ba4c7 0%, #1982a5 100%); 
+        background-image: -o-linear-gradient(top, #3ba4c7 0%, #1982a5 100%); 
+        background-image: -ms-linear-gradient(top, #3ba4c7 0% ,#1982a5 100%); 
+        filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#1982a5', endColorstr='#1982a5',GradientType=0 ); 
+        background-image: linear-gradient(top, #3ba4c7 0% ,#1982a5 100%);   
+        -webkit-box-shadow:0px 0px 2px #bababa, inset 0px 0px 1px #ffffff; 
+        -moz-box-shadow: 0px 0px 2px #bababa,  inset 0px 0px 1px #ffffff;  
+        box-shadow:0px 0px 2px #bababa, inset 0px 0px 1px #ffffff;  
+
+        }.button:hover{
+            padding:8px 25px; 
+            border:solid 1px #004F72; 
+            -webkit-border-radius:4px;
+            -moz-border-radius:4px; 
+            border-radius: 4px; 
+            font:15px Arial, Helvetica, sans-serif; 
+            font-weight:bold; 
+            color:#ffffff; 
+            background-color:#8fe3ff; 
+            background-image: -moz-linear-gradient(top, #8fe3ff 0%, #1982A5 100%); 
+            background-image: -webkit-linear-gradient(top, #8fe3ff 0%, #1982A5 100%); 
+            background-image: -o-linear-gradient(top, #8fe3ff 0%, #1982A5 100%); 
+            background-image: -ms-linear-gradient(top, #8fe3ff 0% ,#1982A5 100%); 
+            filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#1982A5', endColorstr='#1982A5',GradientType=0 ); 
+            background-image: linear-gradient(top, #8fe3ff 0% ,#1982A5 100%);   
+            -webkit-box-shadow:0px 0px 2px #bababa, inset 0px 0px 1px #ffffff; 
+            -moz-box-shadow: 0px 0px 2px #bababa,  inset 0px 0px 1px #ffffff;  
+            box-shadow:0px 0px 2px #bababa, inset 0px 0px 1px #ffffff;  
+
+            }.button:active{
+                padding:8px 25px; 
+                border:solid 1px #004F72; 
+                -webkit-border-radius:4px;
+                -moz-border-radius:4px; 
+                border-radius: 4px; 
+                font:15px Arial, Helvetica, sans-serif; 
+                font-weight:bold; 
+                color:#e5ffff; 
+                background-color:#3ba4c7; 
+                background-image: -moz-linear-gradient(top, #3ba4c7 0%, #8fe3ff 100%); 
+                background-image: -webkit-linear-gradient(top, #3ba4c7 0%, #8fe3ff 100%); 
+                background-image: -o-linear-gradient(top, #3ba4c7 0%, #8fe3ff 100%); 
+                background-image: -ms-linear-gradient(top, #3ba4c7 0% ,#8fe3ff 100%); 
+                filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#8fe3ff', endColorstr='#8fe3ff',GradientType=0 ); 
+                background-image: linear-gradient(top, #3ba4c7 0% ,#8fe3ff 100%);   
+                -webkit-box-shadow:0px 0px 2px #bababa, inset 0px 0px 1px #ffffff; 
+                -moz-box-shadow: 0px 0px 2px #bababa,  inset 0px 0px 1px #ffffff;  
+                box-shadow:0px 0px 2px #bababa, inset 0px 0px 1px #ffffff;  
+
+            }
+
+
+
+            /*----- Tab Links -----*/
+            /* Clearfix */
+            .tab-links:after {
+
+                display:block;
+                clear:both;
+                content:'';
+            }
+
+            .tab-links li {
+                margin:5px 5px;
+                float:left;
+                list-style:none;
+            }
+
+            .tab-links a {
+                padding:9px 15px;
+                display:inline-block;
+                border-radius:3px 3px 0px 0px;
+                background:#7FB5DA;
+                font-size:16px;
+                font-weight:600;
+                color:#4c4c4c;
+                transition:all linear 0.15s;
+            }
+
+            .tab-links a:hover {
+                background:#a7cce5;
+                text-decoration:none;
+            }
+
+            li.active a, li.active a:hover {
+                background:#fff;
+                color:#4c4c4c;
+            }
+
+            /*----- Content of Tabs -----*/
+            .tab-content {
+                min-height: 300px; 
+                padding:15px;
+                border-radius:3px;
+                box-shadow:-1px 1px 1px rgba(0,0,0,0.15);
+                background:#f0f1ff;
+            }
+
+            .tab {
+                display:none;
+            }
+
+            .tab.active {
+                display:block;
+            }
