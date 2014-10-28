@@ -55,15 +55,15 @@
 
     <div class="menuDiv" >
         <div style="white-space: nowrap;" align="center" >
-            <h1 class="nameHeader">iGEM DEMO</h1>  <!--Change Title-->
+            <h1 class="nameHeader">Clotho 3.0 for iGEM</h1>  <!--Change Title-->
 
 
-            <form action="#" align="center">
-                <div align="center">
-                    <input type="text" class="queryText" name="clothoQuery" id="clothoQuery"  title="Object Id" style="color:#888" value="Object Id" onfocus="inputFocus(this)" onblur="inputBlur(this)" />
+            <!--<form action="#" align="center">
+               <div align="center">
+                  <input type="text" class="queryText" name="clothoQuery" id="clothoQuery"  title="Object Id" style="color:#888" value="Object Id" onfocus="inputFocus(this)" onblur="inputBlur(this)" />
                 </div>
 
-            </form>         
+           </form>-->         
 
 
         </div>     
@@ -83,7 +83,16 @@
 
                 <div class="tab-content">
                     <div id="tab1" class="tab active">
-                        <div align="center">
+                            <div id="partDetailsArea" class="partDetails" style="min-width:400px" >
+<label><b>Author: </b></label><label id="authorLabel"></label><br><input type="text" id="authorEntry" name="authorEntry" title="Author Entry" style="color:#888;font-size:15px" onfocus="inputFocus(this)" onblur="inputBlur(this)"><br>                                
+<label><b>Name: </b></label><label id="nameLabel"></label><br><input type="text" id="nameEntry" name="nameEntry" title="Name Entry" style="color:#888;font-size:15px" onfocus="inputFocus(this)" onblur="inputBlur(this)"><br>
+                                <label><b>Description: </b></label><label id="descriptionLabel"></label><br>
+<textarea id="descriptionEntry"  rows="8" cols="70"> </textarea> <br>
+                                <label><b>Sequence: </b></label><label id="sequenceLabel"></label><br>
+<textarea id="sequenceEntry"  rows="8" cols="70"> </textarea> <br>
+                                
+                            </div>
+<div align="center">
                             <textarea id="gateupload" rows="15" cols="100"> </textarea>
                             <br>
 
