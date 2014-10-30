@@ -4,52 +4,52 @@
     <meta charset="utf-8">
     <title>iGem Demo</title>
     <script type="text/javascript" src="JS/clotho3API.js"></script>
-    
+
     <link rel="stylesheet" type="text/css" href="styles/style.css">
-    <!--
-    <link rel="stylesheet" href="styles/2e84f2a0.command.css"/>
-    <link rel="stylesheet" href="styles/773cbfe6.main.css"/>
-    -->
-    <script src="http://netdna.bootstrapcdn.com/bootstrap/3.1.0/js/bootstrap.min.js"></script>
-    <script type="text/javascript" src="http://cdnjs.cloudflare.com/ajax/libs/q.js/1.0.0/q.js"></script>
-    <script src="http://code.jquery.com/jquery-1.10.1.min.js"></script>
+<!--
+<link rel="stylesheet" href="styles/2e84f2a0.command.css"/>
+<link rel="stylesheet" href="styles/773cbfe6.main.css"/>
+-->
+<script src="http://netdna.bootstrapcdn.com/bootstrap/3.1.0/js/bootstrap.min.js"></script>
+<script type="text/javascript" src="http://cdnjs.cloudflare.com/ajax/libs/q.js/1.0.0/q.js"></script>
+<script src="http://code.jquery.com/jquery-1.10.1.min.js"></script>
 
 
-    <script type="text/javascript">
-    jQuery(document).ready(function() {
-        jQuery('.tabs .tab-links a').on('click', function(e)  {
-            var currentAttrValue = jQuery(this).attr('href');
+<script type="text/javascript">
+jQuery(document).ready(function() {
+    jQuery('.tabs .tab-links a').on('click', function(e)  {
+        var currentAttrValue = jQuery(this).attr('href');
 
-            // Show/Hide Tabs
-            jQuery('.tabs ' + currentAttrValue).show().siblings().hide();
+// Show/Hide Tabs
+jQuery('.tabs ' + currentAttrValue).show().siblings().hide();
 
-            // Change/remove current tab to active
-            jQuery(this).parent('li').addClass('active').siblings().removeClass('active');
+// Change/remove current tab to active
+jQuery(this).parent('li').addClass('active').siblings().removeClass('active');
 
-            e.preventDefault();
-        });
-    });
-    </script>
+e.preventDefault();
+});
+});
+</script>
 
 
-    <script type="text/javascript">
-        function inputFocus(i)
-        {
-            if(i.value == i.defaultValue)
-            {
-                i.value = "";
-                i.style.color = "#000";
-            }
-        }
-        function inputBlur(i)
-        {
-            if(i.value == "")
-            {
-                i.value = i.defaultValue; 
-                i.style.color = "#888";
-            }
-        }
-    </script>
+<script type="text/javascript">
+function inputFocus(i)
+{
+    if(i.value == i.defaultValue)
+    {
+        i.value = "";
+        i.style.color = "#000";
+    }
+}
+function inputBlur(i)
+{
+    if(i.value == "")
+    {
+        i.value = i.defaultValue; 
+        i.style.color = "#888";
+    }
+}
+</script>
 
 </head>
 
@@ -57,287 +57,287 @@
 <body>
 
 <!--
-    <div ng-app="clothoRoot">
-        <div class="container">
-            <div clotho-command-bar></div>
-        </div>
-        <terminal-aside></terminal-aside>
-    </div>
+<div ng-app="clothoRoot">
+<div class="container">
+<div clotho-command-bar></div>
+</div>
+<terminal-aside></terminal-aside>
+</div>
 -->
-    <div class="menuDiv" >
-        <div style="white-space: nowrap;" align="center" >
-            <h1 class="nameHeader">Clotho 3.0 for iGEM</h1>  <!--Change Title-->
+<div class="menuDiv" >
+    <div style="white-space: nowrap;" align="center" >
+        <h1 class="nameHeader">Clotho 3.0 for iGEM</h1>  <!--Change Title-->
 
 
-            <!--<form action="#" align="center">
-               <div align="center">
-                  <input type="text" class="queryText" name="clothoQuery" id="clothoQuery"  title="Object Id" style="color:#888" value="Object Id" onfocus="inputFocus(this)" onblur="inputBlur(this)" />
+<!--<form action="#" align="center">
+<div align="center">
+<input type="text" class="queryText" name="clothoQuery" id="clothoQuery"  title="Object Id" style="color:#888" value="Object Id" onfocus="inputFocus(this)" onblur="inputBlur(this)" />
+</div>
+
+</form>-->         
+
+
+</div>     
+</div>
+
+<div class="mainBodyDiv" >
+    <div class="mainConsole" >
+
+
+        <div class="tabs">
+            <ul class="tab-links">
+                <li class="active"><a href="#tab1" style = "font-family:Arial">Upload Data</a></li>
+                <li><a href="#tab2" style = "font-family:Arial">Query Parts</a></li>
+                <li><a href="#tab3" style = "font-family:Arial">Run Functions</a></li>
+                <li><a href="#tab4" style = "font-family:Arial">Advanced Functions</a></li>
+            </ul>
+
+            <div class="tab-content">
+                <div id="tab1" class="tab active">
+                    <div id = "uploadSelector">
+                        <form>
+                            <input  type="radio" value="Basic" name="uploadType" id="basicUpload" checked> <label style="font-size:20px;font-family:Arial;margin-right:15px">Upload Parts</label>
+                            <input type="radio" value="Advanced" name="uploadType" id="advancedUpload"> <label style="font-size:20px;font-family:Arial;margin-right:15px">Upload JSON Objects</label><br><br>
+                        </form>
+                    </div>
+                    <div id="partEntryArea" style="min-width:400px" >
+                        <label style = "font-family:Arial"><b>Author: </b></label><br>
+                        <input type="text" id="authorEntry" name="authorEntry" title="Author Entry" style="color:#888;font-size:15px;font-family:Arial" onfocus="inputFocus(this)" onblur="inputBlur(this)"><br>                                
+                        <label style = "font-family:Arial"><b>Name: </b></label><br>
+                        <input type="text" id="nameEntry" name="nameEntry" title="Name Entry" style="color:#888;font-size:15px;font-family:Arial" onfocus="inputFocus(this)" onblur="inputBlur(this)"><br>
+                        <label style = "font-family:Arial"><b>Type: </b></label><br>
+                        <input type="text" id="typeEntry" name="typeEntry" title="Type Entry" style="color:#888;font-size:15px;font-family:Arial" onfocus="inputFocus(this)" onblur="inputBlur(this)"><br>
+                        <label style = "font-family:Arial"><b>Description: </b></label><br>
+                        <textarea id="descriptionEntry"  rows="4" cols="70" style = "font-family:Arial"> </textarea> <br>
+                        <label style = "font-family:Arial"><b>Sequence: </b></label><br>
+                        <textarea id="sequenceEntry"  rows="4" cols="70" style = "font-family:Arial"> </textarea> <br><br>
+                        <button id="uploadPart" type="button" class="button">Upload</button><br>
+
+                    </div>
+                    <div id = "objectEntryArea" style = "display:none">
+                        <label style ="font-family:Arial"><b>JSON: </b></label><br>
+                        <textarea id="gateupload" rows="15" cols="100" style="font-family:Arial"> </textarea><br><br>
+                        <button id="create" type="button" class="button">Upload</button><br>
+                    </div>
+                    <div align="center" style="display:none">
+                        <form style="margin-bottom:10px;">
+                            <input  type="radio" value="AsJSON" name="inputType" id="asJson" checked> <label style="font-size:20px;margin-right:15px">As Jason</label>
+                            <input type="radio" value="Parse" name="inputType" id="parse"> <label style="font-size:20px;margin-right:15px">Parse</label>                             
+                            <input type="radio" value="OriginalText" name="inputType" id="originalText"> <label style="font-size:20px;">Original Text</label><br>
+                        </form>
+                    </div>
                 </div>
 
-           </form>-->         
+                <div id="tab2" class="tab">
+                    <div id = "partQueryArea">
+                        <label style = "font-family:Arial"><b>Author: </b></label><br>
+                        <input type="text" id="authorQuery" name="authorQuery" title="Author Query" style="color:#888;font-size:15px;font-family:Arial" onfocus="inputFocus(this)" onblur="inputBlur(this)"><br><br>
+                        <button id="queryAuthor" type="button" class="button">Query by Author</button><br><br>
+                        <label style = "font-family:Arial"><b>Name: </b></label><br>
+                        <input type="text" id="nameQuery" name="nameQuery" title="Name Query" style="color:#888;font-size:15px;font-family:Arial" onfocus="inputFocus(this)" onblur="inputBlur(this)"><br><br>
+                        <button id="queryName" type="button" class="button">Query by Name</button><br><br>
+                        <label style = "font-family:Arial"><b>Type: </b></label><br>
+                        <input type="text" id="typeQuery" name="typeQuery" title="Type Query" style="color:#888;font-size:15px;font-family:Arial" onfocus="inputFocus(this)" onblur="inputBlur(this)"><br><br>
+                        <button id="queryType" type="button" class="button">Query by Type</button><br><br>
+                    </div>
+<!--<div >
+<input type="text" id="nameSearch" name="searchName" title="Search" style="color:#888;font-size:15px" value="Search" onfocus="inputFocus(this)" onblur="inputBlur(this)">
+<br>
 
+</div>
+<div >
+<div id="partDetailsArea" class="partDetails" style="min-width:400px" >
+<label><b>Name : </b></label><label id="partName"></label><br>
+<label><b>Id : </b></label><label id="partId"></label><br>
+<label><b>Schema : </b></label><label id="partSchema"></label><br><br>
+<label><b>Details : </b></label>
+</div>
+<textarea id="queryResults" class="queryResults" rows="8" cols="70"> </textarea>
+</div>-->
+</div>
 
-        </div>     
+<div id="tab3" class="tab">
+    <div>
+        <form>
+            <input  type="radio" value="Basic" name="functionType" id="basicFunctions" checked> <label style="font-size:20px;font-family:Arial;margin-right:15px">Existing Functions</label>
+            <input type="radio" value="Advanced" name="functionType" id="advancedFunctions"> <label style="font-size:20px;font-family:Arial;margin-right:15px">Advanced Functions</label><br><br>
+        </form>
+    </div>
+    <div >
+
+        <input type="text" id="funcArgument" name="argument" title="Arguments" style="color:#888;font-size:15px;width:350px;margin-right:10px;" value="Arguments" onfocus="inputFocus(this)" onblur="inputBlur(this)"> 
+        <button id="runFunction" type="button" class="button">Run</button>
+
+        <br>
+
+    </div>
+    <div >
+        <div id="functionDetails" class="partDetails" style="min-width:400px" >
+            <label><b>Function : </b></label>
+        </div>
+        <textarea id="funtionVal" class="queryResults" rows="8" cols="70"> </textarea> <br>
+        <br>
+
+        <div id="functionDetails" class="partDetails" style="min-width:400px" >
+            <label><b>Output : </b></label>
+        </div>
+        <textarea id="functionResults" class="queryResults" rows="3" cols="70"> </textarea> <br>
+
     </div>
 
-    <div class="mainBodyDiv" >
-        <div class="mainConsole" >
+</div>
 
 
-            <div class="tabs">
-                <ul class="tab-links">
-                    <li class="active"><a href="#tab1" style = "font-family:Arial">Upload Data</a></li>
-                    <li><a href="#tab2" style = "font-family:Arial">Query Parts</a></li>
-                    <li><a href="#tab3" style = "font-family:Arial">Run Functions</a></li>
-                    <li><a href="#tab4" style = "font-family:Arial">Advanced Functions</a></li>
-                </ul>
+<div id="tab4" class="tab">
+    <div >
 
-                <div class="tab-content">
-                   	<div id="tab1" class="tab active">
-			<div id = "uploadSelector">
-				                    <form>
-                                		<input  type="radio" value="Basic" name="uploadType" id="basicUpload" checked> <label style="font-size:20px;font-family:Arial;margin-right:15px">Upload Parts</label>
-                                		<input type="radio" value="Advanced" name="uploadType" id="advancedUpload"> <label style="font-size:20px;font-family:Arial;margin-right:15px">Upload JSON Objects</label><br><br>
-                            		</form>
-			</div>
-                     		<div id="partEntryArea" style="min-width:400px" >
-					<label style = "font-family:Arial"><b>Author: </b></label><br>
-					<input type="text" id="authorEntry" name="authorEntry" title="Author Entry" style="color:#888;font-size:15px;font-family:Arial" onfocus="inputFocus(this)" onblur="inputBlur(this)"><br>                                
-					<label style = "font-family:Arial"><b>Name: </b></label><br>
-					<input type="text" id="nameEntry" name="nameEntry" title="Name Entry" style="color:#888;font-size:15px;font-family:Arial" onfocus="inputFocus(this)" onblur="inputBlur(this)"><br>
-					<label style = "font-family:Arial"><b>Type: </b></label><br>
-					<input type="text" id="typeEntry" name="typeEntry" title="Type Entry" style="color:#888;font-size:15px;font-family:Arial" onfocus="inputFocus(this)" onblur="inputBlur(this)"><br>
-                          		<label style = "font-family:Arial"><b>Description: </b></label><br>
-					<textarea id="descriptionEntry"  rows="4" cols="70" style = "font-family:Arial"> </textarea> <br>
-                             		<label style = "font-family:Arial"><b>Sequence: </b></label><br>
-					<textarea id="sequenceEntry"  rows="4" cols="70" style = "font-family:Arial"> </textarea> <br><br>
-				<button id="uploadPart" type="button" class="button">Upload</button><br>
-                                
-                            	</div>
-			<div id = "objectEntryArea" style = "display:none">
-				<label style ="font-family:Arial"><b>JSON: </b></label><br>
-                            		<textarea id="gateupload" rows="15" cols="100" style="font-family:Arial"> </textarea><br><br>
-				<button id="create" type="button" class="button">Upload</button><br>
-			</div>
-                        	<div align="center" style="display:none">
-                            		<form style="margin-bottom:10px;">
-                                		<input  type="radio" value="AsJSON" name="inputType" id="asJson" checked> <label style="font-size:20px;margin-right:15px">As Jason</label>
-                                		<input type="radio" value="Parse" name="inputType" id="parse"> <label style="font-size:20px;margin-right:15px">Parse</label>                             
-                                		<input type="radio" value="OriginalText" name="inputType" id="originalText"> <label style="font-size:20px;">Original Text</label><br>
-                            		</form>
-			</div>
-                    </div>
+        <input type="text" id="funcNameAdv" name="funcNameAdv" title="FunctionName" style="color:#888;font-size:15px;width:250px;margin-right:10px;" value="Function Name" onfocus="inputFocus(this)" onblur="inputBlur(this)"> 
+        <input type="text" id="funcArgumentAdv" name="funcArgumentAdv" title="PartName" style="color:#888;font-size:15px;width:350px;margin-right:10px;" value="Part Name" onfocus="inputFocus(this)" onblur="inputBlur(this)"> 
+        <button id="runFunctionAdv" type="button" class="button">Run</button>
 
-                    <div id="tab2" class="tab">
-			<div id = "partQueryArea">
-				<label style = "font-family:Arial"><b>Author: </b></label><br>
-				<input type="text" id="authorQuery" name="authorQuery" title="Author Query" style="color:#888;font-size:15px;font-family:Arial" onfocus="inputFocus(this)" onblur="inputBlur(this)"><br><br>
-				<button id="queryAuthor" type="button" class="button">Query by Author</button><br><br>
-				<label style = "font-family:Arial"><b>Name: </b></label><br>
-				<input type="text" id="nameQuery" name="nameQuery" title="Name Query" style="color:#888;font-size:15px;font-family:Arial" onfocus="inputFocus(this)" onblur="inputBlur(this)"><br><br>
-				<button id="queryName" type="button" class="button">Query by Name</button><br><br>
-				<label style = "font-family:Arial"><b>Type: </b></label><br>
-				<input type="text" id="typeQuery" name="typeQuery" title="Type Query" style="color:#888;font-size:15px;font-family:Arial" onfocus="inputFocus(this)" onblur="inputBlur(this)"><br><br>
-				<button id="queryType" type="button" class="button">Query by Type</button><br><br>
-			</div>
-                       <!--<div >
-                            <input type="text" id="nameSearch" name="searchName" title="Search" style="color:#888;font-size:15px" value="Search" onfocus="inputFocus(this)" onblur="inputBlur(this)">
-                            <br>
-                            
-                        </div>
-                        <div >
-                            <div id="partDetailsArea" class="partDetails" style="min-width:400px" >
-                                <label><b>Name : </b></label><label id="partName"></label><br>
-                                <label><b>Id : </b></label><label id="partId"></label><br>
-                                <label><b>Schema : </b></label><label id="partSchema"></label><br><br>
-                                <label><b>Details : </b></label>
-                            </div>
-                            <textarea id="queryResults" class="queryResults" rows="8" cols="70"> </textarea>
-                        </div>-->
-                    </div>
+        <br>
 
-                    <div id="tab3" class="tab">
-                        <div>
-                            <form>
-                                <input  type="radio" value="Basic" name="functionType" id="basicFunctions" checked> <label style="font-size:20px;font-family:Arial;margin-right:15px">Existing Functions</label>
-                                        <input type="radio" value="Advanced" name="functionType" id="advancedFunctions"> <label style="font-size:20px;font-family:Arial;margin-right:15px">Advanced Functions</label><br><br>
-                            </form>
-                        </div>
-                        <div >
-
-                                <input type="text" id="funcArgument" name="argument" title="Arguments" style="color:#888;font-size:15px;width:350px;margin-right:10px;" value="Arguments" onfocus="inputFocus(this)" onblur="inputBlur(this)"> 
-                                <button id="runFunction" type="button" class="button">Run</button>
-                            
-                            <br>
-                            
-                        </div>
-                        <div >
-                            <div id="functionDetails" class="partDetails" style="min-width:400px" >
-                                <label><b>Function : </b></label>
-                            </div>
-                            <textarea id="funtionVal" class="queryResults" rows="8" cols="70"> </textarea> <br>
-                            <br>
-                            
-                            <div id="functionDetails" class="partDetails" style="min-width:400px" >
-                                <label><b>Output : </b></label>
-                            </div>
-                            <textarea id="functionResults" class="queryResults" rows="3" cols="70"> </textarea> <br>
-                            
-                        </div>
-
-                    </div>
-
-
-                    <div id="tab4" class="tab">
-                        <div >
-
-                                <input type="text" id="funcNameAdv" name="funcNameAdv" title="FunctionName" style="color:#888;font-size:15px;width:250px;margin-right:10px;" value="Function Name" onfocus="inputFocus(this)" onblur="inputBlur(this)"> 
-                                <input type="text" id="funcArgumentAdv" name="funcArgumentAdv" title="PartName" style="color:#888;font-size:15px;width:350px;margin-right:10px;" value="Part Name" onfocus="inputFocus(this)" onblur="inputBlur(this)"> 
-                                <button id="runFunctionAdv" type="button" class="button">Run</button>
-                            
-                            <br>
-                            
-                        </div>
-                        <div >
-                            <div id="functionDetailsAdv" class="partDetails" style="min-width:400px" >
-                                <label><b>Function : </b></label>
-                            </div>
-                            <textarea id="funtionValAdv" class="queryResults" rows="8" cols="70"> </textarea> <br>
-                            <br>
-                            
-                            <div id="functionDetailsAdv" class="partDetails" style="min-width:400px" >
-                                <label><b>Output : </b></label>
-                            </div>
-                            <textarea id="functionResultsAdv" class="queryResults" rows="3" cols="70"> </textarea> <br>
-                            
-                        </div>
-
-                    </div>
-
-                </div>
-            </div>
-
+    </div>
+    <div >
+        <div id="functionDetailsAdv" class="partDetails" style="min-width:400px" >
+            <label><b>Function : </b></label>
         </div>
+        <textarea id="funtionValAdv" class="queryResults" rows="8" cols="70"> </textarea> <br>
+        <br>
+
+        <div id="functionDetailsAdv" class="partDetails" style="min-width:400px" >
+            <label><b>Output : </b></label>
+        </div>
+        <textarea id="functionResultsAdv" class="queryResults" rows="3" cols="70"> </textarea> <br>
+
+    </div>
+
+</div>
+
+</div>
+</div>
+
+</div>
 <textarea id="outputWindow" style="width:50%; min-height:200px; height:100%; background-color:#9CFFA4;float:left" ></textarea>
-    <!--
-        <div class="debugConsole" >
-            <div align="center">
-                <p style="font-size:20px;"> <b>Debug Console</b></p> 
-                <textarea id="outputWindow" style="width:50%; min-height:200px; height:100%; background-color:#9CFFA4;float:left" ></textarea>      
-                <textarea id="debugWindow" style="width:49%; min-height:200px; height:100%; background-color:#E31010;color:#FFF;float:left" ></textarea>       
+<!--
+<div class="debugConsole" >
+<div align="center">
+<p style="font-size:20px;"> <b>Debug Console</b></p> 
+<textarea id="outputWindow" style="width:50%; min-height:200px; height:100%; background-color:#9CFFA4;float:left" ></textarea>      
+<textarea id="debugWindow" style="width:49%; min-height:200px; height:100%; background-color:#E31010;color:#FFF;float:left" ></textarea>       
 
-            </div>
-        </div>
-    -->
-    </div>
-    <script>
-    $(document).ready(function() {
+</div>
+</div>
+-->
+</div>
+<script>
+$(document).ready(function() {
 
 
-$("#queryAuthor").click(function() {
-	Clotho.query("author",{name:authorQuery.value}).then(function(data) {
-		if (data.length != 1) {
-			document.getElementById('outputWindow').value += (data.length + " parts were found:\n");
-		} else if (data.length == 1) {
-			document.getElementById('outputWindow').value += "1 part was found:\n";
-		}
-		for (i = 0; i < data.length; i++) {
-			document.getElementById('outputWindow').value += (JSON.stringify(data[i]) + "\n");
-		}
-	}).done();
-});
-
-$("#queryType").click(function() {
-	Clotho.query("type",typeQuery.value).then(function(data) {
-		 if (data.length != 1) {
-			document.getElementById('outputWindow').value += (data.length + " parts were found:\n");
-		} else if (data.length == 1) {
-			document.getElementById('outputWindow').value += "1 part was found:\n";
-		}
-		for (i = 0; i < data.length; i++) {
-			document.getElementById('outputWindow').value += (JSON.stringify(data[i]) + "\n");
-		}
-	}).done();
-});
-
-$("#queryName").click(function() {
-	Clotho.query("name",nameQuery.value).then(function(data) {
-		 if (data.length != 1) {
-			document.getElementById('outputWindow').value += (data.length + " parts were found:\n");
-		} else if (data.length == 1) {
-			document.getElementById('outputWindow').value += "1 part was found:\n";
-		}
-		for (i = 0; i < data.length; i++) {
-			document.getElementById('outputWindow').value += (JSON.stringify(data[i]) + "\n");
-		}
-	}).done();
-});
-
-$('#clothoQuery').keypress(function (e) 
-{
-    if (e.keyCode == 13) 
-    {
-        var text;
-        var queryVal = document.getElementById('clothoQuery').value;
-        Clotho.get(queryVal).then(function(data) {
-            var found=false;
-            if(data !=null)
-            {
-                document.getElementById('debugWindow').value += ("Object Found. Name: "+data.name+" \n");  
-                found = true;                                   
+    $("#queryAuthor").click(function() {
+        Clotho.query("author",{name:authorQuery.value}).then(function(data) {
+            if (data.length != 1) {
+                document.getElementById('outputWindow').value += (data.length + " parts were found:\n");
+            } else if (data.length == 1) {
+                document.getElementById('outputWindow').value += "1 part was found:\n";
             }
-            if(!found)
-            {
-                document.getElementById('debugWindow').value += ("No results obtained\n");  
+            for (i = 0; i < data.length; i++) {
+                document.getElementById('outputWindow').value += (JSON.stringify(data[i]) + "\n");
             }
-            document.getElementById('clothoQuery').value = "";
         }).done();
-        return false;
-    }   
-});
+    });
+
+    $("#queryType").click(function() {
+        Clotho.query("type",typeQuery.value).then(function(data) {
+            if (data.length != 1) {
+                document.getElementById('outputWindow').value += (data.length + " parts were found:\n");
+            } else if (data.length == 1) {
+                document.getElementById('outputWindow').value += "1 part was found:\n";
+            }
+            for (i = 0; i < data.length; i++) {
+                document.getElementById('outputWindow').value += (JSON.stringify(data[i]) + "\n");
+            }
+        }).done();
+    });
+
+    $("#queryName").click(function() {
+        Clotho.query("name",nameQuery.value).then(function(data) {
+            if (data.length != 1) {
+                document.getElementById('outputWindow').value += (data.length + " parts were found:\n");
+            } else if (data.length == 1) {
+                document.getElementById('outputWindow').value += "1 part was found:\n";
+            }
+            for (i = 0; i < data.length; i++) {
+                document.getElementById('outputWindow').value += (JSON.stringify(data[i]) + "\n");
+            }
+        }).done();
+    });
+
+    $('#clothoQuery').keypress(function (e) 
+    {
+        if (e.keyCode == 13) 
+        {
+            var text;
+            var queryVal = document.getElementById('clothoQuery').value;
+            Clotho.get(queryVal).then(function(data) {
+                var found=false;
+                if(data !=null)
+                {
+                    document.getElementById('debugWindow').value += ("Object Found. Name: "+data.name+" \n");  
+                    found = true;                                   
+                }
+                if(!found)
+                {
+                    document.getElementById('debugWindow').value += ("No results obtained\n");  
+                }
+                document.getElementById('clothoQuery').value = "";
+            }).done();
+            return false;
+        }   
+    });
 
 
-$('#runFunction').click(function()
-{
+    $('#runFunction').click(function()
+    {
 
-    var argumentVal = document.getElementById('funcArgument').value;
-    var codeVal = document.getElementById('funtionVal').value;
-    var script = "var data = {};\n"
-                + "data.name = \"functionX\";\n"
-                + "data.language = \"JAVASCRIPT\";\n"
-                + "data.schema = \"org.clothocad.core.datums.Function\";\n"
-                + "data.code = \"" + codeVal + "\";\n"
-                + "data.arguments = [{name:'sequence', type:'String'}];\n"
-                + "\n"
-                + "functionX = clotho.create(data);\n"
-                + "\n"
-                + "clotho.run(functionX, [\"" + argumentVal + "\"]);";
-    
-
-    document.getElementById('outputWindow').value += ("\nArguments :\n" + argumentVal +"\n");  
-    document.getElementById('outputWindow').value += ("\nScript :\n" + script +"\n");  
+        var argumentVal = document.getElementById('funcArgument').value;
+        var codeVal = document.getElementById('funtionVal').value;
+        var script = "var data = {};\n"
+        + "data.name = \"functionX\";\n"
+        + "data.language = \"JAVASCRIPT\";\n"
+        + "data.schema = \"org.clothocad.core.datums.Function\";\n"
+        + "data.code = \"" + codeVal + "\";\n"
+        + "data.arguments = [{name:'sequence', type:'String'}];\n"
+        + "\n"
+        + "functionX = clotho.create(data);\n"
+        + "\n"
+        + "clotho.run(functionX, [\"" + argumentVal + "\"]);";
 
 
-    Clotho.submit(script).then(function(data) {
-        document.getElementById('functionResults').value = data;
-        document.getElementById('outputWindow').value += ("\nOutput :\n" + data +"\n");  
+        document.getElementById('outputWindow').value += ("\nArguments :\n" + argumentVal +"\n");  
+        document.getElementById('outputWindow').value += ("\nScript :\n" + script +"\n");  
 
-    }).done();
-    
-});
+
+        Clotho.submit(script).then(function(data) {
+            document.getElementById('functionResults').value = data;
+            document.getElementById('outputWindow').value += ("\nOutput :\n" + data +"\n");  
+
+        }).done();
+
+    });
 
 
 $('#runFunctionAdv').click(function()
 {
-    
+
     var argumentVal = document.getElementById('funcArgumentAdv').value;
     var codeVal = document.getElementById('funtionValAdv').value;
     var functionNameVal = document.getElementById('funcNameAdv').value;
-    
-    
+
+
 
     document.getElementById('outputWindow').value += ("\nArguments :\n" + argumentVal +"\n");  
-    
+
 
     Clotho.queryOne("name",argumentVal).then(function(dataQ) {
 
@@ -357,8 +357,8 @@ $('#runFunctionAdv').click(function()
                 + "clotho.run("+functionNameVal+", [\"" + dataQ.seq + "\"]);";
                 document.getElementById('outputWindow').value += ("\nScript :\n" + script +"\n");  
                 Clotho.submit(script).then(function(data) {
-                document.getElementById('functionResultsAdv').value = data;
-                document.getElementById('outputWindow').value += ("\nOutput :\n" + data +"\n");
+                    document.getElementById('functionResultsAdv').value = data;
+                    document.getElementById('outputWindow').value += ("\nOutput :\n" + data +"\n");
                 }).done();  
             }
             else
@@ -371,13 +371,13 @@ $('#runFunctionAdv').click(function()
             document.getElementById('debugWindow').value += ("No results obtained\n");  
         }
 
-    
-                
-    }).done();
-    
 
-    
-    
+
+    }).done();
+
+
+
+
 });
 
 
@@ -396,7 +396,7 @@ $('#nameSearch').keypress(function (e)
         var text;
         var queryVal = document.getElementById('nameSearch').value;
         Clotho.queryOne("name",queryVal).then(function(data) {
-            
+
             var found=false;
             if(data !=null)
             {
@@ -456,49 +456,49 @@ $('#nameSearch').keypress(function (e)
             }
             document.getElementById('nameSearch').value = ""; 
         }).done();
-        
-        return false;
-    }   
+
+return false;
+}   
 });
 
 $("#uploadPart").click(function() {
-	var authorText = document.getElementById('authorEntry').value;
-	var nameText = document.getElementById('nameEntry').value;
-	if (nameText.length > 0 && authorText.length > 0) {
-		var part = {name:nameText};
-		part.type = document.getElementById('typeEntry').value;
-		part.shortDescription = document.getElementById('descriptionEntry').value;
-		part.sequence = document.getElementById('sequenceEntry').value;
-		part.author = {name:authorText};
-		Clotho.create(part).then(function() {
-			 document.getElementById('outputWindow').value += "1 part was successfully uploaded.\n";
-		}).done();
-	} else {
-		document.getElementById('outputWindow').value += "Upload failed. ";
-		if (authorText.length == 0) {
-			document.getElementById('outputWindow').value += "Part author is missing. ";
-		} 
-		if (nameText.length == 0) {
-			document.getElementById('outputWindow').value += "Part name is missing.";
-		}
-		document.getElementById('outputWindow').value += "\n";
-	}
+    var authorText = document.getElementById('authorEntry').value;
+    var nameText = document.getElementById('nameEntry').value;
+    if (nameText.length > 0 && authorText.length > 0) {
+        var part = {name:nameText};
+        part.type = document.getElementById('typeEntry').value;
+        part.shortDescription = document.getElementById('descriptionEntry').value;
+        part.sequence = document.getElementById('sequenceEntry').value;
+        part.author = {name:authorText};
+        Clotho.create(part).then(function() {
+            document.getElementById('outputWindow').value += "1 part was successfully uploaded.\n";
+        }).done();
+    } else {
+        document.getElementById('outputWindow').value += "Upload failed. ";
+        if (authorText.length == 0) {
+            document.getElementById('outputWindow').value += "Part author is missing. ";
+        } 
+        if (nameText.length == 0) {
+            document.getElementById('outputWindow').value += "Part name is missing.";
+        }
+        document.getElementById('outputWindow').value += "\n";
+    }
 });
 
 $("#advancedUpload").click(function() {
-	 document.getElementById('partEntryArea').style.display = "none"; 
-	document.getElementById('objectEntryArea').style.display = "initial"; 
+    document.getElementById('partEntryArea').style.display = "none"; 
+    document.getElementById('objectEntryArea').style.display = "initial"; 
 });
 
 $("#basicUpload").click(function() {
-	 document.getElementById('partEntryArea').style.display = "initial"; 
-	document.getElementById('objectEntryArea').style.display = "none"; 
+    document.getElementById('partEntryArea').style.display = "initial"; 
+    document.getElementById('objectEntryArea').style.display = "none"; 
 });
 
 $("#create").click(function() {
 
-     var entiretext = document.getElementById('gateupload').value;
-     var lineArray = entiretext.split("\n");
+    var entiretext = document.getElementById('gateupload').value;
+    var lineArray = entiretext.split("\n");
 
     if (document.getElementById('asJson').checked)
     {
@@ -509,12 +509,12 @@ $("#create").click(function() {
             Clotho.create(obj);
         }
         var textMessage = " uploaded.\n";
-	if (lineArray.length == 1) {
-	 	textMessage = " object was" + textMessage;
-	} else if (lineArray.length > 1) {
-		textMessage = " objects were" + textMessage;
-	}
-	textMessage = lineArray.length + textMessage;
+        if (lineArray.length == 1) {
+            textMessage = " object was" + textMessage;
+        } else if (lineArray.length > 1) {
+            textMessage = " objects were" + textMessage;
+        }
+        textMessage = lineArray.length + textMessage;
         document.getElementById('outputWindow').value += textMessage; 
     }
     else if (document.getElementById('parse').checked)
