@@ -129,7 +129,18 @@
                     </div>
 
                     <div id="tab2" class="tab">
-                       <div >
+			<div id = "partQueryArea">
+				<label style = "font-family:Arial"><b>Author: </b></label><br>
+				<input type="text" id="authorQuery" name="authorQuery" title="Author Query" style="color:#888;font-size:15px;font-family:Arial" onfocus="inputFocus(this)" onblur="inputBlur(this)"><br><br>
+				<button id="queryAuthor" type="button" class="button">Query by Author</button><br><br>
+				<label style = "font-family:Arial"><b>Name: </b></label><br>
+				<input type="text" id="nameQuery" name="nameQuery" title="Name Query" style="color:#888;font-size:15px;font-family:Arial" onfocus="inputFocus(this)" onblur="inputBlur(this)"><br><br>
+				<button id="queryName" type="button" class="button">Query by Name</button><br><br>
+				<label style = "font-family:Arial"><b>Type: </b></label><br>
+				<input type="text" id="typeQuery" name="typeQuery" title="Type Query" style="color:#888;font-size:15px;font-family:Arial" onfocus="inputFocus(this)" onblur="inputBlur(this)"><br><br>
+				<button id="queryType" type="button" class="button">Query by Type</button><br><br>
+			</div>
+                       <!--<div >
                             <input type="text" id="nameSearch" name="searchName" title="Search" style="color:#888;font-size:15px" value="Search" onfocus="inputFocus(this)" onblur="inputBlur(this)">
                             <br>
                             
@@ -142,7 +153,7 @@
                                 <label><b>Details : </b></label>
                             </div>
                             <textarea id="queryResults" class="queryResults" rows="8" cols="70"> </textarea>
-                        </div>
+                        </div>-->
                     </div>
 
                     <div id="tab3" class="tab">
@@ -217,7 +228,44 @@
     $(document).ready(function() {
 
 
+$("#queryAuthor").click(function() {
+	Clotho.query("author",{name:authorQuery.value}).then(function(data) {
+		if (data.length != 1) {
+			document.getElementById('outputWindow').value += (data.length + " parts were found:\n");
+		} else if (data.length == 1) {
+			document.getElementById('outputWindow').value += "1 part was found:\n";
+		}
+		for (i = 0; i < data.length; i++) {
+			document.getElementById('outputWindow').value += (JSON.stringify(data[i]) + "\n");
+		}
+	}).done();
+});
 
+$("#queryType").click(function() {
+	Clotho.query("type",typeQuery.value).then(function(data) {
+		 if (data.length != 1) {
+			document.getElementById('outputWindow').value += (data.length + " parts were found:\n");
+		} else if (data.length == 1) {
+			document.getElementById('outputWindow').value += "1 part was found:\n";
+		}
+		for (i = 0; i < data.length; i++) {
+			document.getElementById('outputWindow').value += (JSON.stringify(data[i]) + "\n");
+		}
+	}).done();
+});
+
+$("#queryName").click(function() {
+	Clotho.query("name",nameQuery.value).then(function(data) {
+		 if (data.length != 1) {
+			document.getElementById('outputWindow').value += (data.length + " parts were found:\n");
+		} else if (data.length == 1) {
+			document.getElementById('outputWindow').value += "1 part was found:\n";
+		}
+		for (i = 0; i < data.length; i++) {
+			document.getElementById('outputWindow').value += (JSON.stringify(data[i]) + "\n");
+		}
+	}).done();
+});
 
 $('#clothoQuery').keypress(function (e) 
 {
@@ -425,10 +473,9 @@ $("#uploadPart").click(function() {
 			document.getElementById('outputWindow').value += "Part author is missing. ";
 		} 
 		if (nameText.length == 0) {
-			document.getElementById('outputWindow').value += "Part name is missing.\n";
-		} else {
-			document.getElementById('outputWindow').value += "\n";
+			document.getElementById('outputWindow').value += "Part name is missing.";
 		}
+		document.getElementById('outputWindow').value += "\n";
 	}
 });
 
