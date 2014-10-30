@@ -480,13 +480,13 @@ $("#uploadPart").click(function() {
 });
 
 $("#advancedUpload").click(function() {
-	 document.getElementById('partEntryArea').style = "display:none"; 
-	document.getElementById('objectEntryArea').style = ""; 
+	 document.getElementById('partEntryArea').style.display = "none"; 
+	document.getElementById('objectEntryArea').style.display = "initial"; 
 });
 
 $("#basicUpload").click(function() {
-	 document.getElementById('partEntryArea').style = "min-width:400px"; 
-	document.getElementById('objectEntryArea').style = "display:none"; 
+	 document.getElementById('partEntryArea').style.display = "initial"; 
+	document.getElementById('objectEntryArea').style.display = "none"; 
 });
 
 $("#create").click(function() {
