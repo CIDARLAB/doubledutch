@@ -95,7 +95,7 @@
                 <div class="tab-content">
                    	<div id="tab1" class="tab active">
 			<div id = "uploadSelector">
-				<form>
+				                    <form>
                                 		<input  type="radio" value="Basic" name="uploadType" id="basicUpload" checked> <label style="font-size:20px;font-family:Arial;margin-right:15px">Upload Parts</label>
                                 		<input type="radio" value="Advanced" name="uploadType" id="advancedUpload"> <label style="font-size:20px;font-family:Arial;margin-right:15px">Upload JSON Objects</label><br><br>
                             		</form>
@@ -157,6 +157,12 @@
                     </div>
 
                     <div id="tab3" class="tab">
+                        <div>
+                            <form>
+                                <input  type="radio" value="Basic" name="functionType" id="basicFunctions" checked> <label style="font-size:20px;font-family:Arial;margin-right:15px">Existing Functions</label>
+                                        <input type="radio" value="Advanced" name="functionType" id="advancedFunctions"> <label style="font-size:20px;font-family:Arial;margin-right:15px">Advanced Functions</label><br><br>
+                            </form>
+                        </div>
                         <div >
 
                                 <input type="text" id="funcArgument" name="argument" title="Arguments" style="color:#888;font-size:15px;width:350px;margin-right:10px;" value="Arguments" onfocus="inputFocus(this)" onblur="inputBlur(this)"> 
