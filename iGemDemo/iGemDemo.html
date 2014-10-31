@@ -53,7 +53,7 @@ function displayQueriedParts(data) {
     var parts = [];
     var out = document.getElementById('outputWindow');
     for (i = 0; i < data.length; i++) {
-        if (data[i].schema == "BasicPart" || data[i].schema == "CompositePart") {
+        if (data[i].schema == "org.clothocad.model.BasicPart" || data[i].schema == "org.clothocad.model.CompositePart") {
             parts[parts.length] = data[i];
         }
     }
@@ -537,9 +537,9 @@ $("#uploadPart").click(function() {
         part.shortDescription = document.getElementById('descriptionEntry').value;
         part.sequence = document.getElementById('sequenceEntry').value;
         part.author = {name:authorText};
-        part.schema = "BasicPart";
+        part.schema = "org.clothocad.model.BasicPart";
         Clotho.create(part).then(function() {
-            out.value += "1 part was successfully uploaded.\n";
+            out.value += "1 part was successfully uploaded.\n\n";
         }).done();
     } else {
         out.value += "Upload failed. ";
@@ -586,7 +586,7 @@ $("#create").click(function() {
             obj = JSON.parse(line);
             Clotho.create(obj);
         }
-        var textMessage = " successfully uploaded.\n";
+        var textMessage = " successfully uploaded.\n\n";
         if (lineArray.length == 1) {
             textMessage = " object was" + textMessage;
         } else if (lineArray.length > 1) {
