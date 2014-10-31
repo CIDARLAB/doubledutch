@@ -89,7 +89,7 @@ function inputBlur(i)
                 <li class="active"><a href="#tab1" style = "font-family:Arial">Upload Data</a></li>
                 <li><a href="#tab2" style = "font-family:Arial">Query Parts</a></li>
                 <li><a href="#tab3" style = "font-family:Arial">Run Functions</a></li>
-                <li><a href="#tab4" style = "font-family:Arial">Advanced Functions</a></li>
+                <!--<li><a href="#tab4" style = "font-family:Arial">Advanced Functions</a></li>-->
             </ul>
 
             <div class="tab-content">
@@ -163,11 +163,17 @@ function inputBlur(i)
             <input type="radio" value="Advanced" name="functionType" id="advancedFunctions"> <label style="font-size:20px;font-family:Arial;margin-right:15px">Advanced Functions</label><br><br>
         </form>
     </div>
+    
+
+
     <div >
-
+        
         <input type="text" id="funcArgument" name="argument" title="Arguments" style="color:#888;font-size:15px;width:350px;margin-right:10px;" value="Arguments" onfocus="inputFocus(this)" onblur="inputBlur(this)"> 
+            <select id="presetFunctions">
+                
+            </select>
+        
         <button id="runFunction" type="button" class="button">Run</button>
-
         <br>
 
     </div>
@@ -187,7 +193,7 @@ function inputBlur(i)
 
 </div>
 
-
+<!--
 <div id="tab4" class="tab">
     <div >
 
@@ -213,6 +219,7 @@ function inputBlur(i)
     </div>
 
 </div>
+-->
 
 </div>
 </div>
@@ -494,6 +501,39 @@ $("#basicUpload").click(function() {
     document.getElementById('partEntryArea').style.display = "initial"; 
     document.getElementById('objectEntryArea').style.display = "none"; 
 });
+
+
+$("#advancedFunctions").click(function() {
+    alert("advanced");
+    //document.getElementById('partEntryArea').style.display = "none"; 
+    //document.getElementById('objectEntryArea').style.display = "initial"; 
+});
+
+$("#basicFunctions").click(function() {
+    alert("basic");
+    Clotho.query("schema","org.clothocad.core.datums.Function").then(function(data) {
+            //alert(data.length);
+            var dropdownMenu = document.getElementById('presetFunctions');
+            alert(dropdownMenu.selectedIndex);
+            for(var i=0;i<data.length;i++)
+            {
+                if(data[i].language == "JAVASCRIPT")
+                {
+                    var option = document.createElement('option');
+                    option.value = data[i].name;
+                    option.text = data[i].name;
+                    //alert(data[i].name);
+                    dropdownMenu.appendChild(option);
+                }
+
+            }
+    }).done();
+
+
+    //document.getElementById('partEntryArea').style.display = "initial"; 
+    //document.getElementById('objectEntryArea').style.display = "none"; 
+});
+
 
 $("#create").click(function() {
 
