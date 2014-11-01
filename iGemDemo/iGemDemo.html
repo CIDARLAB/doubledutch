@@ -2,7 +2,7 @@
 <html>
 <head>
     <meta charset="utf-8">
-    <title>iGem Demo</title>
+    <title>OWBDA Demo</title>
     <script type="text/javascript" src="JS/clotho3API.js"></script>
 
     <link rel="stylesheet" type="text/css" href="styles/style.css">
@@ -96,7 +96,7 @@ function displayQueriedObjects(data) {
 -->
 <div class="menuDiv" >
     <div style="white-space: nowrap;" align="center" >
-        <h1 class="nameHeader">Clotho 3.0 for iGEM</h1>  <!--Change Title-->
+        <h1 class="nameHeader">Clotho 3.0 for OWBDA</h1>  <!--Change Title-->
 
 
 <!--<form action="#" align="center">
@@ -199,7 +199,7 @@ function displayQueriedObjects(data) {
 
 
 <div id="tab3" class="tab">
-    <div>
+    <div id="functionSelector">
         <form>
             <input  type="radio" value="Basic" name="functionType" id="basicFunctions" checked> <label style="font-size:20px;font-family:Arial;margin-right:15px">Existing Functions</label>
             <input type="radio" value="Advanced" name="functionType" id="advancedFunctions"> <label style="font-size:20px;font-family:Arial;margin-right:15px">Advanced Functions</label><br><br>
@@ -208,30 +208,52 @@ function displayQueriedObjects(data) {
     
 
 
-    <div >
-        
+    <div id="preloadedFunctions">
         <input type="text" id="funcArgument" name="argument" title="Arguments" style="color:#888;font-size:15px;width:350px;margin-right:10px;" value="Arguments" onfocus="inputFocus(this)" onblur="inputBlur(this)"> 
             <select id="presetFunctions">
-                
             </select>
-        
         <button id="runFunction" type="button" class="button">Run</button>
         <br>
-
-    </div>
-    <div >
         <div id="functionDetails" class="partDetails" style="min-width:400px" >
-            <label><b>Function : </b></label>
+            <label><b>Details : </b></label>
         </div>
-        <textarea id="funtionVal" class="queryResults" rows="8" cols="70"> </textarea> <br>
+        <textarea id="functionArgs" class="queryResults" rows="5" cols="70"> </textarea> <br>
+        <br>
+
+        <div id="functionDetails" class="partDetails" style="min-width:400px" >
+            <label><b>Code : </b></label>
+        </div>
+        <textarea id="functionVal" class="queryResults" rows="6" cols="70"> </textarea> <br>
         <br>
 
         <div id="functionDetails" class="partDetails" style="min-width:400px" >
             <label><b>Output : </b></label>
         </div>
         <textarea id="functionResults" class="queryResults" rows="3" cols="70"> </textarea> <br>
+    </div>
+
+
+    <div id="advFunctions" style = "display:none">
+        <input type="text" id="funcNameAdv" name="funcNameAdv" title="FunctionName" style="color:#888;font-size:15px;width:250px;margin-right:10px;" value="Function Name" onfocus="inputFocus(this)" onblur="inputBlur(this)"> 
+        <input type="text" id="funcArgumentAdv" name="funcArgumentAdv" title="PartName" style="color:#888;font-size:15px;width:350px;margin-right:10px;" value="Part Name" onfocus="inputFocus(this)" onblur="inputBlur(this)"> 
+        <button id="runFunctionAdv" type="button" class="button">Run</button>
+
+        <br>
+        <div id="functionDetailsAdv" class="partDetails" style="min-width:400px" >
+            <label><b>Function : </b></label>
+        </div>
+        <textarea id="functionValAdv" class="queryResults" rows="8" cols="70"> </textarea> <br>
+        <br>
+
+        <div id="functionDetailsAdv" class="partDetails" style="min-width:400px" >
+            <label><b>Output : </b></label>
+        </div>
+        <textarea id="functionResultsAdv" class="queryResults" rows="3" cols="70"> </textarea> <br>
+
 
     </div>
+
+
 
 </div>
 
@@ -247,16 +269,7 @@ function displayQueriedObjects(data) {
 
     </div>
     <div >
-        <div id="functionDetailsAdv" class="partDetails" style="min-width:400px" >
-            <label><b>Function : </b></label>
-        </div>
-        <textarea id="funtionValAdv" class="queryResults" rows="8" cols="70"> </textarea> <br>
-        <br>
-
-        <div id="functionDetailsAdv" class="partDetails" style="min-width:400px" >
-            <label><b>Output : </b></label>
-        </div>
-        <textarea id="functionResultsAdv" class="queryResults" rows="3" cols="70"> </textarea> <br>
+        
 
     </div>
 
@@ -296,7 +309,7 @@ $(document).ready(function() {
             //alert(dropdownMenu.selectedIndex);
             for(var i=0;i<data.length;i++)
             {
-                if(data[i].language == "JAVASCRIPT")
+                if(data[i].language == "JAVASCRIPT" && data[i].name!="functionX")
                 {
                     var option = document.createElement('option');
                     option.value = data[i].name;
@@ -400,13 +413,13 @@ $(document).ready(function() {
     {
 
         var argumentVal = document.getElementById('funcArgument').value;
-        var codeVal = document.getElementById('funtionVal').value;
+        var codeVal = document.getElementById('functionVal').value;
         var script = "var data = {};\n"
         + "data.name = \"functionX\";\n"
         + "data.language = \"JAVASCRIPT\";\n"
         + "data.schema = \"org.clothocad.core.datums.Function\";\n"
         + "data.code = \"" + codeVal + "\";\n"
-        + "data.arguments = [{name:'sequence', type:'String'}];\n"
+        + "data.args = [{name:'sequence', type:'String'}];\n"
         + "\n"
         + "functionX = clotho.create(data);\n"
         + "\n"
@@ -430,10 +443,10 @@ $('#runFunctionAdv').click(function()
 {
 
     var argumentVal = document.getElementById('funcArgumentAdv').value;
-    var codeVal = document.getElementById('funtionValAdv').value;
+    var codeVal = document.getElementById('functionValAdv').value;
     var functionNameVal = document.getElementById('funcNameAdv').value;
-
-
+    
+    alert(argumentVal);
 
     document.getElementById('outputWindow').value += ("\nArguments :\n" + argumentVal +"\n");  
 
@@ -442,32 +455,33 @@ $('#runFunctionAdv').click(function()
 
         if(dataQ!=null)
         {
-            if(dataQ.seq != null)
+            if(dataQ.sequence != null)
             {
                 var script = "var data = {};\n"
                 + "data.name = \""+ functionNameVal   +"\";\n"
                 + "data.language = \"JAVASCRIPT\";\n"
                 + "data.schema = \"org.clothocad.core.datums.Function\";\n"
                 + "data.code = \"" + codeVal + "\";\n"
-                + "data.arguments = [{name:'sequence', type:'String'}];\n"
+                + "data.args = [{name:'sequence', type:'String'}];\n"
                 + "\n"
                 + functionNameVal+" = clotho.create(data);\n"
                 + "\n"
-                + "clotho.run("+functionNameVal+", [\"" + dataQ.seq + "\"]);";
+                + "clotho.run("+functionNameVal+", [\"" + dataQ.sequence + "\"]);";
                 document.getElementById('outputWindow').value += ("\nScript :\n" + script +"\n");  
                 Clotho.submit(script).then(function(data) {
                     document.getElementById('functionResultsAdv').value = data;
-                    document.getElementById('outputWindow').value += ("\nOutput :\n" + data +"\n");
+                    //document.getElementById('outputWindow').value += ("\nOutput :\n" + data +"\n");
                 }).done();  
             }
             else
             {
-                document.getElementById('debugWindow').value += ("Sequence field is empty\n");  
+
+                document.getElementById('outputWindow').value += ("Result : \n Sequence field is empty\n");  
             }
         }
         else
         {
-            document.getElementById('debugWindow').value += ("No results obtained\n");  
+            document.getElementById('outputWindow').value += ("No results obtained\n");  
         }
 
 
@@ -594,9 +608,27 @@ $("#presetFunctions").change(function()
     var option  = funcMenu.options[funcMenu.selectedIndex].value;
     var code = "";
     Clotho.query("name",option).then(function(data) {
-        //alert(JSON.stringify(data));
-        //alert(data[0].code);    
-        document.getElementById('funtionVal').value = data[0].code;
+        //alert(JSON.stringify(data[0]));
+        //alert(data[0]);    
+        var argsString = "";
+        //alert(data[0].code);
+         
+        if(data[0].args != null)
+        {
+            argsString += "Arguments: \n";
+            for(var i=0;i<data[0].args.length;i++)
+                {
+                for(var subkey in data[0].args[i])
+                {
+                    argsString +=  (subkey + " : " + data[0].args[i][subkey]+"\n"); 
+                }
+                argsString += "\n";    
+            }
+        }
+        
+        document.getElementById('functionArgs').value = argsString;
+        document.getElementById('functionVal').value = data[0].code;
+
     }).done();
     
 });
@@ -615,12 +647,21 @@ $("#basicUpload").click(function() {
 
 
 $("#advancedFunctions").click(function() {
-    alert("advanced");
+
+    document.getElementById('preloadedFunctions').style.display = "none"; 
+    document.getElementById('advFunctions').style.display = "initial"; 
+    //abcd
+    //alert("advanced");
     //document.getElementById('partEntryArea').style.display = "none"; 
     //document.getElementById('objectEntryArea').style.display = "initial"; 
 });
 
 $("#basicFunctions").click(function() {
+
+
+    document.getElementById('preloadedFunctions').style.display = "initial"; 
+    document.getElementById('advFunctions').style.display = "none"; 
+
     //alert("basic");
     Clotho.query("schema","org.clothocad.core.datums.Function").then(function(data) {
             //alert(data.length);
@@ -629,7 +670,7 @@ $("#basicFunctions").click(function() {
             //alert(dropdownMenu.selectedIndex);
             for(var i=0;i<data.length;i++)
             {
-                if(data[i].language == "JAVASCRIPT")
+                if(data[i].language == "JAVASCRIPT" && data[i].name!="functionX")
                 {
                     var option = document.createElement('option');
                     option.value = data[i].name;
