@@ -118,7 +118,7 @@ function displayQueriedObjects(data) {
             <ul class="tab-links">
                 <li class="active"><a href="#tab1" style = "font-family:Arial">Upload Data</a></li>
                 <li><a href="#tab2" style = "font-family:Arial">Query Database</a></li>
-                <li><a href="#tab3" style = "font-family:Arial">Run Functions</a></li>
+                <li><a id="funcTab" href="#tab3" style = "font-family:Arial">Run Functions</a></li>
                 <!--<li><a href="#tab4" style = "font-family:Arial">Advanced Functions</a></li>-->
             </ul>
 
@@ -280,8 +280,34 @@ function displayQueriedObjects(data) {
 -->
 </div>
 <script>
+
+
+
+
+
+
 $(document).ready(function() {
 
+    $('#funcTab').click(function(){
+        Clotho.query("schema","org.clothocad.core.datums.Function").then(function(data) {
+            //alert(data.length);
+            var dropdownMenu = document.getElementById('presetFunctions');
+            $('#presetFunctions').empty();
+            //alert(dropdownMenu.selectedIndex);
+            for(var i=0;i<data.length;i++)
+            {
+                if(data[i].language == "JAVASCRIPT")
+                {
+                    var option = document.createElement('option');
+                    option.value = data[i].name;
+                    option.text = data[i].name;
+                    //alert(data[i].name);
+                    dropdownMenu.appendChild(option);
+                }
+
+            }
+    }).done(); 
+    });
 
     $("#queryAuthor").click(function() {
         var authorText = document.getElementById('authorQuery').value;
@@ -560,6 +586,22 @@ $("#uploadPart").click(function() {
     }
 });
 
+
+
+$("#presetFunctions").change(function()
+{
+    var funcMenu = document.getElementById('presetFunctions');
+    var option  = funcMenu.options[funcMenu.selectedIndex].value;
+    var code = "";
+    Clotho.query("name",option).then(function(data) {
+        //alert(JSON.stringify(data));
+        //alert(data[0].code);    
+        document.getElementById('funtionVal').value = data[0].code;
+    }).done();
+    
+});
+
+
 $("#advancedUpload").click(function() {
     document.getElementById('partEntryArea').style.display = "none"; 
     document.getElementById('objectEntryArea').style.display = "initial"; 
@@ -579,11 +621,12 @@ $("#advancedFunctions").click(function() {
 });
 
 $("#basicFunctions").click(function() {
-    alert("basic");
+    //alert("basic");
     Clotho.query("schema","org.clothocad.core.datums.Function").then(function(data) {
             //alert(data.length);
             var dropdownMenu = document.getElementById('presetFunctions');
-            alert(dropdownMenu.selectedIndex);
+            $('#presetFunctions').empty();
+            //alert(dropdownMenu.selectedIndex);
             for(var i=0;i<data.length;i++)
             {
                 if(data[i].language == "JAVASCRIPT")
