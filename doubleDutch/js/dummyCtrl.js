@@ -1,3 +1,0 @@
-function dummyCtrl($scope) {
-   
-}
