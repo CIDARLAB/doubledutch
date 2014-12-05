@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html ng-app="doubleDutchApp">
+<head>
+	<title>Double Dutch</title>
+	<meta charset="utf-8">
+	<!-- Include meta tag to ensure proper rendering and touch zooming -->
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+    <link href='css/application.css' rel='stylesheet'>
+    <link href="http://maxcdn.bootstrapcdn.com/bootstrap/3.2.0/css/bootstrap.min.css" rel="stylesheet">
+</head>
+<body ng-controller="doubleDutchCtrl">
+	<div class="container">
+		<form role="form">
+			<div class="form-group">
+				<label for="fileUpload">File Upload</label>
+				<input type="file" id="fileUpload">
+			</div>
+			<button type="button" class="btn btn-primary">Upload</button>
+		</form>
+		<div class='span4'>
+			<dutch-list>
+				<li>
+					<i class='icon-move'><span class="glyphicon glyphicon-move"></span></i>
+					<textarea rows="5" cols="30"></textarea>
+				</li>
+				<li>
+					<i class='icon-move'><span class="glyphicon glyphicon-move"></span></i>
+					<textarea rows="5" cols="30"></textarea>
+				</li>
+			</dutch-list>
+		</div>
+		<div class='span4'>
+			<dutch-list>
+				<li class='highlight'>
+					Factor 1
+					<ol>
+	                	<li class='highlight'>Levels</li>
+	               	</ol>
+				</li>
+				<li class='highlight'>
+					Factor 2
+					<ol>
+	                	<li class='highlight'>Levels</li>
+	               	</ol>
+				</li>
+			</dutch-list>
+		</div>
+	</div>
+	
+	<script src="http://maxcdn.bootstrapcdn.com/bootstrap/3.2.0/js/bootstrap.min.js"></script>
+	<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.1/jquery.min.js"></script>
+	<script src="js/jquery-sortable.js"></script>
+	<script src="http://ajax.googleapis.com/ajax/libs/angularjs/1.2.26/angular.min.js"></script>
+	<script src="//cdnjs.cloudflare.com/ajax/libs/q.js/0.9.6/q.min.js"></script>
+	<script src="js/clotho3API.js"></script>
+	<script src="js/doubleDutchApp.js"></script>
+	<script src="js/doubleDutchCtrl.js"></script>
+	<script src="js/dutchListDir.js"></script>
+</body>
+</html>
