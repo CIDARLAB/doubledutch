@@ -1,60 +1,99 @@
 <!DOCTYPE html>
-<html ng-app="doubleDutchApp">
+<html ng-app = "doubleDutchApp">
 <head>
 	<title>Double Dutch</title>
 	<meta charset="utf-8">
 	<!-- Include meta tag to ensure proper rendering and touch zooming -->
 	<meta name="viewport" content="width=device-width, initial-scale=1">
-    <link href='css/application.css' rel='stylesheet'>
+    <link href="css/application.css" rel="stylesheet">
     <link href="http://maxcdn.bootstrapcdn.com/bootstrap/3.2.0/css/bootstrap.min.css" rel="stylesheet">
+    <!-- <style>
+		.dutchLeaf {
+		    
+		}
+	</style>-->
 </head>
 <body ng-controller="doubleDutchCtrl">
 	<div class="container">
-		<form role="form">
-			<div class="form-group">
-				<label for="fileUpload">File Upload</label>
-				<input type="file" id="fileUpload">
+		<div class="container">
+			<label for="fileUploader">File Upload</label>
+			<input type="file" id="fileUploader" file-input="files" multiple>
+			<br>
+			<button type="button" class="btn btn-primary" ng-click="uploadDesigns(files, currentParser)">Upload</button>
+			<br><br>
+			<!-- <label for="parameterSelector">Variable</label> -->
+			<!-- <br>
+			<select id="parameterSelector" ng-model="currentVariable" ng-options="x for x in variables"></select>
+			<br><br> -->
+			<label for="inputTarget">Target Levels</label>
+			<br>
+			<input type="text" id="inputTarget" style="height:25px" ng-model="newTarget" placeholder="New Target">
+			<br>
+			<button type="button" class="btn btn-primary" ng-click="addTarget()">Add Target</button>
+			<button type="button" class="btn btn-primary" ng-click="removeTarget()">Remove Target</button>
+			<br><br>
+			<div ng-repeat="x in targetLevels">
+				<input type="text" style="height:25px" ng-model="x">
 			</div>
-			<button type="button" class="btn btn-primary">Upload</button>
-		</form>
-		<div class='span4'>
-			<dutch-list>
-				<li>
-					<i class='icon-move'><span class="glyphicon glyphicon-move"></span></i>
-					<textarea rows="5" cols="30"></textarea>
-				</li>
-				<li>
-					<i class='icon-move'><span class="glyphicon glyphicon-move"></span></i>
-					<textarea rows="5" cols="30"></textarea>
+		</div>
+		<div class="span4">
+			<label for="factorList">Factors</label>
+			<dutch-list id="factorList" drop="false">
+				<li ng-repeat="x in factors">
+					<i class="icon-move"><span class="glyphicon glyphicon-move"></span></i>Factor
+					<ol>
+						<li>
+							<form>
+								<label for="factorModuleName">Module</label><br>
+								<input type="text" id="factorModuleName" style="height:25px" ng-model="x.design.module.name">
+							</form> 
+						</li>
+					</ol>
 				</li>
 			</dutch-list>
 		</div>
-		<div class='span4'>
-			<dutch-list>
-				<li class='highlight'>
-					Factor 1
+		<div class="span4">
+			<label for="experimentalDesignList">Experimental Design</label>
+			<dutch-list id="experimentalDesignList">
+				<!-- <li ng-repeat="x in experimentalDesign.factors">
+					<i class="icon-move"><span class="glyphicon glyphicon-move"></span></i>Factor
 					<ol>
-	                	<li class='highlight'>Levels</li>
-	               	</ol>
-				</li>
-				<li class='highlight'>
-					Factor 2
-					<ol>
-	                	<li class='highlight'>Levels</li>
-	               	</ol>
+						<li>
+							<form>
+								<label for="expDesignModuleName">Module</label><br>
+								<input type="text" id="expDesignModuleName" style="height:25px" ng-model="x.design.module.name">
+							</form> 
+						</li>
+					</ol>
+				</li> -->
+			</dutch-list>
+		</div>
+		<div class="span4">
+			<label for="levelList">Levels</label>
+			<dutch-list id="levelList" drop="false">
+				<li ng-repeat="x in levels">
+					<i class="icon-move"><span class="glyphicon glyphicon-move"></span></i>Level<br><br>
+					<form>
+						<label for="levelModuleName">Module</label><br>
+						<input type="text" id="levelModuleName" style="height:25px" ng-model="x.design.module.name"><br>
+						<label for="parameterValue" ng-bind="x.parameter.variable.name"></label>
+						<input type="text" id="parameterValue" style="height:25px" ng-model="x.parameter.value">
+					</form>
 				</li>
 			</dutch-list>
 		</div>
 	</div>
 	
-	<script src="http://maxcdn.bootstrapcdn.com/bootstrap/3.2.0/js/bootstrap.min.js"></script>
 	<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.1/jquery.min.js"></script>
+	<script src="http://maxcdn.bootstrapcdn.com/bootstrap/3.2.0/js/bootstrap.min.js"></script>
 	<script src="js/jquery-sortable.js"></script>
 	<script src="http://ajax.googleapis.com/ajax/libs/angularjs/1.2.26/angular.min.js"></script>
 	<script src="//cdnjs.cloudflare.com/ajax/libs/q.js/0.9.6/q.min.js"></script>
+	<script src="js/papaparse.min.js"></script>
 	<script src="js/clotho3API.js"></script>
 	<script src="js/doubleDutchApp.js"></script>
 	<script src="js/doubleDutchCtrl.js"></script>
 	<script src="js/dutchListDir.js"></script>
+	<script src="js/fileInput.js"></script>
 </body>
 </html>

@@ -6,36 +6,27 @@ app.directive('dutchList', function () {
          var html = "<ol class='simple_with_animation vertical'>" + element.html() + "</ol>";
          element.replaceWith($(html));
          return function (scope, element, attrs, controller) {
-            var adjustment;
+            var origin;
+            var dropStatus = true;
+            if ('drop' in attrs) {
+               dropStatus = scope.$eval(attrs.drop);
+            }
             element.sortable({
-               group: 'simple_with_animation',
+               group: 'dutch',
                pullPlaceholder: false,
                handle: 'i.icon-move',
-               // animation on drop
-               onDrop: function (item, targetContainer, _super) {
-                  var clonedItem = $('<li/>').css({height: 0});
-                  item.before(clonedItem);
-                  clonedItem.animate({'height': item.height()});
-                  item.animate(clonedItem.position(), function  () {
-                     clonedItem.detach();
-                     _super(item);
-                  });
+               drop: dropStatus,
+               onDrop: function (item, container, _super) {
+                   _super(item);
+                  if (container == origin && !container.options.drop) {
+                     container.el[0].removeChild(item[0]);
+                  }
                },
-               // set item relative to cursor position
                onDragStart: function (item, container, _super) {
-                  var offset = item.offset();
-                  pointer = container.rootGroup.pointer;
-                  adjustment = {
-                     left: pointer.left - offset.left,
-                     top: pointer.top - offset.top
-                  };
-                  _super(item, container);
-               },
-               onDrag: function (item, position) {
-                  item.css({
-                     left: position.left - adjustment.left,
-                     top: position.top - adjustment.top
-                  });
+                  origin = container;
+                  if (!container.options.drop)
+                     item.clone().insertAfter(item);
+                  _super(item);
                }
             });
          };
