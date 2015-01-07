@@ -1,1 +1,1 @@
-var app = angular.module("doubleDutchApp", []);
+var app = angular.module("doubleDutchApp", ['ui.tree']);

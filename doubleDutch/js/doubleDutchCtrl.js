@@ -293,9 +293,28 @@ app.controller("doubleDutchCtrl", function($scope) {
 	$scope.designs = [];
 	$scope.levels = [];
 	$scope.factors = [];
-	$scope.experimentalDesign = {factors: [], schema: "org.clothocad.model.ExperimentalDesign"};
+	// $scope.experimentalDesign = {factors: [], schema: "org.clothocad.model.ExperimentalDesign"};
+	$scope.experimentalDesign = [];
 	$scope.parsers = [gridParser];
 	$scope.currentParser = $scope.parsers[0];
+
+	$scope.remove = function(scope) {
+      scope.remove();
+    };
+
+    $scope.toggle = function(scope) {
+      scope.toggle();
+    };
+
+    $scope.treeOptions = {
+    	accept: function(sourceNodeScope, destNodesScope, destIndex) {
+    		if (sourceNodeScope.$modelValue.rootable) {
+    			return destNodesScope.maxDepth == 0;
+      		} else {
+      			return destNodesScope.maxDepth == 1;
+      		}
+    	}
+  	};
 
 	$scope.uploadDesigns = function(files, designParser) {
 		var i;
@@ -354,11 +373,13 @@ app.controller("doubleDutchCtrl", function($scope) {
 					var j;
 					for (i = 0; i < $scope.designs.length; i++) {
 						if (isCodedExpression($scope.designs[i])) {
-							$scope.factors.push({design: $scope.designs[i], schema: "org.clothocad.model.Factor"});
+							$scope.factors.push({depth: 1, rootable: true, nodes: [], 
+								fl: {design: $scope.designs[i], schema: "org.clothocad.model.Factor"}});
 						} else {
 							j = isParameterizedExpression($scope.designs[i]);
 							if (j >= 0) {
-								$scope.levels.push({parameter: $scope.designs[i].parameters[j], design: $scope.designs[i], schema: "org.clothocad.model.Level"});
+								$scope.levels.push({depth: 2, rootable: false, nodes: [], 
+									fl: {parameter: $scope.designs[i].parameters[j], design: $scope.designs[i], schema: "org.clothocad.model.Level"}});
 							}	
 						}
 					}
@@ -385,137 +406,144 @@ app.controller("doubleDutchCtrl", function($scope) {
     	}
     };
 
-	// $scope.assignLevels = function() {
-	// 	$scope.targetLevels.sort(function(a, b){return a - b});
-	// 	$scope.levels.sort(function(a, b){return a.parameter.value - b.parameter.value});
-	// 	var midPoints = [];
-	// 	var i;
-	// 	for (i = 0; i < $scope.targetLevels.length - 1; i++) {
-	// 		midPoints.push(($scope.targetLevels[i] + $scope.targetLevels[i + 1])/2);
-	// 	}
-	// 	var levelScorings = [[]];
-	// 	var j = 0;
-	// 	for (i = 0; i < $scope.levels.length; i++) {
-	// 		while (j < midPoints.length && $scope.levels[i].parameter.value > midPoints[j]) {
-	// 			levelScorings.push([]);
-	// 			j++;
-	// 		} 
-	// 		levelScorings[j].push({level: $scope.levels[i], score: Math.abs($scope.levels[i].parameter.value - $scope.targetLevels[j])});
-	// 	}
-	// 	for (i = 0; i < levelScorings.length; i++) {
-	// 		levelScorings[i].sort(function(a, b){return a.score - b.score});
-	// 	}
+	$scope.assignLevels = function() {
+		$scope.targetLevels.sort(function(a, b){return a - b});
+		$scope.levels.sort(function(a, b){return a.parameter.value - b.parameter.value});
+		var midPoints = [];
+		var i;
+		for (i = 0; i < $scope.targetLevels.length - 1; i++) {
+			midPoints.push(($scope.targetLevels[i] + $scope.targetLevels[i + 1])/2);
+		}
+		var levelScorings = [[]];
+		var j = 0;
+		for (i = 0; i < $scope.levels.length; i++) {
+			while (j < midPoints.length && $scope.levels[i].parameter.value > midPoints[j]) {
+				levelScorings.push([]);
+				j++;
+			} 
+			levelScorings[j].push({level: $scope.levels[i], score: Math.abs($scope.levels[i].parameter.value - $scope.targetLevels[j])});
+		}
+		for (i = 0; i < levelScorings.length; i++) {
+			levelScorings[i].sort(function(a, b){return a.score - b.score});
+		}
 		
-	// 	function solution(targetLevelCount, factorCount, score) {
-	// 		this.levelSelections = [];
-	// 		for (i = 0; i < targetLevelCount; i++) {
-	// 			this.levelSelections.push([]);
-	// 			for (j = 0; j < factorCount; j++) {
-	// 				this.levelSelections[i].push(0);
-	// 			}
-	// 		}
-	// 		this.score = score;
-	// 		this.isHomologyRisk = function(levelScorings, i, j) {
-	// 			var k = this.levelSelections[i][j];
-	// 			var feats = levelScorings[i][k].level.design.module.getFeatures();
-	// 			var b;
-	// 			var c;
-	// 			var usedFeats;
-	// 			var d;
-	// 			for (b = 0; b < j; b++) {
-	// 				c = levelSelections[i][b];
-	// 				usedFeats = levelScorings[i][c].level.design.module.getFeatures();
-	// 				for (d = 0; d < feats.length; d++) {
-	// 					if (usedFeats.indexOf(feats[d]) >= 0) {
-	// 						return true;
-	// 					}
-	// 				}
-	// 			}
-	// 			var a;
-	// 			for (a = 0; a < i; a++) {
-	// 				for (b = 0; b < this.levelSelections[a].length; b++) {
-	// 					if (b != j) {
-	// 						c = levelSelections[a][b];
-	// 						usedFeats = levelScorings[i][c].level.design.module.getFeatures();
-	// 						for (d = 0; d < feats.length; d++) {
-	// 							if (usedFeats.indexOf(feats[d]) >= 0) {
-	// 								return true;
-	// 							}
-	// 						}
-	// 					}
-	// 				}
-	// 			}
-	// 			return false;	
-	// 		};
-	// 		this.isSubOptimal = function(levelScorings, i, j, targetSolution) {
-	// 			if (targetSolution.score < 0) {
-	// 				return false;
-	// 			} else {
-	// 				var lowerBound = 0;
-	// 				var a;
-	// 				for (a = i + 1; a < this.levelSelections.length; a++) {
-	// 					lowerBound = lowerBound + this.levelSelections[a].length*levelScorings[a][0].score;
-	// 				}
-	// 				var b = this.levelSelections[i].length - j;
-	// 				if (b > 0) {
-	// 					lowerBound = lowerBound + b*levelScorings[i][0].score;
-	// 				}
-	// 				var k = this.levelSelections[i][j];
-	// 				return this.score + levelScorings[i][k].score + lowerBound >= targetSolution.score;
-	// 			}
-	// 		};
-	// 		this.copySolution = function(targetSolution) {
-	// 			while (this.levelSelections.length > 0) {
-	// 				this.levelSelections.pop();
-	// 			}
-	// 			var i;
-	// 			var j;
-	// 			for (i = 0; i < targetSolution.levelSelections.length; i++) {
-	// 				this.levelSelections.push([]);
-	// 				for (j = 0; j < targetSolution.levelSelections[i].length; j++) {
-	// 					this.levelSelections[i].push(targetSolution.levelSelections[i][j]);
-	// 				}
-	// 			}
-	// 			this.score = targetSolution.score;
-	// 		};
-	// 	}
+		function solution(targetLevelCount, factorCount, score) {
+			this.levelSelections = [];
+			for (i = 0; i < targetLevelCount; i++) {
+				this.levelSelections.push([]);
+				for (j = 0; j < factorCount; j++) {
+					this.levelSelections[i].push(0);
+				}
+			}
+			this.score = score;
+			this.isHomologyRisk = function(levelScorings, i, j) {
+				var k = this.levelSelections[i][j];
+				var feats = levelScorings[i][k].level.design.module.getFeatures();
+				var b;
+				var c;
+				var usedFeats;
+				var d;
+				for (b = 0; b < j; b++) {
+					c = levelSelections[i][b];
+					usedFeats = levelScorings[i][c].level.design.module.getFeatures();
+					for (d = 0; d < feats.length; d++) {
+						if (usedFeats.indexOf(feats[d]) >= 0) {
+							return true;
+						}
+					}
+				}
+				var a;
+				for (a = 0; a < i; a++) {
+					for (b = 0; b < this.levelSelections[a].length; b++) {
+						if (b != j) {
+							c = levelSelections[a][b];
+							usedFeats = levelScorings[i][c].level.design.module.getFeatures();
+							for (d = 0; d < feats.length; d++) {
+								if (usedFeats.indexOf(feats[d]) >= 0) {
+									return true;
+								}
+							}
+						}
+					}
+				}
+				return false;	
+			};
+			this.isSubOptimal = function(levelScorings, i, j, targetSolution) {
+				if (targetSolution.score < 0) {
+					return false;
+				} else {
+					var lowerBound = 0;
+					var a;
+					for (a = i + 1; a < this.levelSelections.length; a++) {
+						lowerBound = lowerBound + this.levelSelections[a].length*levelScorings[a][0].score;
+					}
+					var b = this.levelSelections[i].length - j;
+					if (b > 0) {
+						lowerBound = lowerBound + b*levelScorings[i][0].score;
+					}
+					var k = this.levelSelections[i][j];
+					return this.score + levelScorings[i][k].score + lowerBound >= targetSolution.score;
+				}
+			};
+			this.copySolution = function(targetSolution) {
+				while (this.levelSelections.length > 0) {
+					this.levelSelections.pop();
+				}
+				var i;
+				var j;
+				for (i = 0; i < targetSolution.levelSelections.length; i++) {
+					this.levelSelections.push([]);
+					for (j = 0; j < targetSolution.levelSelections[i].length; j++) {
+						this.levelSelections[i].push(targetSolution.levelSelections[i][j]);
+					}
+				}
+				this.score = targetSolution.score;
+			};
+		}
 
-	// 	var currentSolution = new solution($scope.targetLevels.length, $scope.experimentalDesign.factors.length, 0);
-	// 	var bestSolution = new solution(0, 0, -1);
+		var currentSoln = new solution($scope.targetLevels.length, $scope.experimentalDesign.length, 0);
+		var bestSoln = new solution(0, 0, -1);
 
-	// 	for (i = 0; i < currentSolution.levelSelections.length; i++) {
-	// 		for (j = 0; j < currentSolution.levelSelections[i].length; j++) {
-	// 			while (currentSolution.levelSelections[i][j] < levelScorings[i].length 
-	// 					&& currentSolution.isHomologyRisk(levelScorings, i, j, usedFeatures)) {
-	// 				currentSolution.levelSelections[i][j]++;
-	// 			} 
-	// 			var backtrack = false;
-	// 			if (currentSolution.levelSelections[i][j] == levelScorings[i].length 
-	// 					|| currentSolution.isSubOptimal(levelScorings, i, j, bestSolution)) {
-	// 				backtrack = true;
-	// 			} else {
-	// 				var k = currentSolution.levelSelections[i][j];
-	// 				currentSolution.score = currentSolution.score + levelScorings[i][k];
-	// 				if (i == currentSolution.levelSelections.length - 1 && j == currentSolution.levelSelections[i].length - 1) {
-	// 					bestSolution.copySolution(currentSolution);
-	// 					currentSolution.score = currentSolution.score - levelScorings[i][k];
-	// 					backtrack = true;
-	// 				} else {
-
-	// 				} 
-	// 			}
-	// 			if (backtrack {
-	// 				currentSolution.levelSelections[i][j] = 0;
-	// 				j--;
-	// 				if (j < 0) {
-	// 					i--;
-	// 					j = currentSolution.levelSelections[i].length - 1;
-	// 				}
-	// 				var k = currentSolution.levelSelections[i][j];
-	// 				currentSolution.score = currentSolution.score - levelScorings[i][k].score;
-	// 				currenSolution.levelSelections[i][j]++;
-	// 			}
-	// 		}
-	// 	}
-	// };
+		var backtrack;
+		var k;
+		for (i = 0; i < currentSoln.levelSelections.length; i++) {
+			for (j = 0; j < currentSoln.levelSelections[i].length; j++) {
+				while (currentSoln.levelSelections[i][j] < levelScorings[i].length 
+						&& currentSoln.isHomologyRisk(levelScorings, i, j)) {
+					currentSoln.levelSelections[i][j]++;
+				} 
+				backtrack = false;
+				if (currentSoln.levelSelections[i][j] == levelScorings[i].length 
+						|| currentSoln.isSubOptimal(levelScorings, i, j, bestSoln)) {
+					backtrack = true;
+				} else {
+					k = currentSoln.levelSelections[i][j];
+					currentSoln.score = currentSoln.score + levelScorings[i][k].score;
+					if (i == currentSoln.levelSelections.length - 1 && j == currentSoln.levelSelections[i].length - 1) {
+						bestSoln.copySolution(currentSoln);
+						currentSoln.score = currentSoln.score - levelScorings[i][k].score;
+						backtrack = true;
+					}
+				}
+				if (backtrack) {
+					currentSoln.levelSelections[i][j] = 0;
+					j--;
+					if (j < 0) {
+						i--;
+						j = currentSoln.levelSelections[i].length - 1;
+					}
+					k = currentSoln.levelSelections[i][j];
+					currentSoln.score = currentSoln.score - levelScorings[i][k].score;
+					currentSoln.levelSelections[i][j]++;
+				}
+			}
+		}
+		for (i = 0; i < bestSoln.levelSelections.length; i++) {
+			for (j = 0; j < bestSoln.levelSelections[i].length; j++) {
+				k = bestSoln.levelSelections[i][j];
+				// $scope.experimentalDesign.factors[j].push(levelScorings[i][k].level);
+				$scope.experimentalDesign[j].push(levelScorings[i][k].level);
+			}
+		}
+	};
 });
