@@ -249,51 +249,12 @@ app.controller("doubleDutchCtrl", function($scope) {
 				}
 			}, schema: "org.clothocad.model.FunctionalGrammar"}
 	};
-
-	// var seq1 = {sequence: "ttgacggctagctcagtcctaggtacagtgctagc", type: seqType.DNA, schema: "org.clothocad.model.Sequence"};
-	// var seq2 = {sequence: "tttatggctagctcagtcctaggtacaatgctagc", type: seqType.DNA, schema: "org.clothocad.model.Sequence"};
-	// var seq3 = {sequence: "ccggcttatcggtcagtttcacctgatttacgtaaaaacccgcttcggcgggtttttgcttttggaggggcagaaagatgaatgactgtccacgacgctatacccaaaagaaa", 
-	// 			type: seqType.DNA, schema: "org.clothocad.model.Sequence"};
-	// var seq4 = {sequence: "aaagaggagaaa", type: seqType.DNA, schema: "org.clothocad.model.Sequence"};
-	// var seq5 = {sequence: "atgaaagctactaaactggtactgggcgcggtaatcctgggttctactctgctggcaggttgctccagcaacgctaaaatcgatcagggaattaacccgtatgttggctttgaaatgggttacgactggttaggtcgtatgccgtacaaaggcagcgttgaaaacggtgcatacaaagctcagggcgttcaactgaccgctaaactgggttacccaatcactgacgacctggacatctacactcgtctgggtggcatggtatggcgtgcagacactaaatccaacgtttatggtaaaaaccacgacaccggcgtttctccggtcttcgctggcggtgttgagtacgcgatcactcctgaaatcgctacccgtctggaataccagtggaccaacaacatcggtgacgcacacaccatcggcactcgtccggacaacggcggaggttctggaggagggagcatggctctctcacttttcactgtcggacaattgattttcttattttggacaatgagaatcactgaagccagccccgaccccgcagccaaagccgccccagcagcagttgccgcccctgccgcagccgccccagacaccgcctctgacgccgccgccgcagccgcccttaccgccgccaacgccaaagccgctgccgaactcactgccgccaacgccgccgccgccgcagcagccaccgccagaggttaatactagag", 
-	// 			type: seqType.DNA, schema: "org.clothocad.model.Sequence"};
-	// var feat1 = {name: "p_J23100", role: featRole.PROMOTER, sequence: seq1, schema: "org.clothocad.model.Feature"};
-	// var feat2 = {name: "p_J23114", role: featRole.PROMOTER, sequence: seq2, schema: "org.clothocad.model.Feature"};
-	// var feat3 = {name: "t_J61048", role: featRole.TERMINATOR, sequence: seq3, schema: "org.clothocad.model.Feature"};
-	// var feat4 = {name: "r_B0034", role: featRole.RBS, sequence: seq4, schema: "org.clothocad.model.Feature"};
-	// var feat5 = {name: "c_K584019", role: featRole.CDS, sequence: seq5, schema: "org.clothocad.model.Feature"};
-	// var anno1 = {start: 1, end: 35, feature: feat1, schema: "org.clothocad.model.Annotation"};
-	// var anno2 = {start: 1, end: 35, feature: feat2, schema: "org.clothocad.model.Annotation"};
-	// var anno3 = {start: 1, end: 113, feature: feat3, schema: "org.clothocad.model.Annotation"};
-	// var anno4 = {start: 1, end: 12, feature: feat4, schema: "org.clothocad.model.Annotation"};
-	// var anno5 = {start: 1, end: 716, feature: feat5, schema: "org.clothocad.model.Annotation"};
-	// seq1.annotations = [anno1];
-	// seq2.annotations = [anno2];
-	// seq3.annotations = [anno3];
-	// seq4.annotations = [anno4];
-	// seq5.annotations = [anno5];
-	// var form1 = {checkPart: function(p) {return true;}, schema: "org.clothocad.model.FreeForm"};
-	// var part1 = {name: "BBa_J23100", format: form1, sequence: seq1, schema: "org.clothocad.model.BasicPart"};
-	// var part2 = {name: "BBa_J23114", format: form1, sequence: seq2, schema: "org.clothocad.model.BasicPart"};
-	// var part3 = {name: "BBa_J61048", format: form1, sequence: seq3, schema: "org.clothocad.model.BasicPart"};
-	// var part4 = {name: "BBa_B0034", format: form1, sequence: seq4, schema: "org.clothocad.model.BasicPart"};
-	// var part5 = {name: "BBa_K584019", format: form1, sequence: seq5, schema: "org.clothocad.model.BasicPart"};
-	// var mod1 = {name: "Transcription p_J23100 + t_J61048", features: [feat1, feat3], role: modRole.TRANSCRIPTION, schema: "org.clothocad.model.BasicModule"};
-	// var mod2 = {name: "Transcription p_J23114 + t_J61048", features: [feat2, feat3], role: modRole.TRANSCRIPTION, schema: "org.clothocad.model.BasicModule"};
-	// var mod3 = {name: "Translation r_B0034 + c_K584019", features: [feat4, feat5], role: modRole.TRANSLATION, schema: "org.clothocad.model.BasicModule"};
-	// var unit1 = {name: "REU", schema: "org.clothocad.model.Units"};
-	// var param1 = {name: "p_J23100 + t_J61048 Strength", value: 2547, variable: varia1, units: unit1, schema: "org.clothocad.model.Parameter"};
-	// var param2 = {name: "p_J23114 + t_J61048", value: 256, variable: varia1, units: unit1, schema: "org.clothocad.model.Parameter"};
-	// var design1 = {name: "p_J23100 + t_J61048", parameters: [param1], module: mod1, parts: [part1, part3], schema: "org.clothocad.model.Design"};
-	// var design2 = {name: "p_J23114 + t_J61048", parameters: [param2], module: mod2, parts: [part2, part3], schema: "org.clothocad.model.Design"};
-	// var design3 = {name: "r_B0034 + c_K584019", module: mod3, parts: [part4, part5], schema: "org.clothocad.model.Design"};
 	
 	// $scope.variables = [0, 1];
 	// $scope.currentVariable = $scope.variables[0];
 	$scope.designs = [];
 	$scope.levels = [];
 	$scope.factors = [];
-	// $scope.experimentalDesign = {factors: [], schema: "org.clothocad.model.ExperimentalDesign"};
 	$scope.experimentalDesign = [];
 	$scope.parsers = [gridParser];
 	$scope.currentParser = $scope.parsers[0];
@@ -373,12 +334,15 @@ app.controller("doubleDutchCtrl", function($scope) {
 					var j;
 					for (i = 0; i < $scope.designs.length; i++) {
 						if (isCodedExpression($scope.designs[i])) {
-							$scope.factors.push({depth: 1, rootable: true, nodes: [], 
+							$scope.factors.push({depth: 1, rootable: true, valueDisplay: "display:none", toggleDisplay: "", labelColor: "color:#ffffff", 
+								backgroundColor: "background-color:#787878", variableName: "", parameterValue: 0, nodes: [], 
 								fl: {design: $scope.designs[i], schema: "org.clothocad.model.Factor"}});
 						} else {
 							j = isParameterizedExpression($scope.designs[i]);
 							if (j >= 0) {
-								$scope.levels.push({depth: 2, rootable: false, nodes: [], 
+								$scope.levels.push({depth: 2, rootable: false, valueDisplay: "", toggleDisplay: "display:none",
+									variableName: $scope.designs[i].parameters[j].variable.name, parameterValue: $scope.designs[i].parameters[j].value, 
+									labelColor: "", backgroundColor: "", nodes: [],
 									fl: {parameter: $scope.designs[i].parameters[j], design: $scope.designs[i], schema: "org.clothocad.model.Level"}});
 							}	
 						}
