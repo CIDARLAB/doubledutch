@@ -17,50 +17,52 @@
 			<label for="fileUploader">File Upload</label>
 			<input type="file" id="fileUploader" file-input="files" multiple>
 			<br>
-			<button type="button" class="btn btn-primary" ng-click="uploadDesigns(files, currentParser)">Upload</button>
+			<button type="button" class="btn btn-primary" ng-click="uploadDesigns(files, currentParser)">Upload Designs</button>
+			<button type="button" class="btn btn-primary" ng-click="uploadTemplate(files, doeParser)">Upload Template</button>
 			<br><br>
 			<!-- <label for="parameterSelector">Variable</label> -->
 			<!-- <br>
 			<select id="parameterSelector" ng-model="currentVariable" ng-options="x for x in variables"></select>
 			<br><br> -->
-			<label for="inputTarget">Target Levels</label>
+			<label for="targetInput">Target Levels</label>
 			<br>
-			<input type="text" id="inputTarget" style="height:25px" ng-model="newTarget" placeholder="New Target">
+			<input type="number" id="targetInput" style="height:25px" ng-model="newTarget" placeholder="New Target">
 			<br>
 			<button type="button" class="btn btn-primary" ng-click="addTarget()">Add Target</button>
 			<button type="button" class="btn btn-primary" ng-click="removeTarget()">Remove Target</button>
 			<br><br>
 			<div ng-repeat="x in targetLevels">
-				<input type="text" style="height:25px" ng-model="x">
+				<input type="number" style="height:25px" ng-model="x.value">
 			</div>
 			<button type="button" class="btn btn-primary" ng-click="assignLevels()">Assign Levels</button>
+			<button type="button" class="btn btn-primary" ng-click="generateDesigns(experimentalDesign, doeTemplate)">Generate Designs</button>
 		</div>
 
 		<div class="row">
       		
       		<div class="col-sm-4">
         		<h3>Available Factors</h3>
-        		<div ui-tree>
-          			<ol ui-tree-nodes="" data-nodrop ng-model="factors">
-            			<li ng-repeat="node in factors" ui-tree-node ng-include="'no_drop_renderer.html'"></li>
+        		<div ui-tree="flTreeOptions">
+          			<ol ui-tree-nodes="" ng-model="factors">
+            			<li ng-repeat="node in factors" ui-tree-node ng-include="'fl_tree_renderer.html'"></li>
           			</ol>
         		</div>
       		</div>
 
       		<div class="col-sm-4">
         		<h3>Experimental Design</h3>
-        		<div ui-tree="treeOptions">
+        		<div ui-tree="edTreeOptions">
           			<ol ui-tree-nodes="" ng-model="experimentalDesign">
-            			<li ng-repeat="node in experimentalDesign" ui-tree-node ng-include="'variable_drop_renderer.html'"></li>
+            			<li ng-repeat="node in experimentalDesign" ui-tree-node ng-include="'ed_tree_renderer.html'"></li>
           			</ol>
         		</div>
       		</div>
 
       		<div class="col-sm-4">
         		<h3>Available Levels</h3>
-        		<div ui-tree>
-          			<ol ui-tree-nodes="" data-nodrop ng-model="levels">
-            			<li ng-repeat="node in levels" ui-tree-node ng-include="'no_drop_renderer.html'"></li>
+        		<div ui-tree="flTreeOptions">
+          			<ol ui-tree-nodes="" ng-model="levels">
+            			<li ng-repeat="node in levels" ui-tree-node ng-include="'fl_tree_renderer.html'"></li>
           			</ol>
         		</div>
       		</div>
@@ -79,7 +81,8 @@
 	<script src="js/doubleDutchApp.js"></script>
 	<script src="js/doubleDutchCtrl.js"></script>
 	<script src="js/fileInput.js"></script>
-	<script type="text/ng-template" id="variable_drop_renderer.html">
+
+	<script type="text/ng-template" id="ed_tree_renderer.html">
     	<div ui-tree-handle class="tree-node" style="{{node.backgroundColor}}">
     		<div class="tree-node-content">
 	        	<a class="btn btn-success btn-xs" data-nodrag ng-click="toggle(this)" style="{{node.toggleDisplay}}"><span class="glyphicon" ng-class="{'glyphicon-chevron-right': collapsed, 'glyphicon-chevron-down': !collapsed}"></span></a>
@@ -93,25 +96,26 @@
       		</div>
     	</div>
     	<ol ui-tree-nodes="" data-max-depth="{{node.depth}}" ng-model="node.nodes" ng-class="{hidden: collapsed}">
-      		<li ng-repeat="node in node.nodes" ui-tree-node ng-include="'variable_drop_renderer.html'">
+      		<li ng-repeat="node in node.nodes" ui-tree-node ng-include="'ed_tree_renderer.html'">
       		</li>
     	</ol>
   	</script>
-  	<script type="text/ng-template" id="no_drop_renderer.html">
+
+  	<script type="text/ng-template" id="fl_tree_renderer.html">
     	<div ui-tree-handle class="tree-node" style="{{node.backgroundColor}}">
     		<div class="tree-node-content">
 	        	<a class="btn btn-success btn-xs" data-nodrag ng-click="toggle(this)" style="{{node.toggleDisplay}}"><span class="glyphicon" ng-class="{'glyphicon-chevron-right': collapsed, 'glyphicon-chevron-down': !collapsed}"></span></a>
-	        	<a class="pull-right btn btn-danger btn-xs" data-nodrag ng-click="remove(this)"><span class="glyphicon glyphicon-remove"></span></a>
+	        	<a class="pull-right btn btn-danger btn-xs" data-nodrag ng-click="customRemove(this)"><span class="glyphicon glyphicon-remove"></span></a>
 				<label for="moduleName" style="{{node.labelColor}}">Module</label><br>
 				<input type="text" id="moduleName" style="height:25px" ng-model="node.fl.design.module.name">
 				<form style="{{node.valueDisplay}}">
 					<label for="levelValue" style="{{node.labelColor}}">{{node.variableName}}</label><br>
-					<input type="text" id="levelValue" style="height:25px" ng-model="node.parameterValue">  
-				</form>
+					<input type="text" id="levelValue" style="height:25px" ng-model="node.parameterValue">
+				</form>   
       		</div>
     	</div>
-    	<ol ui-tree-nodes="" data-nodrop ng-model="node.nodes" ng-class="{hidden: collapsed}">
-      		<li ng-repeat="node in node.nodes" ui-tree-node ng-include="'no_drop_renderer.html'">
+    	<ol ui-tree-nodes="" data-max-depth="{{node.depth}}" ng-model="node.nodes" ng-class="{hidden: collapsed}">
+      		<li ng-repeat="node in node.nodes" ui-tree-node ng-include="'fl_tree_renderer.html'">
       		</li>
     	</ol>
   	</script>
