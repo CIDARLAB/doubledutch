@@ -225,7 +225,101 @@ app.controller("doubleDutchCtrl", function($scope) {
 			doeTemplate.range.sort(function(a, b){return a - b});
 			return doeTemplate;
 		}
-	}
+	};
+
+	var expressGrammar = {name: "Expression Grammar",
+		inferModule: function(feats) {
+			var transcFeats = [];
+			var translFeats = [];
+			var expressFeats = [];
+			var hasPromoter = false;
+			var hasRBS = false;
+			var hasCDS = false;
+			var hasTerminator = false;
+			var i;
+			for (i = 0; i < feats.length; i++) {
+				if (feats[i].role === featRole.PROMOTER || feats[i].role === featRole.TERMINATOR) {
+					transcFeats.push(feats[i]);
+					if (feats[i].role === featRole.PROMOTER) {
+						hasPromoter = true;
+					} else {
+						hasTerminator = true;
+					}
+				} else if (feats[i].role === featRole.RBS || feats[i].role === featRole.UTR) {
+					translFeats.push(feats[i]);
+					hasRBS = true;
+				} else if (feats[i].role === featRole.CDS) {
+					expressFeats.push(feats[i]);
+					hasCDS = true;
+				}
+			}
+			var transcMod;
+			if (hasPromoter || hasTerminator) {
+				var transcName = modRole.TRANSCRIPTION.substring(0, 1).toUpperCase() + modRole.TRANSCRIPTION.substring(1) + " ";
+				for (i = 0; i < transcFeats.length; i++) {
+					transcName = transcName + transcFeats[i].name + " + ";
+				}
+				transcName = transcName.substring(0, transcName.length - 3);
+				transcMod = new module(transcName, transcFeats, [], modRole.TRANSCRIPTION, "org.clothocad.model.BasicModule");
+			} else {
+				transcMod = null;
+			}
+			var translMod;
+			if (hasRBS) {
+				var translName = modRole.TRANSLATION.substring(0, 1).toUpperCase() + modRole.TRANSLATION.substring(1) + " ";
+				for (i = 0; i < translFeats.length; i++) {
+					translName = translName + translFeats[i].name + " + ";
+				}
+				translName = translName.substring(0, translName.length - 3);
+				translMod = new module(translName, translFeats, [], modRole.TRANSLATION, "org.clothocad.model.BasicModule");
+			} else {
+				translMod = null;
+			}
+			var expressMod;
+			if (hasCDS) {
+				var expressName = modRole.EXPRESSION.substring(0, 1).toUpperCase() + modRole.EXPRESSION.substring(1) + " ";
+				for (i = 0; i < expressFeats.length; i++) {
+					expressName = expressName + expressFeats[i].name + " + ";
+				}
+				expressName = expressName.substring(0, expressName.length - 3);
+				expressMod = new module(expressName, expressFeats, [], modRole.EXPRESSION, "org.clothocad.model.BasicModule");
+			} else {
+				expressMod = null;
+			}
+			if ((hasCDS && (hasPromoter || hasTerminator || hasRBS)) || ((hasPromoter || hasTerminator) && hasRBS)) {
+				var compExpressName = modRole.EXPRESSION;
+				for (i = 0; i < expressFeats.length; i++) {
+					compExpressName = compExpressName + " + " + expressFeats[i].name;
+				}
+				for (i = 0; i < transcFeats.length; i++) {
+					compExpressName = compExpressName + " + " + transcFeats[i].name;
+				}
+				for (i = 0; i < translFeats.length; i++) {
+					compExpressName = compExpressName + " + " + translFeats[i].name;
+				}
+				var subMods = [];
+				if (hasCDS) {
+					subMods.push(expressMod);
+				}
+				if (hasPromoter || hasTerminator) {
+					subMods.push(transcMod);
+				}
+				if (hasRBS) {
+					subMods.push(translMod);
+				}
+				return new module(compExpressName, [], subMods, modRole.EXPRESSION, "org.clothocad.model.CompositeModule");
+			} else if (hasCDS) {
+				return expressMod;
+			} else if (hasPromoter || hasTerminator) {
+				return transcMod;
+			} else if (hasRBS) {
+				return translMod;
+			} else {
+				return null;
+			}
+		}, 
+		schema: "org.clothocad.model.FunctionalGrammar"
+	};
 
 	var gridParser = {
 		parseDesigns: function(data) {
@@ -295,7 +389,11 @@ app.controller("doubleDutchCtrl", function($scope) {
 				} else {
 					return null;
 				}
-				return new feature(data.substring(0, data.length - 1), parsedRole);
+				if (parsedRole === featRole.CDS) {
+					return new feature(data.substring(0, data.length - 1), parsedRole);
+				} else {
+					return new feature(data, parsedRole);
+				}
 			} else {
 				return null;
 			}
@@ -315,98 +413,47 @@ app.controller("doubleDutchCtrl", function($scope) {
 			} else {
 				return null;
 			}
-		}, grammar: {name: "Expression Grammar",
-			inferModule: function(feats) {
-				var transcFeats = [];
-				var translFeats = [];
-				var expressFeats = [];
-				var hasPromoter = false;
-				var hasRBS = false;
-				var hasCDS = false;
-				var hasTerminator = false;
+		}
+	};
+
+	gridParser.grammar = expressGrammar;
+
+	var tableParser = {
+		parseDesigns: function(data) {
+			if (data !=null && data.length > 1 && data[0].length > 1 && data[0][0] === "Part") {
 				var i;
-				for (i = 0; i < feats.length; i++) {
-					if (feats[i].role === featRole.PROMOTER || feats[i].role === featRole.TERMINATOR) {
-						transcFeats.push(feats[i]);
-						if (feats[i].role === featRole.PROMOTER) {
-							hasPromoter = true;
-						} else {
-							hasTerminator = true;
-						}
-					} else if (feats[i].role === featRole.RBS || feats[i].role === featRole.UTR) {
-						translFeats.push(feats[i]);
-						hasRBS = true;
-					} else if (feats[i].role === featRole.CDS) {
-						expressFeats.push(feats[i]);
-						hasCDS = true;
+				for (i = 1; i < data.length; i++) {
+					if (data[i].length > 1 && isNaN(data[i][0]) && data[i][0].length > 0) {
+						this.parseFeature(data[0], data[i]);
 					}
 				}
-				var transcMod;
-				if (hasPromoter || hasTerminator) {
-					var transcName = modRole.TRANSCRIPTION.substring(0, 1).toUpperCase() + modRole.TRANSCRIPTION.substring(1) + " ";
-					for (i = 0; i < transcFeats.length; i++) {
-						transcName = transcName + transcFeats[i].name + " + ";
-					}
-					transcName = transcName.substring(0, transcName.length - 3);
-					transcMod = new module(transcName, transcFeats, [], modRole.TRANSCRIPTION, "org.clothocad.model.BasicModule");
-				} else {
-					transcMod = null;
-				}
-				var translMod;
-				if (hasRBS) {
-					var translName = modRole.TRANSLATION.substring(0, 1).toUpperCase() + modRole.TRANSLATION.substring(1) + " ";
-					for (i = 0; i < translFeats.length; i++) {
-						translName = translName + translFeats[i].name + " + ";
-					}
-					translName = translName.substring(0, translName.length - 3);
-					translMod = new module(translName, translFeats, [], modRole.TRANSLATION, "org.clothocad.model.BasicModule");
-				} else {
-					translMod = null;
-				}
-				var expressMod;
-				if (hasCDS) {
-					var expressName = modRole.EXPRESSION.substring(0, 1).toUpperCase() + modRole.EXPRESSION.substring(1) + " ";
-					for (i = 0; i < expressFeats.length; i++) {
-						expressName = expressName + expressFeats[i].name + " + ";
-					}
-					expressName = expressName.substring(0, expressName.length - 3);
-					expressMod = new module(expressName, expressFeats, [], modRole.EXPRESSION, "org.clothocad.model.BasicModule");
-				} else {
-					expressMod = null;
-				}
-				if ((hasCDS && (hasPromoter || hasTerminator || hasRBS)) || ((hasPromoter || hasTerminator) && hasRBS)) {
-					var compExpressName = modRole.EXPRESSION;
-					for (i = 0; i < expressFeats.length; i++) {
-						compExpressName = compExpressName + " + " + expressFeats[i].name;
-					}
-					for (i = 0; i < transcFeats.length; i++) {
-						compExpressName = compExpressName + " + " + transcFeats[i].name;
-					}
-					for (i = 0; i < translFeats.length; i++) {
-						compExpressName = compExpressName + " + " + translFeats[i].name;
-					}
-					var subMods = [];
-					if (hasCDS) {
-						subMods.push(expressMod);
-					}
-					if (hasPromoter || hasTerminator) {
-						subMods.push(transcMod);
-					}
-					if (hasRBS) {
-						subMods.push(translMod);
-					}
-					return new module(compExpressName, [], subMods, modRole.EXPRESSION, "org.clothocad.model.CompositeModule");
-				} else if (hasCDS) {
-					return expressMod;
-				} else if (hasPromoter || hasTerminator) {
-					return transcMod;
-				} else if (hasRBS) {
-					return translMod;
+			}
+		}, parseFeature: function(header, data) {
+			// var i;
+			// for (i = 1; i < data.length; i++) {
+
+			// }
+		}, parseParameter: function(data, designName, role) {
+			if (!isNaN(data) && data !== "") {
+				var varia;
+				if (role === modRole.EXPRESSION) {
+					varia = expressStrength;
+				} else if (role === modRole.TRANSCRIPTION) {
+					varia = transcStrength;
+				} else if (role === modRole.TRANSLATION) {
+					varia = translStrength;
 				} else {
 					return null;
 				}
-			}, schema: "org.clothocad.model.FunctionalGrammar"}
+				return [new parameter(designName + " " + varia.name, data, varia, reu)];
+			} else {
+				return null;
+			}
+		}
 	};
+
+	gridParser.grammar = expressGrammar;
+
 	
 	// $scope.variables = [0, 1];
 	// $scope.currentVariable = $scope.variables[0];
@@ -419,6 +466,7 @@ app.controller("doubleDutchCtrl", function($scope) {
 	$scope.currentParser = $scope.parsers[0];
 	$scope.doeParser = doeTemplateParser;
 	$scope.doeTemplate;
+	$scope.assignmentPenalty = "N/A";
 
 	$scope.customRemove = function(scope) {
 		scope.remove();
@@ -453,10 +501,11 @@ app.controller("doubleDutchCtrl", function($scope) {
   	$scope.generateDesigns = function(experimentalDesign, doeTemplate) {
   		if (experimentalDesign.length == doeTemplate.grid[0].length 
   				&& experimentalDesign[0].nodes.length == doeTemplate.range.length) {
-  			var outputData = [];
+  			var outputData = [[]];
   			var i;
   			for (i = 0; i < experimentalDesign.length; i++) {
   				experimentalDesign[i].nodes.sort(function(a, b){return a.parameterValue - b.parameterValue})
+  				outputData[0].push(experimentalDesign[i].fl.design.name);
   			}
   			var j;
   			var k;
@@ -464,109 +513,128 @@ app.controller("doubleDutchCtrl", function($scope) {
   				outputData.push([]);
   				for (j = 0; j < doeTemplate.grid[i].length; j++) {
   					k = doeTemplate.range.indexOf(doeTemplate.grid[i][j]);
-  					outputData[i].push(experimentalDesign[j].nodes[k].fl.design.name);
+  					outputData[i + 1].push(experimentalDesign[j].nodes[k].fl.design.name);
   				}
   			}
-  			console.log(Papa.unparse(outputData));
+  			return outputData;
   		}
   	}
 
-  	$scope.uploadTemplate = function(files, templateParser) {
-		Papa.parse(files[0], {dynamicTyping: true, templateParser: templateParser,
+  	$scope.uploadTemplate = function(files, templateParser, experimentalDesign) {
+		Papa.parse(files[0], {dynamicTyping: true, templateParser: templateParser, experimentalDesign: experimentalDesign,
 			complete: function(results) {
 				$scope.doeTemplate = templateParser.parseTemplate(results.data);
+				// if (this.experimentalDesign.length == $scope.doeTemplate.grid[0].length 
+	  	// 				&& this.experimentalDesign[0].nodes.length == $scope.doeTemplate.range.length) {
+		  // 			$scope.outputData = [];
+		  // 			var i;
+		  // 			for (i = 0; i < this.experimentalDesign.length; i++) {
+		  // 				this.experimentalDesign[i].nodes.sort(function(a, b){return a.parameterValue - b.parameterValue})
+		  // 			}
+		  // 			var j;
+		  // 			var k;
+		  // 			for (i = 0; i < $scope.doeTemplate.grid.length; i++) {
+		  // 				$scope.outputData.push([]);
+		  // 				for (j = 0; j < $scope.doeTemplate.grid[i].length; j++) {
+		  // 					k = $scope.doeTemplate.range.indexOf($scope.doeTemplate.grid[i][j]);
+		  // 					$scope.outputData[i].push(this.experimentalDesign[j].nodes[k].fl.design.name);
+		  // 				}
+		  // 			}
+	  	// 		}
 			}
 		});
   	}
 
 	$scope.uploadDesigns = function(files, designParser) {
 		var i;
-    	for (i = 0; i < files.length; i++) {
-    		Papa.parse(files[i], {dynamicTyping: true, designParser: designParser,
-				complete: function(results) {
-					var designNames = [];
-					var designs = this.designParser.parseDesigns(results.data);
-					var i;
-					for (i = 0; i < $scope.designs.length; i++) {
-						designNames.push($scope.designs[i].name);
-					}
-					for (i = 0; i < designs.length; i++) {
-						if (designNames.indexOf(designs[i].name) < 0) {
-							designNames.push(designs[i].name);
-							$scope.designs.push(designs[i]);
+		if (files != null) {
+	    	for (i = 0; i < files.length; i++) {
+	    		Papa.parse(files[i], {dynamicTyping: true, designParser: designParser,
+					complete: function(results) {
+						var designNames = [];
+						var designs = this.designParser.parseDesigns(results.data);
+						var i;
+						for (i = 0; i < $scope.designs.length; i++) {
+							designNames.push($scope.designs[i].name);
 						}
-					}
-					var isCodedExpression = function(design) {
-						if ('module' in design) { 
-							if (design.module.role === modRole.EXPRESSION) {
-								var feats = design.module.getFeatures();
-								var i;
-								for (i = 0; i < feats.length; i++) {
-									if (feats[i].role === featRole.CDS) {
-										return true;
+						for (i = 0; i < designs.length; i++) {
+							if (designNames.indexOf(designs[i].name) < 0) {
+								designNames.push(designs[i].name);
+								$scope.designs.push(designs[i]);
+							}
+						}
+						var isCodedExpression = function(design) {
+							if ('module' in design) { 
+								if (design.module.role === modRole.EXPRESSION) {
+									var feats = design.module.getFeatures();
+									var i;
+									for (i = 0; i < feats.length; i++) {
+										if (feats[i].role === featRole.CDS) {
+											return true;
+										}
 									}
+									return false;
+								} else {
+									return false;
 								}
-								return false;
 							} else {
 								return false;
 							}
-						} else {
-							return false;
-						}
-					};
-					var isParameterizedExpression = function(design) {
-						if ('module' in design && 'parameters' in design) { 
-							var varia;
-							if (design.module.role === modRole.EXPRESSION) {
-								varia = expressStrength;
-							} else if (design.module.role === modRole.TRANSCRIPTION) {
-								varia = transcStrength;
-							} else if (design.module.role === modRole.TRANSLATION) {
-								varia = translStrength;
+						};
+						var isParameterizedExpression = function(design) {
+							if ('module' in design && 'parameters' in design) { 
+								var varia;
+								if (design.module.role === modRole.EXPRESSION) {
+									varia = expressStrength;
+								} else if (design.module.role === modRole.TRANSCRIPTION) {
+									varia = transcStrength;
+								} else if (design.module.role === modRole.TRANSLATION) {
+									varia = translStrength;
+								} else {
+									return -1;
+								}
+								var i = 0;
+								while (i < design.parameters.length) {
+									if (design.parameters[i].variable.name === varia.name) {
+										return i;
+									} else {
+										i++;
+									}
+								}
+								return -1;
 							} else {
 								return -1;
 							}
-							var i = 0;
-							while (i < design.parameters.length) {
-								if (design.parameters[i].variable.name === varia.name) {
-									return i;
-								} else {
-									i++;
-								}
+						};
+						$scope.factors = [];
+						$scope.levels = [];
+						var j;
+						for (i = 0; i < $scope.designs.length; i++) {
+							if (isCodedExpression($scope.designs[i])) {
+								$scope.factors.push(new flNode(new factor($scope.designs[i])));
+							} else {
+								j = isParameterizedExpression($scope.designs[i]);
+								if (j >= 0) {
+									$scope.levels.push(new flNode(new level($scope.designs[i].parameters[j], $scope.designs[i])));
+								}	
 							}
-							return -1;
-						} else {
-							return -1;
 						}
-					};
-					$scope.factors = [];
-					$scope.levels = [];
-					var j;
-					for (i = 0; i < $scope.designs.length; i++) {
-						if (isCodedExpression($scope.designs[i])) {
-							$scope.factors.push(new flNode(new factor($scope.designs[i])));
-						} else {
-							j = isParameterizedExpression($scope.designs[i]);
-							if (j >= 0) {
-								$scope.levels.push(new flNode(new level($scope.designs[i].parameters[j], $scope.designs[i])));
-							}	
-						}
+						$scope.factors.sort(function(a, b) {
+							var nameA = a.fl.design.module.name;
+							var nameB = b.fl.design.module.name;
+							if (nameA < nameB) {
+								return -1;
+							} else if (nameA > nameB) {
+								return 1;
+							} else {
+								return 0;
+							}
+						});
+						$scope.levels.sort(function(a, b){return a.parameterValue - b.parameterValue});
+						$scope.$apply();
 					}
-					$scope.factors.sort(function(a, b) {
-						var nameA = a.fl.design.module.name;
-						var nameB = b.fl.design.module.name;
-						if (nameA < nameB) {
-							return -1;
-						} else if (nameA > nameB) {
-							return 1;
-						} else {
-							return 0;
-						}
-					});
-					$scope.levels.sort(function(a, b){return a.parameterValue - b.parameterValue});
-					$scope.$apply();
-				}
-			});
+				});
+	    	}
     	}
     };
 
@@ -743,7 +811,7 @@ app.controller("doubleDutchCtrl", function($scope) {
 
 		// var bestSoln = solver.branchAndBound($scope.targetLevels.length, $scope.experimentalDesign.length, 1, levelScorings);
 		var bestSoln = solver.monteCarlo(1000, $scope.targetLevels.length, $scope.experimentalDesign.length, 50, levelScorings);
-
+		$scope.assignmentPenalty = Math.floor(bestSoln.score);
 		// console.log(bestBnB.score);
 
 		for (i = 0; i < $scope.experimentalDesign.length; i++) {

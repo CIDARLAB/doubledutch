@@ -6,7 +6,7 @@
 	<!-- Include meta tag to ensure proper rendering and touch zooming -->
 	<meta name="viewport" content="width=device-width, initial-scale=1">
     <link href="css/application.css" rel="stylesheet">
-  	<link href="css/bootstrap.min.css" rel="stylesheet">
+  	<link href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.1/css/bootstrap.min.css" rel="stylesheet">
     <link href="css/tree.css" rel="stylesheet">
     <link href="css/angular-ui-tree.min.css" rel="stylesheet">
 
@@ -18,7 +18,7 @@
 			<input type="file" id="fileUploader" file-input="files" multiple>
 			<br>
 			<button type="button" class="btn btn-primary" ng-click="uploadDesigns(files, currentParser)">Upload Designs</button>
-			<button type="button" class="btn btn-primary" ng-click="uploadTemplate(files, doeParser)">Upload Template</button>
+			<button type="button" class="btn btn-primary" ng-click="uploadTemplate(files, doeParser, experimentalDesign)">Upload Template</button>
 			<br><br>
 			<!-- <label for="parameterSelector">Variable</label> -->
 			<!-- <br>
@@ -26,16 +26,19 @@
 			<br><br> -->
 			<label for="targetInput">Target Levels</label>
 			<br>
+			<div ng-repeat="x in targetLevels">
+				<input type="number" style="height:25px" ng-model="x.value">
+			</div>
+			<br>
 			<input type="number" id="targetInput" style="height:25px" ng-model="newTarget" placeholder="New Target">
 			<br>
 			<button type="button" class="btn btn-primary" ng-click="addTarget()">Add Target</button>
 			<button type="button" class="btn btn-primary" ng-click="removeTarget()">Remove Target</button>
 			<br><br>
-			<div ng-repeat="x in targetLevels">
-				<input type="number" style="height:25px" ng-model="x.value">
-			</div>
+			<label for="targetInput">Assignment Penalty: {{assignmentPenalty}}</label>
+			<br>
 			<button type="button" class="btn btn-primary" ng-click="assignLevels()">Assign Levels</button>
-			<button type="button" class="btn btn-primary" ng-click="generateDesigns(experimentalDesign, doeTemplate)">Generate Designs</button>
+			<button type="button" class="btn btn-primary" ng-csv="generateDesigns(experimentalDesign, doeTemplate)" filename="experimental_design.csv" field-separator=",">Generate Designs</button>
 		</div>
 
 		<div class="row">
@@ -72,11 +75,13 @@
 	</div>
 	
 	<script src="js/jquery.min.js"></script>
-	<script src="js/angular.min.js"></script>
-	<script src="js/bootstrap.min.js"></script>
+	<script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.3.9/angular.min.js"></script>
+	<script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.3.9/angular-sanitize.min.js"></script>
+	<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.1/js/bootstrap.min.js"></script>
 	<script src="js/angular-ui-tree.min.js"></script>
 	<script src="//cdnjs.cloudflare.com/ajax/libs/q.js/0.9.6/q.min.js"></script>
 	<script src="js/papaparse.min.js"></script>
+	<script src="js/ng-csv.min.js"></script>
 	<script src="js/clotho3API.js"></script>
 	<script src="js/doubleDutchApp.js"></script>
 	<script src="js/doubleDutchCtrl.js"></script>
