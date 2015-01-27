@@ -1,4 +1,4 @@
-app.controller("doubleDutchCtrl", function($scope) {
+app.controller("doubleDutchCtrl", function($scope, $modal, $log) {
 	seqType = {DNA: "DNA", schema: "org.clothocad.model.SequenceType"};
 	featRole = {PROMOTER: "promoter", RBS: "ribosome binding site", UTR: "untranslated region", CDS: "coding sequence", TERMINATOR: "terminator", schema: "org.clothocad.model.FeatureRole"};
 	modRole = {TRANSCRIPTION: "transcription", TRANSLATION: "translation", EXPRESSION: "expression", schema: "org.clothocad.model.ModuleRole"};
@@ -7,15 +7,14 @@ app.controller("doubleDutchCtrl", function($scope) {
 	expressStrength = {name: "Expression Strength", schema: "org.clothocad.model.Variable"};
 	reu = {name: "REU", schema: "org.clothocad.model.Units"};
 
-	function module(name, feats, subMods, role, schema) {
-		this.name = name;
-		this.role = role;
+	function module(feats, subMods, role, schema) {
+		this.schema = schema;
 		if (schema === "org.clothocad.model.BasicModule") {
 			this.features = feats;
 		} else if (schema === "org.clothocad.model.CompositeModule") {
 			this.subModules = subMods;
 		}
-		this.schema = schema;
+		this.role = role;
 		this.getFeatures = function() {
 			var feats = [];
 			var mods = [];
@@ -34,16 +33,36 @@ app.controller("doubleDutchCtrl", function($scope) {
 				}
 			} while (mods.length > 0);
 			return feats;
-		}
+		};
+		this.constructName = function() {
+			var feats = this.getFeatures();
+			var name = "";
+			var i;
+			for (i = 0; i < feats.length; i++) {
+				name = name + " + " + feats[i].name;
+			}
+			return this.role.substring(0, 1).toUpperCase() + this.role.substring(1) + " " + name.substring(3);
+		};
+		this.name = this.constructName();
 	}
 
-	function design(name, mod, params) {
-		this.name = name;
+	function design(mod, params, grammar) {
 		if (mod != null) {
 			this.module = mod;
 		}
+		this.constructName = function() {
+			if ('module' in this) {
+				return this.module.constructName().substring(this.module.role.length + 1);
+			} else {
+				return "";
+			}
+		};
+		this.name = this.constructName();
 		if (params != null && params.length > 0) {
 			this.parameters = params;
+		}
+		if (grammar != null) {
+			this.grammar = grammar;
 		}
 		this.schema = "org.clothocad.model.Design";
 	}
@@ -90,8 +109,7 @@ app.controller("doubleDutchCtrl", function($scope) {
 			this.labelColor = "color:#ffffff";
 			this.backgroundColor = "background-color:#787878"
 			this.variableName = "";
-			this.parameterValue = 0;
-
+			this.parameterValue = "";
 		} else if (fl.schema === "org.clothocad.model.Level") {
 			this.depth = 2;
 			this.rootable = false;
@@ -227,7 +245,8 @@ app.controller("doubleDutchCtrl", function($scope) {
 		}
 	};
 
-	var expressGrammar = {name: "Expression Grammar",
+	var expressGrammar = {
+		name: "Expression Grammar",
 		inferModule: function(feats) {
 			var transcFeats = [];
 			var translFeats = [];
@@ -255,48 +274,23 @@ app.controller("doubleDutchCtrl", function($scope) {
 			}
 			var transcMod;
 			if (hasPromoter || hasTerminator) {
-				var transcName = modRole.TRANSCRIPTION.substring(0, 1).toUpperCase() + modRole.TRANSCRIPTION.substring(1) + " ";
-				for (i = 0; i < transcFeats.length; i++) {
-					transcName = transcName + transcFeats[i].name + " + ";
-				}
-				transcName = transcName.substring(0, transcName.length - 3);
-				transcMod = new module(transcName, transcFeats, [], modRole.TRANSCRIPTION, "org.clothocad.model.BasicModule");
+				transcMod = new module(transcFeats, [], modRole.TRANSCRIPTION, "org.clothocad.model.BasicModule");
 			} else {
 				transcMod = null;
 			}
 			var translMod;
 			if (hasRBS) {
-				var translName = modRole.TRANSLATION.substring(0, 1).toUpperCase() + modRole.TRANSLATION.substring(1) + " ";
-				for (i = 0; i < translFeats.length; i++) {
-					translName = translName + translFeats[i].name + " + ";
-				}
-				translName = translName.substring(0, translName.length - 3);
-				translMod = new module(translName, translFeats, [], modRole.TRANSLATION, "org.clothocad.model.BasicModule");
+				translMod = new module(translFeats, [], modRole.TRANSLATION, "org.clothocad.model.BasicModule");
 			} else {
 				translMod = null;
 			}
 			var expressMod;
 			if (hasCDS) {
-				var expressName = modRole.EXPRESSION.substring(0, 1).toUpperCase() + modRole.EXPRESSION.substring(1) + " ";
-				for (i = 0; i < expressFeats.length; i++) {
-					expressName = expressName + expressFeats[i].name + " + ";
-				}
-				expressName = expressName.substring(0, expressName.length - 3);
-				expressMod = new module(expressName, expressFeats, [], modRole.EXPRESSION, "org.clothocad.model.BasicModule");
+				expressMod = new module(expressFeats, [], modRole.EXPRESSION, "org.clothocad.model.BasicModule");
 			} else {
 				expressMod = null;
 			}
 			if ((hasCDS && (hasPromoter || hasTerminator || hasRBS)) || ((hasPromoter || hasTerminator) && hasRBS)) {
-				var compExpressName = modRole.EXPRESSION;
-				for (i = 0; i < expressFeats.length; i++) {
-					compExpressName = compExpressName + " + " + expressFeats[i].name;
-				}
-				for (i = 0; i < transcFeats.length; i++) {
-					compExpressName = compExpressName + " + " + transcFeats[i].name;
-				}
-				for (i = 0; i < translFeats.length; i++) {
-					compExpressName = compExpressName + " + " + translFeats[i].name;
-				}
 				var subMods = [];
 				if (hasCDS) {
 					subMods.push(expressMod);
@@ -307,7 +301,7 @@ app.controller("doubleDutchCtrl", function($scope) {
 				if (hasRBS) {
 					subMods.push(translMod);
 				}
-				return new module(compExpressName, [], subMods, modRole.EXPRESSION, "org.clothocad.model.CompositeModule");
+				return new module([], subMods, modRole.EXPRESSION, "org.clothocad.model.CompositeModule");
 			} else if (hasCDS) {
 				return expressMod;
 			} else if (hasPromoter || hasTerminator) {
@@ -317,22 +311,14 @@ app.controller("doubleDutchCtrl", function($scope) {
 			} else {
 				return null;
 			}
-		}, 
-		schema: "org.clothocad.model.FunctionalGrammar"
+		}, schema: "org.clothocad.model.FunctionalGrammar"
 	};
 
 	var gridParser = {
+		grammar: expressGrammar,
 		parseDesigns: function(data) {
 			var designs = [];
 			var mod;
-			var constructName = function(feats) {
-				var designName = "";
-				var i;
-				for (i = 0; i < feats.length; i++) {
-					designName = designName + " + " + feats[i].name;
-				}
-				return designName.substring(3);
-			};
 			var rowFeats = [];
 			var i;
 			for (i = 0; i < data.length; i++) {
@@ -341,7 +327,7 @@ app.controller("doubleDutchCtrl", function($scope) {
 					if (rowFeats[i] != null) {
 						mod = this.grammar.inferModule([rowFeats[i]]);
 						if (mod != null) {
-							designs.push(new design(constructName([rowFeats[i]]), mod, []));
+							designs.push(new design(mod, [], this.grammar));
 						}
 					}
 				}
@@ -353,20 +339,23 @@ app.controller("doubleDutchCtrl", function($scope) {
 				if (colFeats[j] != null) {
 					mod = this.grammar.inferModule([colFeats[j]]);
 					if (mod != null) {
-						designs.push(new design(constructName([colFeats[j]]), mod, []));
+						designs.push(new design(mod, [], this.grammar));
 					}
 				}
 			}
-			var designName;
 			var param;
+			var parsedDesign;
 			for (i = 1; i < data.length; i++) {
 				for (j = 1; j < data[i].length; j++) {
 					if (rowFeats[i] != null && colFeats[j] != null) {
 						mod = this.grammar.inferModule([rowFeats[i], colFeats[j]]);
 						if (mod != null) {
-							designName = constructName([rowFeats[i], colFeats[j]]);
-							param = this.parseParameter(data[i][j], designName, mod.role);
-							designs.push(new design(designName, mod, param));
+							parsedDesign = new design(mod, [], this.grammar);
+							param = this.parseParameter(data[i][j], parsedDesign.name, mod.role);
+							if (param != null) {
+								parsedDesign.parameters = param;
+							}
+							designs.push(parsedDesign);
 						}
 					}
 				}
@@ -397,7 +386,7 @@ app.controller("doubleDutchCtrl", function($scope) {
 			} else {
 				return null;
 			}
-		}, parseParameter: function(data, designName, role) {
+		}, parseParameter: function(data, prefix, role) {
 			if (!isNaN(data) && data !== "") {
 				var varia;
 				if (role === modRole.EXPRESSION) {
@@ -409,16 +398,15 @@ app.controller("doubleDutchCtrl", function($scope) {
 				} else {
 					return null;
 				}
-				return [new parameter(designName + " " + varia.name, data, varia, reu)];
+				return [new parameter(prefix + " " + varia.name, data, varia, reu)];
 			} else {
 				return null;
 			}
 		}
 	};
 
-	gridParser.grammar = expressGrammar;
-
 	var tableParser = {
+		grammar: expressGrammar,
 		parseDesigns: function(data) {
 			if (data !=null && data.length > 1 && data[0].length > 1 && data[0][0] === "Part") {
 				var i;
@@ -452,14 +440,13 @@ app.controller("doubleDutchCtrl", function($scope) {
 		}
 	};
 
-	gridParser.grammar = expressGrammar;
-
-	
 	// $scope.variables = [0, 1];
 	// $scope.currentVariable = $scope.variables[0];
 	$scope.designs = [];
+	$scope.features = [];
+	$scope.selectedFL;
 	$scope.levels = [];
-	$scope.targetLevels = [{value: 2500}, {value: 6000}, {value: 200}];
+	$scope.targetLevels = [{value: 200}, {value: 2500}, {value: 6000}];
 	$scope.factors = [];
 	$scope.experimentalDesign = [];
 	$scope.parsers = [gridParser];
@@ -467,6 +454,24 @@ app.controller("doubleDutchCtrl", function($scope) {
 	$scope.doeParser = doeTemplateParser;
 	$scope.doeTemplate;
 	$scope.assignmentPenalty = "N/A";
+
+	$scope.addFeatures = function (size, fl) {
+		$scope.selectedFL = fl;
+	    var modalInstance = $modal.open({
+	    	templateUrl: 'featureWindow.html',
+	    	controller: 'featureWindowCtrl',
+		    size: size,
+		    resolve: {
+	        	items: function () {
+	          		return {selectedFeatures: $scope.selectedFL.design.module.getFeatures(), features: $scope.features};
+	        	}
+	      	}
+	    });
+	    modalInstance.result.then(function (selectedItem) {
+	    	$scope.selectedFL.design.module = $scope.selectedFL.design.grammar.inferModule(selectedItem);
+	    	$scope.selectedFL.design.constructName();
+	    });
+	};
 
 	$scope.customRemove = function(scope) {
 		scope.remove();
@@ -492,7 +497,13 @@ app.controller("doubleDutchCtrl", function($scope) {
     	},
     	beforeDrop: function(event) {
     		if (event.dest.nodesScope.$id !== event.source.nodesScope.$id) {
-    			var copy = new flNode(event.source.nodeScope.$modelValue.fl);
+    			var fl = event.source.nodeScope.$modelValue.fl;
+    			var copy;
+    			if (fl.schema === "org.clothocad.model.Level") {
+    				copy = new flNode(new level(fl.parameter, fl.design));
+    			} else {
+    				copy = new flNode(new factor(fl.design));
+    			}
     			event.source.nodesScope.$modelValue.splice(event.source.index, 0, copy);
     		}
     	}
@@ -552,15 +563,28 @@ app.controller("doubleDutchCtrl", function($scope) {
 	    		Papa.parse(files[i], {dynamicTyping: true, designParser: designParser,
 					complete: function(results) {
 						var designNames = [];
-						var designs = this.designParser.parseDesigns(results.data);
+						var featNames = [];
 						var i;
 						for (i = 0; i < $scope.designs.length; i++) {
 							designNames.push($scope.designs[i].name);
 						}
+						for (i = 0; i < $scope.features.length; i++) {
+							featNames.push($scope.features[i].name);
+						}
+						var designs = this.designParser.parseDesigns(results.data);
+						var feats;
+						var j;
 						for (i = 0; i < designs.length; i++) {
 							if (designNames.indexOf(designs[i].name) < 0) {
 								designNames.push(designs[i].name);
 								$scope.designs.push(designs[i]);
+							}
+							feats = designs[i].module.getFeatures();
+							for (j = 0; j < feats.length; j++) {
+								if (featNames.indexOf(feats[j].name) < 0) {
+									featNames.push(feats[j].name);
+									$scope.features.push(feats[j]);
+								}
 							}
 						}
 						var isCodedExpression = function(design) {
@@ -608,7 +632,6 @@ app.controller("doubleDutchCtrl", function($scope) {
 						};
 						$scope.factors = [];
 						$scope.levels = [];
-						var j;
 						for (i = 0; i < $scope.designs.length; i++) {
 							if (isCodedExpression($scope.designs[i])) {
 								$scope.factors.push(new flNode(new factor($scope.designs[i])));

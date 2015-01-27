@@ -1,19 +1,19 @@
 <!DOCTYPE html>
 <html ng-app = "doubleDutchApp">
 <head>
-	<title>Double Dutch</title>
-	<meta charset="utf-8">
-	<!-- Include meta tag to ensure proper rendering and touch zooming -->
-	<meta name="viewport" content="width=device-width, initial-scale=1">
-    <link href="css/application.css" rel="stylesheet">
-  	<link href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.1/css/bootstrap.min.css" rel="stylesheet">
-    <link href="css/tree.css" rel="stylesheet">
-    <link href="css/angular-ui-tree.min.css" rel="stylesheet">
-
+<title>Double Dutch</title>
+  <meta charset="utf-8">
+  <!-- Include meta tag to ensure proper rendering and touch zooming -->
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <!-- <link href="css/application.css" rel="stylesheet"> -->
+  <link href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.1/css/bootstrap.min.css" rel="stylesheet">
+  <link href="css/tree.css" rel="stylesheet">
+  <link href="css/angular-ui-tree.min.css" rel="stylesheet">
 </head>
 <body ng-controller="doubleDutchCtrl">
 	<div class="container">
-		<div class="container">
+		
+    <div class="container">
 			<label for="fileUploader">File Upload</label>
 			<input type="file" id="fileUploader" file-input="files" multiple>
 			<br>
@@ -42,7 +42,6 @@
 		</div>
 
 		<div class="row">
-      		
       		<div class="col-sm-4">
         		<h3>Available Factors</h3>
         		<div ui-tree="flTreeOptions">
@@ -51,7 +50,6 @@
           			</ol>
         		</div>
       		</div>
-
       		<div class="col-sm-4">
         		<h3>Experimental Design</h3>
         		<div ui-tree="edTreeOptions">
@@ -60,7 +58,6 @@
           			</ol>
         		</div>
       		</div>
-
       		<div class="col-sm-4">
         		<h3>Available Levels</h3>
         		<div ui-tree="flTreeOptions">
@@ -69,15 +66,12 @@
           			</ol>
         		</div>
       		</div>
-
     	</div>
-
 	</div>
-	
-	<script src="js/jquery.min.js"></script>
+
 	<script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.3.9/angular.min.js"></script>
 	<script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.3.9/angular-sanitize.min.js"></script>
-	<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.1/js/bootstrap.min.js"></script>
+	<script src="js/ui-bootstrap-tpls-0.12.0.min.js"></script>
 	<script src="js/angular-ui-tree.min.js"></script>
 	<script src="//cdnjs.cloudflare.com/ajax/libs/q.js/0.9.6/q.min.js"></script>
 	<script src="js/papaparse.min.js"></script>
@@ -85,12 +79,14 @@
 	<script src="js/clotho3API.js"></script>
 	<script src="js/doubleDutchApp.js"></script>
 	<script src="js/doubleDutchCtrl.js"></script>
+	<script src="js/featureWindowCtrl.js"></script>
 	<script src="js/fileInput.js"></script>
 
 	<script type="text/ng-template" id="ed_tree_renderer.html">
     	<div ui-tree-handle class="tree-node" style="{{node.backgroundColor}}">
     		<div class="tree-node-content">
 	        	<a class="btn btn-success btn-xs" data-nodrag ng-click="toggle(this)" style="{{node.toggleDisplay}}"><span class="glyphicon" ng-class="{'glyphicon-chevron-right': collapsed, 'glyphicon-chevron-down': !collapsed}"></span></a>
+            <a class="pull-right btn btn-primary btn-xs" data-nodrag ng-click="addFeatures('lg', node.fl)" style="margin-right: 8px;"><span class="glyphicon glyphicon-pencil"></span></a>
 	        	<a class="pull-right btn btn-danger btn-xs" data-nodrag ng-click="remove(this)"><span class="glyphicon glyphicon-remove"></span></a>
 				<label for="moduleName" style="{{node.labelColor}}">Module</label><br>
 				<input type="text" id="moduleName" style="height:25px" ng-model="node.fl.design.module.name">
@@ -110,6 +106,7 @@
     	<div ui-tree-handle class="tree-node" style="{{node.backgroundColor}}">
     		<div class="tree-node-content">
 	        	<a class="btn btn-success btn-xs" data-nodrag ng-click="toggle(this)" style="{{node.toggleDisplay}}"><span class="glyphicon" ng-class="{'glyphicon-chevron-right': collapsed, 'glyphicon-chevron-down': !collapsed}"></span></a>
+	        	<a class="pull-right btn btn-primary btn-xs" data-nodrag ng-click="addFeatures('lg', node.fl)" style="margin-right: 8px;"><span class="glyphicon glyphicon-pencil"></span></a>
 	        	<a class="pull-right btn btn-danger btn-xs" data-nodrag ng-click="customRemove(this)"><span class="glyphicon glyphicon-remove"></span></a>
 				<label for="moduleName" style="{{node.labelColor}}">Module</label><br>
 				<input type="text" id="moduleName" style="height:25px" ng-model="node.fl.design.module.name">
@@ -124,5 +121,29 @@
       		</li>
     	</ol>
   	</script>
+
+  	<script type="text/ng-template" id="featureWindow.html">
+        <div class="modal-header">
+            <h3 class="modal-title">Add Feature</h3>
+        </div>
+        <div class="modal-body">
+            <ul>
+                <li ng-repeat="feature in features">
+                    <a ng-click="selected.features.push(feature)">{{feature.name}}</a>
+                </li>
+            </ul>
+            Selected: 
+            <br>
+            <ul>
+                <li ng-repeat="selectedFeature in selected.features">
+                    <a ng-click="moveFeature(selectedFeature)">{{selectedFeature.name}}</a>
+                </li>
+            </ul>
+        </div>
+        <div class="modal-footer">
+            <button class="btn btn-primary" ng-click="ok()">OK</button>
+            <button class="btn btn-warning" ng-click="cancel()">Cancel</button>
+        </div>
+    </script>
 </body>
 </html>
