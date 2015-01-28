@@ -336,7 +336,7 @@ app.controller("doubleDutchCtrl", function($scope, $modal, $log) {
 			var j;
 			for (j = 0; j < data[0].length; j++) {
 				colFeats[j] = this.parseFeature(data[0][j]);
-				if (colFeats[j] != null) {
+				if (j > 0 && colFeats[j] != null) {
 					mod = this.grammar.inferModule([colFeats[j]]);
 					if (mod != null) {
 						designs.push(new design(mod, [], this.grammar));
@@ -440,10 +440,6 @@ app.controller("doubleDutchCtrl", function($scope, $modal, $log) {
 		}
 	};
 
-	// $scope.variables = [0, 1];
-	// $scope.currentVariable = $scope.variables[0];
-	$scope.designs = [];
-	$scope.features = [];
 	$scope.selectedFL;
 	$scope.levels = [];
 	$scope.targetLevels = [{value: 200}, {value: 2500}, {value: 6000}];
@@ -455,31 +451,47 @@ app.controller("doubleDutchCtrl", function($scope, $modal, $log) {
 	$scope.doeTemplate;
 	$scope.assignmentPenalty = "N/A";
 
-	$scope.addFeatures = function (size, fl) {
+	$scope.addFeatures = function(size, fl) {
 		$scope.selectedFL = fl;
 	    var modalInstance = $modal.open({
 	    	templateUrl: 'featureWindow.html',
 	    	controller: 'featureWindowCtrl',
 		    size: size,
 		    resolve: {
-	        	items: function () {
-	          		return {selectedFeatures: $scope.selectedFL.design.module.getFeatures(), features: $scope.features};
+	        	items: function() {
+	        		var addUniqueFeatures = function(feats, targetFeats) {
+	        			var i;
+	        			for (i = 0; i < targetFeats.length; i++) {
+	        				if (feats.indexOf(targetFeats[i]) < 0) {
+	        					feats.push(targetFeats[i]);
+	        				}
+	        			}
+	        			return feats;
+	        		};
+	        		var feats = [];
+	        		var i;
+	        		for (i = 0; i < $scope.factors.length; i++) {
+	        			feats = addUniqueFeatures(feats, $scope.factors[i].fl.design.module.getFeatures());
+	        		}
+	        		for (i = 0; i < $scope.levels.length; i++) {
+	        			feats = addUniqueFeatures(feats, $scope.levels[i].fl.design.module.getFeatures());
+	        		}
+	        		var j;
+	        		for (i = 0; i < $scope.experimentalDesign.length; i++) {
+	        			feats = addUniqueFeatures(feats, $scope.experimentalDesign[i].fl.design.module.getFeatures());
+	        			for (j = 0; j < $scope.experimentalDesign[i].nodes.length; j++) {
+	        				feats = addUniqueFeatures(feats, $scope.experimentalDesign[i].nodes[j].fl.design.module.getFeatures());
+	        			}
+	        		}
+	          		return {selectedFeatures: $scope.selectedFL.design.module.getFeatures(), features: feats};
 	        	}
 	      	}
 	    });
-	    modalInstance.result.then(function (selectedItem) {
+	    modalInstance.result.then(function(selectedItem) {
 	    	$scope.selectedFL.design.module = $scope.selectedFL.design.grammar.inferModule(selectedItem);
 	    	$scope.selectedFL.design.constructName();
 	    });
 	};
-
-	$scope.customRemove = function(scope) {
-		scope.remove();
-		var target = $scope.designs.indexOf(scope.$nodeScope.$modelValue.fl.design);
-		if (target >= 0) {
-			$scope.designs.splice(target, 1);
-		}
-    };
 
     $scope.edTreeOptions = {
     	accept: function(sourceNodeScope, destNodesScope, destIndex) {
@@ -562,31 +574,6 @@ app.controller("doubleDutchCtrl", function($scope, $modal, $log) {
 	    	for (i = 0; i < files.length; i++) {
 	    		Papa.parse(files[i], {dynamicTyping: true, designParser: designParser,
 					complete: function(results) {
-						var designNames = [];
-						var featNames = [];
-						var i;
-						for (i = 0; i < $scope.designs.length; i++) {
-							designNames.push($scope.designs[i].name);
-						}
-						for (i = 0; i < $scope.features.length; i++) {
-							featNames.push($scope.features[i].name);
-						}
-						var designs = this.designParser.parseDesigns(results.data);
-						var feats;
-						var j;
-						for (i = 0; i < designs.length; i++) {
-							if (designNames.indexOf(designs[i].name) < 0) {
-								designNames.push(designs[i].name);
-								$scope.designs.push(designs[i]);
-							}
-							feats = designs[i].module.getFeatures();
-							for (j = 0; j < feats.length; j++) {
-								if (featNames.indexOf(feats[j].name) < 0) {
-									featNames.push(feats[j].name);
-									$scope.features.push(feats[j]);
-								}
-							}
-						}
 						var isCodedExpression = function(design) {
 							if ('module' in design) { 
 								if (design.module.role === modRole.EXPRESSION) {
@@ -630,15 +617,18 @@ app.controller("doubleDutchCtrl", function($scope, $modal, $log) {
 								return -1;
 							}
 						};
+						var designs = this.designParser.parseDesigns(results.data);
 						$scope.factors = [];
 						$scope.levels = [];
-						for (i = 0; i < $scope.designs.length; i++) {
-							if (isCodedExpression($scope.designs[i])) {
-								$scope.factors.push(new flNode(new factor($scope.designs[i])));
+						var i;
+						var j;
+						for (i = 0; i < designs.length; i++) {
+							if (isCodedExpression(designs[i])) {
+								$scope.factors.push(new flNode(new factor(designs[i])));
 							} else {
-								j = isParameterizedExpression($scope.designs[i]);
+								j = isParameterizedExpression(designs[i]);
 								if (j >= 0) {
-									$scope.levels.push(new flNode(new level($scope.designs[i].parameters[j], $scope.designs[i])));
+									$scope.levels.push(new flNode(new level(designs[i].parameters[j], designs[i])));
 								}	
 							}
 						}
@@ -776,8 +766,6 @@ app.controller("doubleDutchCtrl", function($scope, $modal, $log) {
 						}
 					}
 				}
-				// console.log("branch and bound");
-				// console.log(bestSoln.score);
 				return bestSoln;
 	    	},
 	    	monteCarlo: function(initialTemp, targetLevelCount, factorCount, solutionCap, levelScorings) {
@@ -826,8 +814,6 @@ app.controller("doubleDutchCtrl", function($scope, $modal, $log) {
 					}
 					solutionCount++;
 				} while (solutionCount < solutionCap);
-				// console.log("monte carlo");
-				// console.log(bestSoln.score);
 				return bestSoln;
 	    	} 
 		}
@@ -835,7 +821,6 @@ app.controller("doubleDutchCtrl", function($scope, $modal, $log) {
 		// var bestSoln = solver.branchAndBound($scope.targetLevels.length, $scope.experimentalDesign.length, 1, levelScorings);
 		var bestSoln = solver.monteCarlo(1000, $scope.targetLevels.length, $scope.experimentalDesign.length, 50, levelScorings);
 		$scope.assignmentPenalty = Math.floor(bestSoln.score);
-		// console.log(bestBnB.score);
 
 		for (i = 0; i < $scope.experimentalDesign.length; i++) {
 			$scope.experimentalDesign[i].nodes = [];

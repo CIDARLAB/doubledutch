@@ -54,7 +54,7 @@
         		<h3>Experimental Design</h3>
         		<div ui-tree="edTreeOptions">
           			<ol ui-tree-nodes="" ng-model="experimentalDesign">
-            			<li ng-repeat="node in experimentalDesign" ui-tree-node ng-include="'ed_tree_renderer.html'"></li>
+            			<li ng-repeat="node in experimentalDesign" ui-tree-node ng-include="'fl_tree_renderer.html'"></li>
           			</ol>
         		</div>
       		</div>
@@ -82,68 +82,48 @@
 	<script src="js/featureWindowCtrl.js"></script>
 	<script src="js/fileInput.js"></script>
 
-	<script type="text/ng-template" id="ed_tree_renderer.html">
-    	<div ui-tree-handle class="tree-node" style="{{node.backgroundColor}}">
-    		<div class="tree-node-content">
-	        	<a class="btn btn-success btn-xs" data-nodrag ng-click="toggle(this)" style="{{node.toggleDisplay}}"><span class="glyphicon" ng-class="{'glyphicon-chevron-right': collapsed, 'glyphicon-chevron-down': !collapsed}"></span></a>
-            <a class="pull-right btn btn-primary btn-xs" data-nodrag ng-click="addFeatures('lg', node.fl)" style="margin-right: 8px;"><span class="glyphicon glyphicon-pencil"></span></a>
-	        	<a class="pull-right btn btn-danger btn-xs" data-nodrag ng-click="remove(this)"><span class="glyphicon glyphicon-remove"></span></a>
-				<label for="moduleName" style="{{node.labelColor}}">Module</label><br>
-				<input type="text" id="moduleName" style="height:25px" ng-model="node.fl.design.module.name">
-				<form style="{{node.valueDisplay}}">
-					<label for="levelValue" style="{{node.labelColor}}">{{node.variableName}}</label><br>
-					<input type="text" id="levelValue" style="height:25px" ng-model="node.parameterValue">
-				</form>   
-      		</div>
-    	</div>
-    	<ol ui-tree-nodes="" data-max-depth="{{node.depth}}" ng-model="node.nodes" ng-class="{hidden: collapsed}">
-      		<li ng-repeat="node in node.nodes" ui-tree-node ng-include="'ed_tree_renderer.html'">
-      		</li>
-    	</ol>
-  	</script>
+	<script type="text/ng-template" id="fl_tree_renderer.html">
+  	<div ui-tree-handle class="tree-node" style="{{node.backgroundColor}}">
+  		<div class="tree-node-content">
+        	<a class="btn btn-success btn-xs" data-nodrag ng-click="toggle(this)" style="{{node.toggleDisplay}}"><span class="glyphicon" ng-class="{'glyphicon-chevron-right': collapsed, 'glyphicon-chevron-down': !collapsed}"></span></a>
+        	<a class="pull-right btn btn-primary btn-xs" data-nodrag ng-click="addFeatures('lg', node.fl)" style="margin-right: 8px;"><span class="glyphicon glyphicon-pencil"></span></a>
+        	<a class="pull-right btn btn-danger btn-xs" data-nodrag ng-click="remove(this)"><span class="glyphicon glyphicon-remove"></span></a>
+			<label for="moduleName" style="{{node.labelColor}}">Module</label><br>
+			<input type="text" id="moduleName" style="height:25px" ng-model="node.fl.design.module.name">
+			<form style="{{node.valueDisplay}}">
+				<label for="levelValue" style="{{node.labelColor}}">{{node.variableName}}</label><br>
+				<input type="text" id="levelValue" style="height:25px" ng-model="node.parameterValue">
+			</form>   
+    		</div>
+  	</div>
+  	<ol ui-tree-nodes="" data-max-depth="{{node.depth}}" ng-model="node.nodes" ng-class="{hidden: collapsed}">
+    		<li ng-repeat="node in node.nodes" ui-tree-node ng-include="'fl_tree_renderer.html'">
+    		</li>
+  	</ol>
+	</script>
 
-  	<script type="text/ng-template" id="fl_tree_renderer.html">
-    	<div ui-tree-handle class="tree-node" style="{{node.backgroundColor}}">
-    		<div class="tree-node-content">
-	        	<a class="btn btn-success btn-xs" data-nodrag ng-click="toggle(this)" style="{{node.toggleDisplay}}"><span class="glyphicon" ng-class="{'glyphicon-chevron-right': collapsed, 'glyphicon-chevron-down': !collapsed}"></span></a>
-	        	<a class="pull-right btn btn-primary btn-xs" data-nodrag ng-click="addFeatures('lg', node.fl)" style="margin-right: 8px;"><span class="glyphicon glyphicon-pencil"></span></a>
-	        	<a class="pull-right btn btn-danger btn-xs" data-nodrag ng-click="customRemove(this)"><span class="glyphicon glyphicon-remove"></span></a>
-				<label for="moduleName" style="{{node.labelColor}}">Module</label><br>
-				<input type="text" id="moduleName" style="height:25px" ng-model="node.fl.design.module.name">
-				<form style="{{node.valueDisplay}}">
-					<label for="levelValue" style="{{node.labelColor}}">{{node.variableName}}</label><br>
-					<input type="text" id="levelValue" style="height:25px" ng-model="node.parameterValue">
-				</form>   
-      		</div>
-    	</div>
-    	<ol ui-tree-nodes="" data-max-depth="{{node.depth}}" ng-model="node.nodes" ng-class="{hidden: collapsed}">
-      		<li ng-repeat="node in node.nodes" ui-tree-node ng-include="'fl_tree_renderer.html'">
-      		</li>
-    	</ol>
-  	</script>
-
-  	<script type="text/ng-template" id="featureWindow.html">
-        <div class="modal-header">
-            <h3 class="modal-title">Add Feature</h3>
-        </div>
-        <div class="modal-body">
-            <ul>
-                <li ng-repeat="feature in features">
-                    <a ng-click="selected.features.push(feature)">{{feature.name}}</a>
-                </li>
-            </ul>
-            Selected: 
-            <br>
-            <ul>
-                <li ng-repeat="selectedFeature in selected.features">
-                    <a ng-click="moveFeature(selectedFeature)">{{selectedFeature.name}}</a>
-                </li>
-            </ul>
-        </div>
-        <div class="modal-footer">
-            <button class="btn btn-primary" ng-click="ok()">OK</button>
-            <button class="btn btn-warning" ng-click="cancel()">Cancel</button>
-        </div>
-    </script>
+	<script type="text/ng-template" id="featureWindow.html">
+      <div class="modal-header">
+          <h3 class="modal-title">Add Feature</h3>
+      </div>
+      <div class="modal-body">
+          <ul>
+              <li ng-repeat="feat in features">
+                  <a ng-click="selected.push({feature: feat})">{{feat.name}}</a>
+              </li>
+          </ul>
+          Selected: 
+          <br>
+          <ul>
+              <li ng-repeat="item in selected">
+                  <a ng-click="moveFeature(item)">{{item.feature.name}}</a>
+              </li>
+          </ul>
+      </div>
+      <div class="modal-footer">
+          <button class="btn btn-primary" ng-click="ok()">OK</button>
+          <button class="btn btn-warning" ng-click="cancel()">Cancel</button>
+      </div>
+  </script>
 </body>
 </html>
