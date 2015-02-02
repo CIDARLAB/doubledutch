@@ -31,7 +31,8 @@
 			</div>
 			<br>
 			<input type="number" id="targetInput" style="height:25px" ng-model="newTarget" placeholder="New Target">
-			<br>
+			<br><br>
+      <button type="button" class="btn btn-primary" ng-click="clusterLevels()">Generate Targets</button>
 			<button type="button" class="btn btn-primary" ng-click="addTarget()">Add Target</button>
 			<button type="button" class="btn btn-primary" ng-click="removeTarget()">Remove Target</button>
 			<br><br>
@@ -91,8 +92,8 @@
 			<label for="moduleName" style="{{node.labelColor}}">Module</label><br>
 			<input type="text" id="moduleName" style="height:25px" ng-model="node.fl.design.module.name">
 			<form style="{{node.valueDisplay}}">
-				<label for="levelValue" style="{{node.labelColor}}">{{node.variableName}}</label><br>
-				<input type="text" id="levelValue" style="height:25px" ng-model="node.parameterValue">
+				<label for="levelValue" style="{{node.labelColor}}">{{node.variable.name}}</label><br>
+				<input type="text" id="levelValue" style="height:25px" ng-model="node.parameter.value">
 			</form>   
     		</div>
   	</div>

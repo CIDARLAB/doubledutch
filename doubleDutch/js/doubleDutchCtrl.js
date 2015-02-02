@@ -2,10 +2,24 @@ app.controller("doubleDutchCtrl", function($scope, $modal, $log) {
 	seqType = {DNA: "DNA", schema: "org.clothocad.model.SequenceType"};
 	featRole = {PROMOTER: "promoter", RBS: "ribosome binding site", UTR: "untranslated region", CDS: "coding sequence", TERMINATOR: "terminator", schema: "org.clothocad.model.FeatureRole"};
 	modRole = {TRANSCRIPTION: "transcription", TRANSLATION: "translation", EXPRESSION: "expression", schema: "org.clothocad.model.ModuleRole"};
-	transcStrength = {name: "Transcription Strength", schema: "org.clothocad.model.Variable"};
-	translStrength = {name: "Translation Strength", schema: "org.clothocad.model.Variable"};
-	expressStrength = {name: "Expression Strength", schema: "org.clothocad.model.Variable"};
-	reu = {name: "REU", schema: "org.clothocad.model.Units"};
+	
+	function variable(name) {
+		this.name = name;
+		this.schema = "org.clothocad.model.Variable";
+	}
+
+	transcStrength = new variable("Transcription Strength");
+	translStrength = new variable("Translation Strength");
+	expressStrength = new variable("Expression Strength");
+	dummyVariable = new variable("");
+
+	function units(name) {
+		this.name = name;
+		this.schema = "org.clothocad.model.Units";
+	}
+
+	reu = new units("REU");
+	dummyUnits = new units("");
 
 	function module(feats, subMods, role, schema) {
 		this.schema = schema;
@@ -94,7 +108,8 @@ app.controller("doubleDutchCtrl", function($scope, $modal, $log) {
 		this.schema = "org.clothocad.model.Level";
 	}
 
-	function factor(design) {
+	function factor(variable, design) {
+		this.variable = variable;
 		this.design = design;
 		this.schema = "org.clothocad.model.Factor";
 	}
@@ -108,8 +123,8 @@ app.controller("doubleDutchCtrl", function($scope, $modal, $log) {
 			this.toggleDisplay = "";
 			this.labelColor = "color:#ffffff";
 			this.backgroundColor = "background-color:#787878"
-			this.variableName = "";
-			this.parameterValue = "";
+			this.variable = fl.variable;
+			this.parameter = new parameter("", 0, fl.variable, dummyUnits);
 		} else if (fl.schema === "org.clothocad.model.Level") {
 			this.depth = 2;
 			this.rootable = false;
@@ -117,8 +132,8 @@ app.controller("doubleDutchCtrl", function($scope, $modal, $log) {
 			this.toggleDisplay = "display:none";
 			this.labelColor = "";
 			this.backgroundColor = ""
-			this.variableName = fl.parameter.variable.name;
-			this.parameterValue = fl.parameter.value;
+			this.variable = fl.parameter.variable;
+			this.parameter = fl.parameter;
 		}
 		this.nodes = [];
 	}
@@ -442,7 +457,7 @@ app.controller("doubleDutchCtrl", function($scope, $modal, $log) {
 
 	$scope.selectedFL;
 	$scope.levels = [];
-	$scope.targetLevels = [{value: 200}, {value: 2500}, {value: 6000}];
+	$scope.targetLevels = [{value: 100}, {value: 1000}, {value: 10000}];
 	$scope.factors = [];
 	$scope.experimentalDesign = [];
 	$scope.parsers = [gridParser];
@@ -514,7 +529,7 @@ app.controller("doubleDutchCtrl", function($scope, $modal, $log) {
     			if (fl.schema === "org.clothocad.model.Level") {
     				copy = new flNode(new level(fl.parameter, fl.design));
     			} else {
-    				copy = new flNode(new factor(fl.design));
+    				copy = new flNode(new factor(dummyVariable, fl.design));
     			}
     			event.source.nodesScope.$modelValue.splice(event.source.index, 0, copy);
     		}
@@ -527,7 +542,7 @@ app.controller("doubleDutchCtrl", function($scope, $modal, $log) {
   			var outputData = [[]];
   			var i;
   			for (i = 0; i < experimentalDesign.length; i++) {
-  				experimentalDesign[i].nodes.sort(function(a, b){return a.parameterValue - b.parameterValue})
+  				experimentalDesign[i].nodes.sort(function(a, b){return a.parameter.value - b.parameter.value})
   				outputData[0].push(experimentalDesign[i].fl.design.name);
   			}
   			var j;
@@ -552,7 +567,7 @@ app.controller("doubleDutchCtrl", function($scope, $modal, $log) {
 		  // 			$scope.outputData = [];
 		  // 			var i;
 		  // 			for (i = 0; i < this.experimentalDesign.length; i++) {
-		  // 				this.experimentalDesign[i].nodes.sort(function(a, b){return a.parameterValue - b.parameterValue})
+		  // 				this.experimentalDesign[i].nodes.sort(function(a, b){return a.parameter.value - b.parameter.value})
 		  // 			}
 		  // 			var j;
 		  // 			var k;
@@ -618,13 +633,11 @@ app.controller("doubleDutchCtrl", function($scope, $modal, $log) {
 							}
 						};
 						var designs = this.designParser.parseDesigns(results.data);
-						$scope.factors = [];
-						$scope.levels = [];
 						var i;
 						var j;
 						for (i = 0; i < designs.length; i++) {
 							if (isCodedExpression(designs[i])) {
-								$scope.factors.push(new flNode(new factor(designs[i])));
+								$scope.factors.push(new flNode(new factor(dummyVariable, designs[i])));
 							} else {
 								j = isParameterizedExpression(designs[i]);
 								if (j >= 0) {
@@ -643,7 +656,7 @@ app.controller("doubleDutchCtrl", function($scope, $modal, $log) {
 								return 0;
 							}
 						});
-						$scope.levels.sort(function(a, b){return a.parameterValue - b.parameterValue});
+						$scope.levels.sort(function(a, b){return a.parameter.value - b.parameter.value});
 						$scope.$apply();
 					}
 				});
@@ -666,170 +679,256 @@ app.controller("doubleDutchCtrl", function($scope, $modal, $log) {
     	}
     };
 
-	$scope.assignLevels = function() {
-		$scope.targetLevels.sort(function(a, b){return a.value - b.value});
-		$scope.levels.sort(function(a, b){return a.parameterValue - b.parameterValue});
-		var midPoints = [];
-		var i;
-		for (i = 0; i < $scope.targetLevels.length - 1; i++) {
-			midPoints.push(($scope.targetLevels[i].value + $scope.targetLevels[i + 1].value)/2);
-		}
-		var levelScorings = [[]];
-		var j = 0;
-		for (i = 0; i < $scope.levels.length; i++) {
-			while (j < midPoints.length && $scope.levels[i].parameterValue > midPoints[j]) {
-				levelScorings.push([]);
-				j++;
-			} 
-			levelScorings[j].push({level: $scope.levels[i], score: Math.abs($scope.levels[i].parameterValue - $scope.targetLevels[j].value)});
-		}
-		for (i = 0; i < levelScorings.length; i++) {
-			levelScorings[i].sort(function(a, b){return a.score - b.score});
-		}
+    $scope.clusterLevels = function() {
+    	if ($scope.levels.length >= $scope.targetLevels.length) {
+	    	var i;
+	    	var j;
+	    	var usedValues = [];
+	    	var clusters = [];
+	    	var prevClusters = [];
+	    	for (i = 0; i < $scope.targetLevels.length; i++) {
+	    		do {
+		    		j = Math.floor(Math.random()*$scope.levels.length);
+	    		} while(usedValues.indexOf($scope.levels[j].parameter.value) >= 0);
+	    		$scope.targetLevels[i].value = Math.floor($scope.levels[j].parameter.value);
+	    		clusters.push([]);
+	    		prevClusters.push([]);
+	    	}
+	    	$scope.targetLevels.sort(function(a, b){return a.value - b.value});
+	    	var k;
+	    	var levelScore;
+	    	var bestScore;
+	    	var clusterTotal;
+	    	var repeatClustering;
+	    	do {
+	    		repeatClustering = false;
+	    		for (i = 0; i < clusters.length; i++) {
+	    			clusters.splice(i, 1, []);
+	    		}	
+		    	for (i = 0; i < $scope.levels.length; i++) {
+		    		bestScore = -1;
+		    		for (j = 0; j < $scope.targetLevels.length; j++) {
+		    			levelScore = Math.pow(($scope.levels[i].parameter.value - $scope.targetLevels[j].value), 2);
+		    			if (bestScore < 0 || levelScore < bestScore) {
+		    				k = j;
+		    				bestScore = levelScore;
+		    			}
+		    		}
+		    		clusters[k].push($scope.levels[i]);
+		    		if (prevClusters[k].length < clusters[k].length 
+		    				|| prevClusters[k][clusters[k].length - 1] != $scope.levels[i]) {
+		    			repeatClustering = true;
+		    		}
+		    	}
+		    	if (repeatClustering) {
+			    	for (i = 0; i < $scope.targetLevels.length; i++) {
+			    		clusterTotal = 0;
+			    		for (j = 0; j < clusters[i].length; j++) {
+			    			clusterTotal += clusters[i][j].parameter.value;
+			    		}
+			    		$scope.targetLevels[i].value = Math.floor(clusterTotal/clusters[i].length);
+			    	}
+			    	for (i = 0; i < prevClusters.length; i++) {
+		    			prevClusters.splice(i, 1, clusters[i]);
+		    		}	
+		    	}
+	    	} while (repeatClustering);
+    	}
+    };
 
-		var solver = {
-			randomSolve: function(targetLevelCount, factorCount, levelScorings) {
-				var i;
-				var j;
-				var k;
-				var randomSoln = new solution(targetLevelCount, factorCount, 0);
-				for (i = 0; i < randomSoln.levelSelections.length; i++) {
-					for (j = 0; j < randomSoln.levelSelections[i].length; j++) {
-						do {
-							k = Math.floor(Math.random()*levelScorings[i].length);
-						} while (randomSoln.isHomologyRisk(levelScorings, i, j, k, i));
-						randomSoln.levelSelections[i][j] = k;
-						randomSoln.score = randomSoln.score + levelScorings[i][k].score;
+	$scope.assignLevels = function() {
+		if ($scope.experimentalDesign.length >= 2 && $scope.levels.length >= 2) {
+			$scope.targetLevels.sort(function(a, b){return a.value - b.value});
+			$scope.levels.sort(function(a, b){return a.parameter.value - b.parameter.value});
+			var midPoints = [];
+			var i;
+			for (i = 0; i < $scope.targetLevels.length - 1; i++) {
+				midPoints.push(($scope.targetLevels[i].value + $scope.targetLevels[i + 1].value)/2);
+			}
+			var levelScorings = [[]];
+			var j = 0;
+			for (i = 0; i < $scope.levels.length; i++) {
+				while (j < midPoints.length && $scope.levels[i].parameter.value > midPoints[j]) {
+					levelScorings.push([]);
+					j++;
+				} 
+				levelScorings[j].push({level: $scope.levels[i], score: Math.abs($scope.levels[i].parameter.value - $scope.targetLevels[j].value)});
+			}
+			var solver = {
+				greedySolve: function(targetLevelCount, factorCount, levelScorings) {
+					for (i = 0; i < levelScorings.length; i++) {
+						levelScorings[i].sort(function(a, b){return a.score - b.score});
 					}
-				}
-				return randomSoln;
-			},
-			branchAndBound: function(targetLevelCount, factorCount, solutionCap, levelScorings) {
-	    		var soln = new solution(targetLevelCount, factorCount, 0);
-	    		var bestSoln = new solution(0, 0, -1);
-	    		var solutionCount = 0;
-	    		var backtrack;
-	    		var factorHomology = [];
-	    		var i;
-	    		for (i = 0; i < targetLevelCount; i++) {
-	    			factorHomology.push(false);
-	    		}
-	    		var j;
-				var k;
-				for (i = 0; i < soln.levelSelections.length; i++) {
-					for (j = 0; j < soln.levelSelections[i].length; j++) {
-						factorHomology[i] = soln.isFactorHomologous(levelScorings, i, j);
-						if (j > 0 && !factorHomology[i]) {
-							k = soln.levelSelections[i][j - 1] + 1;
-						} else {
+					return this.simpleSolve(targetLevelCount, factorCount, levelScorings);
+				},
+				simpleSolve: function(targetLevelCount, factorCount, levelScorings) {
+					var soln = new solution(targetLevelCount, factorCount, 0);
+		    		var backtrack;
+		    		var i;
+		    		var j;
+					var k;
+					for (i = 0; i < soln.levelSelections.length; i++) {
+						for (j = 0; j < soln.levelSelections[i].length; j++) {
 							k = soln.levelSelections[i][j];
-						}
-						while (k < levelScorings[i].length && soln.isHomologyRisk(levelScorings, i, j, k, i)) {
-							k++;
-						} 
-						backtrack = false;
-						if (k == levelScorings[i].length || soln.isSubOptimal(levelScorings, i, j, k, bestSoln)) {
-							backtrack = true;
-						} else {
-							soln.score = soln.score + levelScorings[i][k].score;
-							soln.levelSelections[i][j] = k;
-							if (i == soln.levelSelections.length - 1 && j == soln.levelSelections[i].length - 1) {
-								bestSoln.copySolution(soln);
-								soln.score = soln.score - levelScorings[i][k].score;
-								solutionCount++;
-								if (solutionCap < 0 || solutionCount < solutionCap) {
-									backtrack = true;
-								}
+							while (k < levelScorings[i].length && soln.isHomologyRisk(levelScorings, i, j, k, i)) {
+								k++;
+							} 
+							if (k == levelScorings[i].length) {
+								backtrack = true;
+							} else {
+								backtrack = false;
+								soln.score = soln.score + levelScorings[i][k].score;
+								soln.levelSelections[i][j] = k;
 							}
-						}
-						if (backtrack) {
-							do {
+							if (backtrack) {
 								soln.levelSelections[i][j] = 0;
 								j--;
 								if (j < 0) {
 									i--;
 									if (i < 0) {
-										i = soln.levelSelections.length - 1;
-										backtrack = false;
+										return null;
 									}
 									j = soln.levelSelections[i].length - 1;
 								}
-								if (backtrack) {
-									k = soln.levelSelections[i][j];
-									soln.score = soln.score - levelScorings[i][k].score;
-									soln.levelSelections[i][j]++;
-								}
-							} while (soln.levelSelections[i][j] == levelScorings[i].length);
-							if (backtrack) {
+								k = soln.levelSelections[i][j];
+								soln.score = soln.score - levelScorings[i][k].score;
+								soln.levelSelections[i][j]++;
 								j--;
 							}
 						}
 					}
-				}
-				return bestSoln;
-	    	},
-	    	monteCarlo: function(initialTemp, targetLevelCount, factorCount, solutionCap, levelScorings) {
-				var i;
-				var j;
-				var k;
-				var soln;
-				var bestSoln = new solution(0, 0, -1);
-				var temp;
-				var mutantScore;
-				var mutationCap;
-				var solutionCount = 0;
-				var mutantK;
-				do {
-					temp = initialTemp;
-					soln = this.randomSolve(targetLevelCount, factorCount, levelScorings);
-					while (temp >= 0) {
-						mutationCap = 0;
-						do {
-							i = Math.floor(Math.random()*soln.levelSelections.length);
-							j = Math.floor(Math.random()*soln.levelSelections[i].length);
-							mutantK = soln.levelSelections[i][j];
-							if (mutantK == 0 || Math.random() > 0.5) {
-								do {
-									mutantK++;
-								} while (mutantK < levelScorings[i].length && soln.isHomologyRisk(levelScorings, i, j, mutantK, soln.levelSelections.length));
+					return soln;
+				},
+				branchAndBound: function(targetLevelCount, factorCount, solutionCap, levelScorings) {
+		    		var soln = new solution(targetLevelCount, factorCount, 0);
+		    		var bestSoln = new solution(0, 0, -1);
+		    		var solutionCount = 0;
+		    		var backtrack;
+		    		var factorHomology = [];
+		    		var i;
+		    		for (i = 0; i < targetLevelCount; i++) {
+		    			factorHomology.push(false);
+		    		}
+		    		var j;
+					var k;
+					for (i = 0; i < soln.levelSelections.length; i++) {
+						for (j = 0; j < soln.levelSelections[i].length; j++) {
+							factorHomology[i] = soln.isFactorHomologous(levelScorings, i, j);
+							if (j > 0 && !factorHomology[i]) {
+								k = soln.levelSelections[i][j - 1] + 1;
 							} else {
-								do {
-									mutantK--;
-								} while (mutantK >= 0 && soln.isHomologyRisk(levelScorings, i, j, mutantK, soln.levelSelections.length));
+								k = soln.levelSelections[i][j];
+							}
+							while (k < levelScorings[i].length && soln.isHomologyRisk(levelScorings, i, j, k, i)) {
+								k++;
 							} 
-							mutationCap++;
-						} while (mutationCap < 3 && (mutantK < 0 || mutantK >= levelScorings[i].length));
-						if (mutantK >= 0 && mutantK < levelScorings[i].length) {
-							k = soln.levelSelections[i][j];
-							mutantScore = soln.score - levelScorings[i][k].score + levelScorings[i][mutantK].score;
-							if (mutantScore < soln.score || Math.random() <= Math.exp((soln.score - mutantScore)/temp)) {
-								soln.levelSelections[i][j] = mutantK;
-								soln.score = mutantScore;
+							backtrack = false;
+							if (k == levelScorings[i].length || soln.isSubOptimal(levelScorings, i, j, k, bestSoln)) {
+								backtrack = true;
+							} else {
+								soln.score = soln.score + levelScorings[i][k].score;
+								soln.levelSelections[i][j] = k;
+								if (i == soln.levelSelections.length - 1 && j == soln.levelSelections[i].length - 1) {
+									bestSoln.copySolution(soln);
+									soln.score = soln.score - levelScorings[i][k].score;
+									solutionCount++;
+									if (solutionCap < 0 || solutionCount < solutionCap) {
+										backtrack = true;
+									}
+								}
+							}
+							if (backtrack) {
+								do {
+									soln.levelSelections[i][j] = 0;
+									j--;
+									if (j < 0) {
+										i--;
+										if (i < 0) {
+											i = soln.levelSelections.length - 1;
+											backtrack = false;
+										}
+										j = soln.levelSelections[i].length - 1;
+									}
+									if (backtrack) {
+										k = soln.levelSelections[i][j];
+										soln.score = soln.score - levelScorings[i][k].score;
+										soln.levelSelections[i][j]++;
+									}
+								} while (soln.levelSelections[i][j] == levelScorings[i].length);
+								if (backtrack) {
+									j--;
+								}
 							}
 						}
-						temp--;
 					}
-					if (bestSoln.score < 0 || soln.score < bestSoln.score) {
-						bestSoln.copySolution(soln);
+					return bestSoln;
+		    	},
+		    	monteCarlo: function(initialTemp, solutionCap, targetLevelCount, factorCount, levelScorings) {
+					var soln = this.greedySolve(targetLevelCount, factorCount, levelScorings);
+					if (soln == null) {
+						return null;
 					}
-					solutionCount++;
-				} while (solutionCount < solutionCap);
-				return bestSoln;
-	    	} 
-		}
-
-		// var bestSoln = solver.branchAndBound($scope.targetLevels.length, $scope.experimentalDesign.length, 1, levelScorings);
-		var bestSoln = solver.monteCarlo(1000, $scope.targetLevels.length, $scope.experimentalDesign.length, 50, levelScorings);
-		$scope.assignmentPenalty = Math.floor(bestSoln.score);
-
-		for (i = 0; i < $scope.experimentalDesign.length; i++) {
-			$scope.experimentalDesign[i].nodes = [];
-		}
-
-		for (i = 0; i < bestSoln.levelSelections.length; i++) {
-			for (j = 0; j < bestSoln.levelSelections[i].length; j++) {
-				k = bestSoln.levelSelections[i][j];
-				$scope.experimentalDesign[j].nodes.push(levelScorings[i][k].level);
+					var bestSoln = new solution(0, 0, -1);
+					var temp;
+					var i;
+					var j;
+					var k;
+					var mutantK;
+					var mutantScore;
+					var mutationAttempts;
+					var solutionCount = 0;
+					do {
+						temp = initialTemp;
+						while (temp >= 0) {
+							mutationAttempts = 0;
+							do {
+								i = Math.floor(Math.random()*soln.levelSelections.length);
+								j = Math.floor(Math.random()*soln.levelSelections[i].length);
+								mutantK = soln.levelSelections[i][j];
+								if (mutantK == 0 || Math.random() > 0.5) {
+									do {
+										mutantK++;
+									} while (mutantK < levelScorings[i].length && soln.isHomologyRisk(levelScorings, i, j, mutantK, soln.levelSelections.length));
+								} else {
+									do {
+										mutantK--;
+									} while (mutantK >= 0 && soln.isHomologyRisk(levelScorings, i, j, mutantK, soln.levelSelections.length));
+								}
+								mutationAttempts++;
+							} while (mutationAttempts < 3 && (mutantK < 0 || mutantK >= levelScorings[i].length));
+							if (mutantK >= 0 && mutantK < levelScorings[i].length) {
+								k = soln.levelSelections[i][j];
+								mutantScore = soln.score - levelScorings[i][k].score + levelScorings[i][mutantK].score;
+								if (mutantScore < soln.score || Math.random() <= Math.exp((soln.score - mutantScore)/temp)) {
+									soln.levelSelections[i][j] = mutantK;
+									soln.score = mutantScore;
+								}
+							}
+							temp--;
+						}
+						if (bestSoln.score < 0 || soln.score < bestSoln.score) {
+							bestSoln = soln;
+						}
+						solutionCount++;
+					} while (solutionCount < solutionCap);
+					return bestSoln;
+		    	} 
+			};
+			// var bestSoln = solver.branchAndBound($scope.targetLevels.length, $scope.experimentalDesign.length, 1, levelScorings);
+			var bestSoln = solver.monteCarlo(1000, 50, $scope.targetLevels.length, $scope.experimentalDesign.length, levelScorings);
+			// var bestSoln = solver.greedySolve($scope.targetLevels.length, $scope.experimentalDesign.length, levelScorings);
+			// var bestSoln = solver.simpleSolve($scope.targetLevels.length, $scope.experimentalDesign.length, levelScorings);
+			if (bestSoln != null) {
+				$scope.assignmentPenalty = Math.floor(bestSoln.score);
+				for (i = 0; i < $scope.experimentalDesign.length; i++) {
+					$scope.experimentalDesign[i].nodes = [];
+				}
+				for (i = 0; i < bestSoln.levelSelections.length; i++) {
+					for (j = 0; j < bestSoln.levelSelections[i].length; j++) {
+						k = bestSoln.levelSelections[i][j];
+						$scope.experimentalDesign[j].nodes.push(levelScorings[i][k].level);
+					}
+				}
 			}
 		}
 	};
