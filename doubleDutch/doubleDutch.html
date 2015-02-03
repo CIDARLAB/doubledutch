@@ -17,7 +17,12 @@
 			<label for="fileUploader">File Upload</label>
 			<input type="file" id="fileUploader" file-input="files" multiple>
 			<br>
-			<button type="button" class="btn btn-primary" ng-click="uploadDesigns(files, currentParser)">Upload Designs</button>
+      <label for="gridRadio">Grid</label>
+      <input type="radio" id="gridRadio" name="uploadSelect" value="0" ng-model="uploadSelector"/>
+      <label for="tableRadio">Table</label>
+      <input type="radio" id="tableRadio" name="uploadSelect" value="1" ng-model="uploadSelector"/>
+      <br>
+			<button type="button" class="btn btn-primary" ng-click="uploadDesigns(files, designParsers[uploadSelector])">Upload Designs</button>
 			<button type="button" class="btn btn-primary" ng-click="uploadTemplate(files, doeParser, experimentalDesign)">Upload Template</button>
 			<br><br>
 			<!-- <label for="parameterSelector">Variable</label> -->
@@ -27,10 +32,10 @@
 			<label for="targetInput">Target Levels</label>
 			<br>
 			<div ng-repeat="x in targetLevels">
-				<input type="number" style="height:25px" ng-model="x.value">
+				<input type="number" step="0.01" style="height:25px" ng-model="x.value">
 			</div>
 			<br>
-			<input type="number" id="targetInput" style="height:25px" ng-model="newTarget" placeholder="New Target">
+			<input type="number" step="0.01" id="targetInput" style="height:25px" ng-model="newTarget" placeholder="New Target">
 			<br><br>
       <button type="button" class="btn btn-primary" ng-click="clusterLevels()">Generate Targets</button>
 			<button type="button" class="btn btn-primary" ng-click="addTarget()">Add Target</button>
