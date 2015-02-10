@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Ananke</title>
+    <script type="text/javascript" src="JS/clotho3API.js"></script>
+    <script type="text/javascript" src="JS/anankeFunctions.js"></script>
+
+    <link rel="stylesheet" type="text/css" href="styles/style.css">
+    <link rel="stylesheet" href="styles/simple-sidebar.css" >
+    <!--
+    <link rel="stylesheet" href="styles/2e84f2a0.command.css"/>
+    <link rel="stylesheet" href="styles/773cbfe6.main.css"/>
+    -->
+
+    <!-- Latest compiled and minified CSS -->
+    <link rel="stylesheet" href="http://maxcdn.bootstrapcdn.com/bootstrap/3.2.0/css/bootstrap.min.css">
+    <!-- jQuery library -->
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.1/jquery.min.js"></script>
+    <!-- Latest compiled JavaScript -->
+    <script src="http://maxcdn.bootstrapcdn.com/bootstrap/3.2.0/js/bootstrap.min.js"></script>
+
+    <!--
+    <script src="http://netdna.bootstrapcdn.com/bootstrap/3.1.0/js/bootstrap.min.js"></script>
+    <script type="text/javascript" src="http://cdnjs.cloudflare.com/ajax/libs/q.js/1.0.0/q.js"></script>
+    <script src="http://code.jquery.com/jquery-1.10.1.min.js"></script>
+    -->
+
+    <script type="text/javascript">
+        jQuery(document).ready(function () {
+            jQuery('.tabs .tab-links a').on('click', function (e) {
+                var currentAttrValue = jQuery(this).attr('href');
+
+// Show/Hide Tabs
+                jQuery('.tabs ' + currentAttrValue).show().siblings().hide();
+
+// Change/remove current tab to active
+                jQuery(this).parent('li').addClass('active').siblings().removeClass('active');
+
+                e.preventDefault();
+            });
+        });
+    </script>
+
+
+    <script type="text/javascript">
+        function inputFocus(i) {
+            if (i.value == i.defaultValue) {
+                i.value = "";
+                i.style.color = "#000";
+            }
+        }
+        function inputBlur(i) {
+            if (i.value == "") {
+                i.value = i.defaultValue;
+                i.style.color = "#888";
+            }
+        }
+        function displayQueriedParts(data) {
+            var parts = [];
+            var out = document.getElementById('outputWindow');
+            for (i = 0; i < data.length; i++) {
+                if (data[i].schema == "org.clothocad.model.BasicPart" || data[i].schema == "org.clothocad.model.CompositePart") {
+                    parts[parts.length] = data[i];
+                }
+            }
+            if (parts.length != 1) {
+                out.value += (parts.length + " parts were found:\n");
+            } else if (parts.length == 1) {
+                out.value += "1 part was found:\n";
+            }
+            for (i = 0; i < parts.length; i++) {
+                out.value += (JSON.stringify(parts[i]) + "\n");
+            }
+            out.value += "\n";
+        }
+        function displayQueriedObjects(data) {
+            var out = document.getElementById('outputWindow');
+            if (data.length != 1) {
+                out.value += (data.length + " objects were found:\n");
+            } else if (parts.length == 1) {
+                out.value += "1 object was found:\n";
+            }
+            for (i = 0; i < data.length; i++) {
+                out.value += (JSON.stringify(data[i]) + "\n");
+            }
+            out.value += "\n";
+        }
+        function refreshFunctions() {
+            Clotho.query("schema", "org.clothocad.core.datums.Function").then(function (data) {
+                //alert(data.length);
+                var dropdownMenu = document.getElementById('presetFunctions');
+                $('#presetFunctions').empty();
+                //alert(dropdownMenu.selectedIndex);
+                for (var i = 0; i < data.length; i++) {
+                    if (data[i].language == "JAVASCRIPT" && data[i].name != "functionX") {
+                        var option = document.createElement('option');
+                        option.value = data[i].name;
+                        option.text = data[i].name;
+                        //alert(data[i].name);
+                        dropdownMenu.appendChild(option);
+                    }
+
+                }
+            }).done();
+        }
+    </script>
+
+</head>
+
+
+<body>
+
+
+<!-- Sidebar -->
+<div id="sidebar-wrapper">
+    <ul class="sidebar-nav">
+        <li class="sidebar-brand">
+            <a href="#">
+                Clotho 3.0
+            </a>
+        </li>
+        <li>
+            <a href="#">Create an Object</a>
+        </li>
+        <li>
+            <a href="#">Query an Object</a>
+        </li>
+        <li>
+            <a href="#">Run a function</a>
+        </li>
+        <!--
+        <li>
+            <a href="#">Events</a>
+        </li>
+        <li>
+            <a href="#">About</a>
+        </li>
+        <li>
+            <a href="#">Services</a>
+        </li>
+        <li>
+            <a href="#">Contact</a>
+        </li>-->
+    </ul>
+</div>
+<div>
+    <div class="jumbotron">
+        <div class="container text-center">
+            <h1>Ananke</h1>
+
+            <p class="col-md-offset-3">A CRUD app for Clotho 3.0</p>
+        </div>
+
+    </div>
+</div>
+
+
+
+
+</body>
+</html>
