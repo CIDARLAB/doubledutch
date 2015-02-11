@@ -1,6 +1,80 @@
 /**
  * Created by prash on 2/9/15.
  */
+jQuery(document).ready(function () {
+    jQuery('.tabs .tab-links a').on('click', function (e) {
+        var currentAttrValue = jQuery(this).attr('href');
+
+// Show/Hide Tabs
+        jQuery('.tabs ' + currentAttrValue).show().siblings().hide();
+
+// Change/remove current tab to active
+        jQuery(this).parent('li').addClass('active').siblings().removeClass('active');
+
+        e.preventDefault();
+    });
+});
+function inputFocus(i) {
+    if (i.value == i.defaultValue) {
+        i.value = "";
+        i.style.color = "#000";
+    }
+}
+function inputBlur(i) {
+    if (i.value == "") {
+        i.value = i.defaultValue;
+        i.style.color = "#888";
+    }
+}
+function displayQueriedParts(data) {
+    var parts = [];
+    var out = document.getElementById('outputWindow');
+    for (i = 0; i < data.length; i++) {
+        if (data[i].schema == "org.clothocad.model.BasicPart" || data[i].schema == "org.clothocad.model.CompositePart") {
+            parts[parts.length] = data[i];
+        }
+    }
+    if (parts.length != 1) {
+        out.value += (parts.length + " parts were found:\n");
+    } else if (parts.length == 1) {
+        out.value += "1 part was found:\n";
+    }
+    for (i = 0; i < parts.length; i++) {
+        out.value += (JSON.stringify(parts[i]) + "\n");
+    }
+    out.value += "\n";
+}
+function displayQueriedObjects(data) {
+    var out = document.getElementById('outputWindow');
+    if (data.length != 1) {
+        out.value += (data.length + " objects were found:\n");
+    } else if (parts.length == 1) {
+        out.value += "1 object was found:\n";
+    }
+    for (i = 0; i < data.length; i++) {
+        out.value += (JSON.stringify(data[i]) + "\n");
+    }
+    out.value += "\n";
+}
+function refreshFunctions() {
+    Clotho.query("schema", "org.clothocad.core.datums.Function").then(function (data) {
+        //alert(data.length);
+        var dropdownMenu = document.getElementById('presetFunctions');
+        $('#presetFunctions').empty();
+        //alert(dropdownMenu.selectedIndex);
+        for (var i = 0; i < data.length; i++) {
+            if (data[i].language == "JAVASCRIPT" && data[i].name != "functionX") {
+                var option = document.createElement('option');
+                option.value = data[i].name;
+                option.text = data[i].name;
+                //alert(data[i].name);
+                dropdownMenu.appendChild(option);
+            }
+
+        }
+    }).done();
+}
+
 
 $(document).ready(function () {
 
