@@ -21,6 +21,7 @@
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.1/jquery.min.js"></script>
     <!-- Latest compiled JavaScript -->
     <script src="http://maxcdn.bootstrapcdn.com/bootstrap/3.2.0/js/bootstrap.min.js"></script>
+    <script type="text/javascript" src="http://cdnjs.cloudflare.com/ajax/libs/q.js/1.0.0/q.js"></script>
 
     <!--
     <script src="http://netdna.bootstrapcdn.com/bootstrap/3.1.0/js/bootstrap.min.js"></script>
@@ -31,7 +32,7 @@
 </head>
 
 
-<body>
+<body onload="initializeCreatePage()">
 
 
 <!-- Sidebar -->
@@ -76,29 +77,22 @@
             </div>
         </div>
     </nav>
-    <div class="container">
-        <table id="keyValueForm" class="form-inline" style='margin-bottom: 10px;' role="form">
-            <tbody>
-            <tr style='margin-top: 10px;'>
-                <td>
-                    <div class='form-group' style='margin-bottom: 10px;'>
-                        <label class='sr-only' for='key0'>Key:</label>
-                        <input type='text' class='form-control' id='key0' placeholder='Key'>
-                    </div>
-                </td>
-                <td>
-                    <div class='form-group' style='margin-left: 10px; margin-bottom: 10px;'>
-                        <label class='sr-only' for='value0'>Value:</label>
-                        <input type='text' class='form-control' id='value0' placeholder='Value'>
-                    </div>
-                </td>
-                <td>
-                    <button class='btn btn-info btn-sm' style='margin-left: 10px; margin-bottom: 10px;' onclick='addNewRow()'><span class='glyphicon glyphicon-plus'></span></button>
-                </td>
-            </tr>
-        </table>
-        <button type="button" class="btn btn-danger" onclick="initializeForm()">Reset</button>
 
+    <div class="col-lg-4 col-lg-offset-5">
+
+        <p>Create an Object</p>
+        <div>
+            <table id="keyValueForm" class="form-inline " style='margin-bottom: 10px;' role="form">
+                <tbody style="text-align: center;">
+
+            </table>
+            <button type="button" class="btn btn-primary" onclick="submitJSON()">Submit</button>
+            <button type="button" class="btn btn-danger" onclick="resetForm()">Reset</button>
+        </div>
+        <hr class="divider">
+
+        <p>Upload a File</p>
+        <input id="input-1" type="file" class="file" >
     </div>
 
 </div>
