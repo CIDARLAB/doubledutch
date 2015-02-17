@@ -6,9 +6,9 @@
     <title>Ananke</title>
     <script type="text/javascript" src="JS/clotho3API.js"></script>
     <!--<script type="text/javascript" src="JS/anankeFunctions.js"></script>-->
-    <script type="text/javascript" src="JS/create.js"></script>
 
     <link rel="stylesheet" type="text/css" href="styles/style.css">
+    <link rel="stylesheet" type="text/css" href="styles/jasny-bootstrap.css">
     <link rel="stylesheet" href="styles/simple-sidebar.css" >
     <!--
     <link rel="stylesheet" href="styles/2e84f2a0.command.css"/>
@@ -16,12 +16,19 @@
     -->
 
     <!-- Latest compiled and minified CSS -->
-    <link rel="stylesheet" href="http://maxcdn.bootstrapcdn.com/bootstrap/3.2.0/css/bootstrap.min.css">
+    <link rel="stylesheet" href="http://maxcdn.bootstrapcdn.com/bootstrap/3.3.1/css/bootstrap.min.css">
     <!-- jQuery library -->
-    <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.1/jquery.min.js"></script>
+    <script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/jquery/1.9.0/jquery.min.js"></script>
+
     <!-- Latest compiled JavaScript -->
     <script src="http://maxcdn.bootstrapcdn.com/bootstrap/3.2.0/js/bootstrap.min.js"></script>
     <script type="text/javascript" src="http://cdnjs.cloudflare.com/ajax/libs/q.js/1.0.0/q.js"></script>
+
+    <script type="text/javascript" src="JS/create.js"></script>
+    <script type="text/javascript" src="JS/papaparse.js"></script>
+    <script type="text/javascript" src="JS/jasny-bootstrap.js"></script>
+
+
 
     <!--
     <script src="http://netdna.bootstrapcdn.com/bootstrap/3.1.0/js/bootstrap.min.js"></script>
@@ -78,9 +85,9 @@
         </div>
     </nav>
 
-    <div class="col-lg-4 col-lg-offset-5">
+    <div class="col-xs-4 col-xs-offset-5">
 
-        <p>Create an Object</p>
+        <h2>Create an Object</h2>
         <div>
             <table id="keyValueForm" class="form-inline " style='margin-bottom: 10px;' role="form">
                 <tbody style="text-align: center;">
@@ -91,8 +98,22 @@
         </div>
         <hr class="divider">
 
-        <p>Upload a File</p>
-        <input id="input-1" type="file" class="file" >
+        <h2>Upload a CSV file</h2>
+        <div class="fileinput fileinput-new input-group col-xs-7" data-provides="fileinput">
+            <div class="form-control" data-trigger="fileinput"><i class="glyphicon glyphicon-file fileinput-exists"></i> <span class="fileinput-filename"></span></div>
+            <span class="input-group-addon btn btn-default btn-file"><span class="fileinput-new">Select file</span><span class="fileinput-exists">Change</span><input id="file" type="file" name="..."></span>
+            <a href="#" class="input-group-addon btn btn-default fileinput-exists" data-dismiss="fileinput">Remove</a>
+        </div>
+        <button type="button" class="btn btn-primary" onclick="uploadCSV()">Submit</button>
+
+
+
+
+        <!--<span class="btn btn-default btn-file">
+            Upload a CSV File <input type="file" id="csvUpload" onchange="fileUpload()">
+        </span>-->
+        <!--<span class="btn btn-file">Upload<input type="file" /></span>-->
+
     </div>
 
 </div>

@@ -33,6 +33,10 @@ function initializeCreatePage()
     resetForm();
 }
 
+
+
+
+
 function submitJSON()
 {
     var table = document.getElementById("keyValueForm");
@@ -99,10 +103,6 @@ function submitJSON()
         alert("Part with id "+data+ " successfully created.");
     });
 
-
-
-
-
 }
 
 
@@ -164,3 +164,29 @@ function deleterow(tableID) {
 
     table.deleteRow(rowCount -1);
 }
+
+
+
+//File Upload:
+
+
+function uploadCSV()
+{
+    var file = document.getElementById('file').files[0];
+    //alert(file);
+    var results = Papa.parse(file, {
+        header: true,
+        complete: function(results) {
+
+            console.log(results);
+            var objRes = JSON.stringify(results.data);
+            alert(objRes);
+        }
+    });
+    //var obj = JSON.stringify(JSON.parse(results),null,2);
+    //var obj = JSON.stringify(results);
+    //alert(results);
+
+
+}
+
