@@ -87,13 +87,19 @@ function deleteObject()
 {
 
     var idVal =  document.getElementById('idKeyDelVal').value;
+    if(idVal != "")
+    {
+        Clotho.destroy(idVal);
+        alert("Object Deleted");
+        resetForm();
+    }
+    else
+    {
+        alert("Please enter a Value");
+    }
 
-    alert(idVal);
 
 
-    Clotho.destroy(idVal);
-    alert("Object Deleted");
-    resetForm();
 
 
 }

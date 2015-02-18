@@ -122,6 +122,7 @@ function updateJSON()
 
 function queryOneObj() {
     document.getElementById('jsonText').value = "";
+    document.getElementById('jsonText').disabled = true;
     var str = getJSONquery();
     if (str != null)
     {
@@ -148,6 +149,8 @@ function queryOneObj() {
 function queryAllObj()
 {
     document.getElementById('jsonText').value = "";
+    document.getElementById('jsonText').disabled = true;
+
     var str = getJSONquery();
     if (str != null)
     {
