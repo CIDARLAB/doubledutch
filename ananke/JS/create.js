@@ -113,6 +113,7 @@ function resetForm()
     while(input_table.rows.length > 0) {
         deleterow("keyValueForm");
     }
+    n_in = 3;
     initializeForm();
 
     //$('#keyValueForm');
@@ -180,7 +181,12 @@ function uploadCSV()
 
             console.log(results);
             var objRes = JSON.stringify(results.data);
-            alert(objRes);
+            Clotho.create(results.data).then(function(dataCreate){
+                alert(dataCreate);
+                alert(dataCreate.length +" objects created.");
+            });
+
+            //alert(objRes);
         }
     });
     //var obj = JSON.stringify(JSON.parse(results),null,2);

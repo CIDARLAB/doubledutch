@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>Ananke</title>
     <script type="text/javascript" src="JS/clotho3API.js"></script>
-    <script type="text/javascript" src="JS/anankeFunctions.js"></script>
+    <script type="text/javascript" src="JS/query.js"></script>
 
     <link rel="stylesheet" type="text/css" href="styles/style.css">
     <link rel="stylesheet" href="styles/simple-sidebar.css" >
@@ -15,11 +15,13 @@
     -->
 
     <!-- Latest compiled and minified CSS -->
-    <link rel="stylesheet" href="http://maxcdn.bootstrapcdn.com/bootstrap/3.2.0/css/bootstrap.min.css">
+    <link rel="stylesheet" href="http://maxcdn.bootstrapcdn.com/bootstrap/3.3.1/css/bootstrap.min.css">
     <!-- jQuery library -->
-    <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.1/jquery.min.js"></script>
+    <script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/jquery/1.9.0/jquery.min.js"></script>
+
     <!-- Latest compiled JavaScript -->
     <script src="http://maxcdn.bootstrapcdn.com/bootstrap/3.2.0/js/bootstrap.min.js"></script>
+    <script type="text/javascript" src="http://cdnjs.cloudflare.com/ajax/libs/q.js/1.0.0/q.js"></script>
 
     <!--
     <script src="http://netdna.bootstrapcdn.com/bootstrap/3.1.0/js/bootstrap.min.js"></script>
@@ -27,90 +29,10 @@
     <script src="http://code.jquery.com/jquery-1.10.1.min.js"></script>
     -->
 
-    <script type="text/javascript">
-        jQuery(document).ready(function () {
-            jQuery('.tabs .tab-links a').on('click', function (e) {
-                var currentAttrValue = jQuery(this).attr('href');
-
-// Show/Hide Tabs
-                jQuery('.tabs ' + currentAttrValue).show().siblings().hide();
-
-// Change/remove current tab to active
-                jQuery(this).parent('li').addClass('active').siblings().removeClass('active');
-
-                e.preventDefault();
-            });
-        });
-    </script>
-
-
-    <script type="text/javascript">
-        function inputFocus(i) {
-            if (i.value == i.defaultValue) {
-                i.value = "";
-                i.style.color = "#000";
-            }
-        }
-        function inputBlur(i) {
-            if (i.value == "") {
-                i.value = i.defaultValue;
-                i.style.color = "#888";
-            }
-        }
-        function displayQueriedParts(data) {
-            var parts = [];
-            var out = document.getElementById('outputWindow');
-            for (i = 0; i < data.length; i++) {
-                if (data[i].schema == "org.clothocad.model.BasicPart" || data[i].schema == "org.clothocad.model.CompositePart") {
-                    parts[parts.length] = data[i];
-                }
-            }
-            if (parts.length != 1) {
-                out.value += (parts.length + " parts were found:\n");
-            } else if (parts.length == 1) {
-                out.value += "1 part was found:\n";
-            }
-            for (i = 0; i < parts.length; i++) {
-                out.value += (JSON.stringify(parts[i]) + "\n");
-            }
-            out.value += "\n";
-        }
-        function displayQueriedObjects(data) {
-            var out = document.getElementById('outputWindow');
-            if (data.length != 1) {
-                out.value += (data.length + " objects were found:\n");
-            } else if (parts.length == 1) {
-                out.value += "1 object was found:\n";
-            }
-            for (i = 0; i < data.length; i++) {
-                out.value += (JSON.stringify(data[i]) + "\n");
-            }
-            out.value += "\n";
-        }
-        function refreshFunctions() {
-            Clotho.query("schema", "org.clothocad.core.datums.Function").then(function (data) {
-                //alert(data.length);
-                var dropdownMenu = document.getElementById('presetFunctions');
-                $('#presetFunctions').empty();
-                //alert(dropdownMenu.selectedIndex);
-                for (var i = 0; i < data.length; i++) {
-                    if (data[i].language == "JAVASCRIPT" && data[i].name != "functionX") {
-                        var option = document.createElement('option');
-                        option.value = data[i].name;
-                        option.text = data[i].name;
-                        //alert(data[i].name);
-                        dropdownMenu.appendChild(option);
-                    }
-
-                }
-            }).done();
-        }
-    </script>
-
 </head>
 
 
-<body>
+<body onload="initializeQueryPage()">
 
 
 <!-- Sidebar -->
@@ -118,7 +40,7 @@
     <ul class="sidebar-nav">
         <li class="sidebar-brand">
             <a href="index.html">
-                Clotho 3.0
+                Home
             </a>
         </li>
         <li>
@@ -130,9 +52,12 @@
         <li>
             <a href="run.html">Run a function</a>
         </li>
-
+        <br>
         <li>
-            <a href="https://github.com/CIDARLAB/clotho3" target="_blank">Download Clotho</a>
+            <a href="https://github.com/CIDARLAB/clotho3" target="_blank">Download Clotho 3.0</a>
+        </li>
+        <li>
+            <a href="https://github.com/CIDARLAB/clotho3apps" target="_blank">Download Ananke</a>
         </li>
         <!--
         <li>
@@ -147,6 +72,7 @@
     </ul>
 </div>
 <!-- End Sidebar-->
+
 <div>
     <nav class="navbar navbar-default">
         <div class="container-fluid">
@@ -155,12 +81,32 @@
             </div>
         </div>
     </nav>
-    <div class="container">
+    <div class="col-xs-4 col-xs-offset-5">
+
+        <h2>Query an Object</h2>
+        <div>
+            <table id="keyValueForm" class="form-inline " style='margin-bottom: 10px;' role="form">
+                <tbody style="text-align: center;">
+
+            </table>
+            <button type="button" class="btn btn-primary" onclick="queryOneObj()">Query One</button>
+            <button type="button" class="btn btn-primary" onclick="queryAllObj()">Query All</button>
+            <button type="button" class="btn btn-danger" onclick="resetForm()">Reset</button>
+
+            <!--<button type="button" class="btn btn-danger" onclick="resetForm()">Reset</button>-->
+        </div>
+        <hr class="divider">
+
+        <div class="form-group col-xs-10" >
+            <label for="jsonText">JSON:</label>
+            <textarea class="form-control" rows="15" id="jsonText" disabled></textarea> <br>
+            <button type="button" id="editJSONButton" class="btn btn-warning" onclick="enableText()" style="visibility: hidden">Edit JSON</button>
+            <button type="button" id="updateJSONButton" class="btn btn-danger"  style="visibility: hidden">Save </button>
+        </div>
 
     </div>
 
 </div>
-
 
 
 
