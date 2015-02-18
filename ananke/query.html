@@ -9,6 +9,8 @@
 
     <link rel="stylesheet" type="text/css" href="styles/style.css">
     <link rel="stylesheet" href="styles/simple-sidebar.css" >
+    <link rel="stylesheet" href="styles/highlightcolors.css" >
+
     <!--
     <link rel="stylesheet" href="styles/2e84f2a0.command.css"/>
     <link rel="stylesheet" href="styles/773cbfe6.main.css"/>
@@ -100,8 +102,11 @@
         <div class="form-group col-xs-10" >
             <label for="jsonText">JSON:</label>
             <textarea class="form-control" rows="15" id="jsonText" disabled></textarea> <br>
+
             <button type="button" id="editJSONButton" class="btn btn-warning" onclick="enableText()" style="visibility: hidden">Edit JSON</button>
-            <button type="button" id="updateJSONButton" class="btn btn-danger"  style="visibility: hidden">Save </button>
+            <button type="button" id="updateJSONButton" class="btn btn-danger" onclick="updateJSON()" style="visibility: hidden">Save </button>
+            <!--<button type="button"  class="btn btn-danger"  style="visibility: hidden">Delete </button>-->
+
         </div>
 
     </div>

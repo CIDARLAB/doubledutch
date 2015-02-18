@@ -14,9 +14,11 @@ function resetForm()
         deleterow("keyValueForm");
     }
     n_in = 1;
+    document.getElementById('jsonText').value = "";
+    document.getElementById('jsonText').disabled = true;
+    document.getElementById('editJSONButton').style.visibility = "hidden";
+    document.getElementById('updateJSONButton').style.visibility = "hidden";
     initializeForm();
-
-    //$('#keyValueForm');
 }
 
 
@@ -86,9 +88,36 @@ function isEmpty(obj) {
 function enableText(){
     document.getElementById('jsonText').disabled = false;
     document.getElementById('updateJSONButton').style.visibility = "visible";
+    //document.getElementById('updateJSONButton').style.visibility = "visible";
+
 }
 
+function updateJSON()
+{
 
+    var textJSON =  document.getElementById('jsonText').value;
+
+    alert(textJSON);
+
+    try{
+        var objJSON = JSON.parse(textJSON);
+
+        Clotho.set(objJSON).then(function(dataSet) {
+            //var arrLen = dataSet.length;
+            alert("Objects successfully modified");
+        });
+
+        document.getElementById('jsonText').value = "";
+        document.getElementById('jsonText').disabled = true;
+        document.getElementById('editJSONButton').style.visibility = "hidden";
+        document.getElementById('updateJSONButton').style.visibility = "hidden";
+
+    }catch(err)
+    {
+        alert("Error in Parsing edited JSON");
+    }
+
+}
 
 
 function queryOneObj() {
@@ -104,10 +133,11 @@ function queryOneObj() {
         else
         {
             Clotho.queryOne(jsonObj).then(function(dataQuery) {
-                jsonStr = JSON.stringify(dataQuery, undefined, 3);
+                var jsonStr = JSON.stringify(dataQuery, undefined, 4);
                 document.getElementById('jsonText').value = jsonStr;
-                document.getElementById('editJSONButton').style.visibility = "visible";
                 //document.getElementById('jsonText').value = syntaxHighlight(jsonStr);
+
+                document.getElementById('editJSONButton').style.visibility = "visible";
             });
         }
     }
@@ -166,6 +196,7 @@ function addNewRow()
     "<input type='text' class='form-control' id='value"+n_in+ "' placeholder='Value'>"+
     "</div> </td>"+
     "</tr>");
+
     //"<td> <button class='btn btn-info btn-sm' onclick='' style='margin-left: 10px; margin-bottom: 10px; id='btn"+n_in+ "'><span class='glyphicon glyphicon-plus'></span></button> </td> </tr>");
     //"<td> <button class='btn btn-danger btn-sm' onclick='deleteRow("+n_in+")' style='margin-left: 10px; margin-bottom: 10px; id='btn"+n_in+ "'><span class='glyphicon glyphicon-minus'></span></button> </td> </tr>");
 
