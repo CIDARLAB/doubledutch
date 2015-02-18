@@ -2,7 +2,7 @@
  * Created by prash on 2/17/15.
  */
 var n_in = 1;
-function initializeQueryPage()
+function initializeDeletePage()
 {
 
     resetForm();
@@ -15,9 +15,7 @@ function resetForm()
     }
     n_in = 1;
     document.getElementById('jsonText').value = "";
-    document.getElementById('jsonText').disabled = true;
-    document.getElementById('editJSONButton').style.visibility = "hidden";
-    document.getElementById('updateJSONButton').style.visibility = "hidden";
+
     initializeForm();
 }
 
@@ -85,43 +83,26 @@ function isEmpty(obj) {
 }
 
 
-function enableText(){
-    document.getElementById('jsonText').disabled = false;
-    document.getElementById('updateJSONButton').style.visibility = "visible";
-    //document.getElementById('updateJSONButton').style.visibility = "visible";
-
-}
-
-function updateJSON()
+function deleteObject()
 {
 
-    var textJSON =  document.getElementById('jsonText').value;
+    var idVal =  document.getElementById('idKeyDelVal').value;
 
-    alert(textJSON);
+    alert(idVal);
 
-    try{
-        var objJSON = JSON.parse(textJSON);
 
-        Clotho.set(objJSON).then(function(dataSet) {
-            //var arrLen = dataSet.length;
-            alert("Objects successfully modified");
-        });
+    Clotho.destroy(idVal);
+    alert("Object Deleted");
+    resetForm();
 
-        document.getElementById('jsonText').value = "";
-        document.getElementById('jsonText').disabled = true;
-        document.getElementById('editJSONButton').style.visibility = "hidden";
-        document.getElementById('updateJSONButton').style.visibility = "hidden";
-
-    }catch(err)
-    {
-        alert("Error in Parsing edited JSON");
-    }
 
 }
 
 
 function queryOneObj() {
+
     document.getElementById('jsonText').value = "";
+
     var str = getJSONquery();
     if (str != null)
     {
@@ -134,7 +115,7 @@ function queryOneObj() {
         else
         {
             Clotho.queryOne(jsonObj).then(function(dataQuery) {
-
+                document.getElementById('idKeyDelVal').value = dataQuery.id;
                 var jsonStr = JSON.stringify(dataQuery, undefined, 4);
                 document.getElementById('jsonText').value = jsonStr;
                 document.getElementById('editJSONButton').style.visibility = "visible";
@@ -148,6 +129,8 @@ function queryOneObj() {
 function queryAllObj()
 {
     document.getElementById('jsonText').value = "";
+
+
     var str = getJSONquery();
     if (str != null)
     {
@@ -164,6 +147,7 @@ function queryAllObj()
                     alert("No results found");
                 else
                 {
+                    document.getElementById('idKeyDelVal').value = dataQuery[0].id;
                     jsonStr = JSON.stringify(dataQuery, undefined, 3);
                     document.getElementById('jsonText').value = jsonStr;
                     document.getElementById('editJSONButton').style.visibility = "visible";
