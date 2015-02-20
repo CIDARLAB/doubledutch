@@ -8,8 +8,8 @@
     <script type="text/javascript" src="JS/query.js"></script>
 
     <link rel="stylesheet" type="text/css" href="styles/style.css">
-    <link rel="stylesheet" href="styles/simple-sidebar.css" >
-    <link rel="stylesheet" href="styles/highlightcolors.css" >
+    <link rel="stylesheet" href="styles/simple-sidebar.css">
+    <link rel="stylesheet" href="styles/highlightcolors.css">
 
     <!--
     <link rel="stylesheet" href="styles/2e84f2a0.command.css"/>
@@ -62,7 +62,7 @@
             <a href="https://github.com/CIDARLAB/clotho3" target="_blank">Download Clotho 3.0</a>
         </li>
         <li>
-            <a href="https://github.com/CIDARLAB/clotho3apps" target="_blank">Download Ananke</a>
+            <a href="https://github.com/CIDARLAB/clotho3apps/tree/master/ananke" target="_blank">Download Ananke</a>
         </li>
         <!--
         <li>
@@ -81,14 +81,15 @@
 <div>
     <nav class="navbar navbar-default">
         <div class="container-fluid">
-            <div style="text-align: center;" >
-                <h1  >Ananke</h1>
+            <div style="text-align: center;">
+                <h1>Ananke</h1>
             </div>
         </div>
     </nav>
     <div class="col-xs-4 col-xs-offset-5">
 
         <h2>Query an Object</h2>
+
         <div>
             <table id="keyValueForm" class="form-inline " style='margin-bottom: 10px;' role="form">
                 <tbody style="text-align: center;">
@@ -102,20 +103,23 @@
         </div>
         <hr class="divider">
 
-        <div class="form-group col-xs-10" >
-            <label for="jsonText">JSON:</label>
-            <textarea class="form-control" rows="15" id="jsonText" disabled></textarea> <br>
+        <!--<div class="form-group col-xs-10" >-->
+        <label for="jsonText">JSON:</label>
+        <textarea class="form-control" rows="15" id="jsonText" disabled></textarea> <br>
 
-            <button type="button" id="editJSONButton" class="btn btn-warning" onclick="enableText()" style="visibility: hidden">Edit JSON</button>
-            <button type="button" id="updateJSONButton" class="btn btn-danger" onclick="updateJSON()" style="visibility: hidden">Save </button>
-            <!--<button type="button"  class="btn btn-danger"  style="visibility: hidden">Delete </button>-->
+        <button type="button" id="editJSONButton" class="btn btn-warning" onclick="enableText()"
+                style="visibility: hidden">Edit JSON
+        </button>
+        <button type="button" id="updateJSONButton" class="btn btn-danger" onclick="updateJSON()"
+                style="visibility: hidden">Save
+        </button>
+        <!--<button type="button"  class="btn btn-danger"  style="visibility: hidden">Delete </button>-->
 
-        </div>
+        <!--</div>-->
 
     </div>
 
 </div>
-
 
 
 </body>

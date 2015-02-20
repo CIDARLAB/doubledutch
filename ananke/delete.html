@@ -62,7 +62,7 @@
             <a href="https://github.com/CIDARLAB/clotho3" target="_blank">Download Clotho 3.0</a>
         </li>
         <li>
-            <a href="https://github.com/CIDARLAB/clotho3apps" target="_blank">Download Ananke</a>
+            <a href="https://github.com/CIDARLAB/clotho3apps/tree/master/ananke" target="_blank">Download Ananke</a>
         </li>
         <!--
         <li>
@@ -99,43 +99,42 @@
             <button type="button" class="btn btn-danger" onclick="resetForm()">Reset</button>
 
             <!--<button type="button" class="btn btn-danger" onclick="resetForm()">Reset</button>-->
-        </div>
-        <hr class="divider">
-
-        <div class="form-group col-xs-10" >
+            <hr class="divider">
             <label for="jsonText">JSON:</label>
             <textarea class="form-control" rows="15" id="jsonText" disabled></textarea> <br>
             <!--<button type="button"  class="btn btn-danger"  style="visibility: hidden">Delete </button>-->
-
-        </div>
-        <div>
             <label for="idtext">Delete (Based on id):</label>
             <table id="idToDelete" class="form-inline " style='margin-bottom: 10px;' role="form">
                 <tbody style="text-align: center;">
 
-
-                    <tr style='margin-top: 10px;'>
-                        <td>
-                            <div class='form-group' style='margin-bottom: 10px;'>
-                                <label class='sr-only' for='idKeyDel'>id:</label>
-                                <input type='text' class='form-control' id='idKeyDel' placeholder='id' disabled="true">
-                            </div>
-                        </td>
-                        <td>
-                            <div class='form-group' style='margin-left: 10px; margin-bottom: 10px;'>
-                                <label class='sr-only' for='idKeyDelVal'>Value:</label>
-                                <input type='text' class='form-control' id='idKeyDelVal' placeholder='Value'>
-                            </div>
-                        </td>
-                        <td>
-                            <div class='form-group' style='margin-left: 10px; margin-bottom: 10px;'>
-                                <button type="button" id="deleteButton" class="btn btn-danger" onclick="deleteObject()" >Delete</button>
-                            </div>
-                        </td>
-                    </tr>
+                <tr style='margin-top: 10px;'>
+                    <td>
+                        <div class='form-group' style='margin-bottom: 10px;'>
+                            <label class='sr-only' for='idKeyDel'>id:</label>
+                            <input type='text' class='form-control' id='idKeyDel' placeholder='id' disabled="true">
+                        </div>
+                    </td>
+                    <td>
+                        <div class='form-group' style='margin-left: 10px; margin-bottom: 10px;'>
+                            <label class='sr-only' for='idKeyDelVal'>Value:</label>
+                            <input type='text' class='form-control' id='idKeyDelVal' placeholder='Value'>
+                        </div>
+                    </td>
+                    <td>
+                        <div class='form-group' style='margin-left: 10px; margin-bottom: 10px;'>
+                            <button type="button" id="deleteButton" class="btn btn-danger" onclick="deleteObject()" >Delete</button>
+                        </div>
+                    </td>
+                </tr>
 
             </table>
+
+
+
         </div>
+
+
+
     </div>
 
 </div>
