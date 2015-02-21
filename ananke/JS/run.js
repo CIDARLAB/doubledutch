@@ -39,12 +39,14 @@ function resetFunctionsForm()
 
         var first = true;
 
+
         for(var i=0;i<dataFuncQ.length;i++)
         {
             if(dataFuncQ[i].language == "JAVASCRIPT")
             {
                 if(first)
                 {
+
                     var liHeader = document.createElement("li");
                     liHeader.setAttribute("role","presentation");
                     liHeader.setAttribute("class","dropdown-header");
@@ -65,7 +67,6 @@ function resetFunctionsForm()
                 li.appendChild(a);
                 ul.appendChild(li);
                 //jsFunc[jsFunc.length] = dataFuncQ[i].name;
-
             }
         }
         first = true;
@@ -104,6 +105,8 @@ function resetFunctionsForm()
     });
 }
 
+
+
 function emptyMenu()
 {
     var ul = document.getElementById('funcMenu');
@@ -116,20 +119,45 @@ function emptyMenu()
     }
 }
 
+
+
 function resetForm()
 {
-    var input_table = document.getElementById("keyValueForm");
+    var input_table = document.getElementById("functionArgsTable");
     while(input_table.rows.length > 0) {
-        deleterow("keyValueForm");
+        deleterow("functionArgsTable");
     }
-    n_in = 1;
-    document.getElementById('jsonText').value = "";
-    initializeForm();
+    n_in = 0;
+    var el = document.getElementById('FunctionCode');
+    var elLabel = document.getElementById('FunctionLabel');
+    var elBtn = document.getElementById('runFunctionBtn');
+    var elAPanel = document.getElementById('argsLabel');
+    if(el!= undefined){
+        document.getElementById('functionParams').removeChild(el);
+    }
+    if(elLabel != undefined)
+    {
+        document.getElementById('functionParams').removeChild(elLabel);
+    }
+    if(elBtn != undefined)
+    {
+        document.getElementById('functionParams').removeChild(elBtn);
+    }
+    if(elAPanel != undefined)
+    {
+        document.getElementById('argsLabelPanel').removeChild(elAPanel);
+    }
+
+    //document.getElementById('jsonText').value = "";
+    //initializeForm();
 }
+
+
+
 
 function getJSONquery()
 {
-    var table = document.getElementById("keyValueForm");
+    var table = document.getElementById("functionArgsTable");
     len = table.rows.length;
 
     var q = '"';
@@ -169,85 +197,72 @@ function isEmpty(obj) {
 }
 
 
-function deleteObject()
+function loadFunction(opt)
 {
 
-    var idVal =  document.getElementById('idKeyDelVal').value;
-    if(idVal != "")
-    {
-        Clotho.destroy(idVal);
-        alert("Object Deleted");
+    var funcQuer = {};
+    funcQuer.id = opt.id;
+
+
+    Clotho.queryOne(funcQuer).then(function(dataFuncQ) {
+
         resetForm();
-    }
-    else
-    {
-        alert("Please enter a Value");
-    }
-}
-
-
-function queryOneObj() {
-
-    document.getElementById('jsonText').value = "";
-
-    var str = getJSONquery();
-    if (str != null)
-    {
-        //alert(str);
-        var jsonObj = JSON.parse(str);
-        if(isEmpty(jsonObj))
+        if(dataFuncQ.args != undefined)
         {
-            alert("Empty Query. Please enter at least 1 valid query");
-        }
-        else
-        {
-            Clotho.queryOne(jsonObj).then(function(dataQuery) {
-                document.getElementById('idKeyDelVal').value = dataQuery.id;
-                var jsonStr = JSON.stringify(dataQuery, undefined, 4);
-                document.getElementById('jsonText').value = jsonStr;
-                document.getElementById('editJSONButton').style.visibility = "visible";
-
-            });
-        }
-    }
-
-}
-
-function queryAllObj()
-{
-    document.getElementById('jsonText').value = "";
-
-
-    var str = getJSONquery();
-    if (str != null)
-    {
-
-        var jsonObj = JSON.parse(str);
-        if(isEmpty(jsonObj))
-        {
-            alert("Empty Query. Please enter at least 1 valid query");
-        }
-        else
-        {
-            Clotho.query(jsonObj).then(function(dataQuery) {
-                if(dataQuery.length == 0)
-                    alert("No results found");
-                else
+            var first = true;
+            n_in = 0;
+            for(var i=0;i<dataFuncQ.args.length;i++)
+            {
+                if(first)
                 {
-                    document.getElementById('idKeyDelVal').value = dataQuery[0].id;
-                    jsonStr = JSON.stringify(dataQuery, undefined, 3);
-                    document.getElementById('jsonText').value = jsonStr;
-                    document.getElementById('editJSONButton').style.visibility = "visible";
+                    var argsLabel = document.createElement("label");
+                    argsLabel.setAttribute("id","argsLabel");
+                    argsLabel.appendChild(document.createTextNode("Args:"));
+                    var aPanel = document.getElementById('argsLabelPanel');
+                    aPanel.appendChild(argsLabel);
+                    first = false;
                 }
-            });
+                addNewRow(dataFuncQ.args[i].name,dataFuncQ.args[i].type);
+            }
         }
-    }
-}
+        else
+        {
+            // Do something?
+        }
+        if(dataFuncQ.code != undefined)
+        {
+            var label =  document.createElement("label");
+            label.setAttribute("id","FunctionLabel");
+            label.appendChild(document.createTextNode("Code: "));
+            var funcParams = document.getElementById('functionParams');
+            funcParams.appendChild(label);
 
-function loadFunction(optVal)
-{
+
+            addNewTextRow(dataFuncQ.code);
+
+            var btn = document.createElement("button");
+            btn.setAttribute("id","runFunctionBtn");
+            btn.setAttribute("class","btn btn-primary");
+            btn.setAttribute("style","margin-top:10px;");
+
+            btn.appendChild(document.createTextNode("Run Function"));
+
+            funcParams.appendChild(btn);
+
+
+        }
+        else
+        {
+            //Do something?
+        }
+
+
+
+    });
+
+
     //document.getElementById('buttonContent').value = optVal;
-    alert(optVal.id);
+    //alert(optVal.id);
 }
 
 function initializeForm()
@@ -265,23 +280,38 @@ function initializeForm()
 
 
 
-function addNewRow()
+function addNewRow(nameVal,typeVal)
 {
     n_in = Number(n_in) + 1;
     sessionStorage.n_keys = n_in;
 
-    $('#keyValueForm').append("<tr style='margin-top: 10px;'> <td> <div class='form-group' style='margin-bottom: 10px;'>"+
-    "<label class='sr-only' for='key"+n_in+ "' >Key:</label>" +
-    "<input type='text' class='form-control' id='key" +n_in + "' placeholder='Key'>"+
+    $('#functionArgsTable').append("<tr style='margin-top: 10px;'> <td> <div class='form-group' style='margin-bottom: 10px;'>"+
+    "<label class='sr-only' for='arg"+n_in+ "' >Key:</label>" +
+    "<input type='text' class='form-control' id='arg" +n_in + "' value='"+nameVal+"' title='"+typeVal+"' disabled >"+
     "</div> </td>"+
     "<td> <div class='form-group' style='margin-left: 10px; margin-bottom: 10px;'>"+
-    "<label class='sr-only' for='value"+n_in+ "'>Value:</label>"+
-    "<input type='text' class='form-control' id='value"+n_in+ "' placeholder='Value'>"+
+    "<label class='sr-only' for='argVal"+n_in+ "'>Value:</label>"+
+    "<input type='text' class='form-control' id='argVal"+n_in+ "' placeholder='Value'>"+
     "</div> </td>"+
     "</tr>");
+}
 
-    //"<td> <button class='btn btn-info btn-sm' onclick='' style='margin-left: 10px; margin-bottom: 10px; id='btn"+n_in+ "'><span class='glyphicon glyphicon-plus'></span></button> </td> </tr>");
-    //"<td> <button class='btn btn-danger btn-sm' onclick='deleteRow("+n_in+")' style='margin-left: 10px; margin-bottom: 10px; id='btn"+n_in+ "'><span class='glyphicon glyphicon-minus'></span></button> </td> </tr>");
+
+function addNewTextRow(codeVal)
+{
+    var textArea =  document.createElement("textarea");
+    textArea.setAttribute("id","FunctionCode");
+    textArea.setAttribute("class","form-control");
+    textArea.setAttribute("rows","15");
+    textArea.setAttribute("disabled","true");
+    textArea.appendChild(document.createTextNode(codeVal));
+
+
+    var funcParams = document.getElementById('functionParams');
+
+    funcParams.appendChild(textArea);
+
+
 
 }
 

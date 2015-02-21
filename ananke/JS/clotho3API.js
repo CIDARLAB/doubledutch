@@ -11,14 +11,19 @@
     //                                              WebSocket                                                //
     ///////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-    socket = new WebSocket("wss://localhost:8443/websocket");
+    var socket = new WebSocket("wss://localhost:8443/websocket");
+    socket.messageCache = [];
 
     socket.onopen = function() {
-        //TODO: Remember JS is single-threaded so the WebSocket will not reach readystate=1 until 
+        console.log("websocket opened!");
+        ///Remember JS is single-threaded so the WebSocket will not reach readystate=1 until 
         ///the entire library finishes loading. In the off chance the user writes a script that calls
         ///a Clotho function immediately upon completion of dependencies loading, the socket will not 
         ///have had enough time to enter readystate. Handle this by storing those calls (if any are made)
         ///and executing them in this socket.onopen() method.
+        for (var i=0; i < socket.messageCache.length; i++){
+            socket.send(socket.messageCache[i]);
+        }
     };
 
     socket.onmessage = function(evt) {
@@ -36,29 +41,59 @@
         }
     };
 
-    var Message = function(channel, data, requestID) {
+    socket.sendwhenready = function(message) {
+        if (socket.readyState == 1) {
+            socket.send(message);
+        }
+        else {
+            console.log("caching " + message);
+            socket.messageCache.push(message);
+        }
+    }
+
+    var Message = function(channel, data, requestID, options) {
         this.channel = channel;
         this.data = data;
         this.requestId = requestID;
+        if (typeof options != undefined){
+            this.options = options;
+        }
     };
 
+    //a generator would be nice
+    var lastRequestId = -1;
+    function nextId(){
+        lastRequestId++;
+        return lastRequestId; 
+    }
+
     // Helper function: Sends message to server 
-    socket.emit = function(channel, data) {
+    socket.emit = function(channel, data, options) {
         // Create 'deferred' object ... Q is a global variable
         var deferred = Q.defer();
-        var requestID = new Date().getTime();
+        var requestID = nextId();
         // var message = '{"channel":"' + channel + '","data":"' + data + '","requestId":"' + requestID + '"}';
-        var message = new Message(channel, data, requestID);
+        var message = new Message(channel, data, requestID, options);
         var callback = function(dataFromServer) {
             deferred.resolve(dataFromServer);
         };
         // Hash callback function: (channel + requestID) because we need to distinguish between "say" messages and desired responses from server. 
         callbackHash[channel + requestID] = callback;
-        socket.send(JSON.stringify(message));
+        socket.sendwhenready(JSON.stringify(message));
         return deferred.promise;
     };
 
-
+    /**
+     * Returns [spec, options]
+     */
+    var parseQueryArgs = function(schema, name, options) {
+        if (typeof(schema) !== 'string') {
+            return {obj:schema, options:name};
+        }
+        else {
+            return {obj:{schema:name}, options:options};
+        }
+    }
     ///////////////////////////////////////////////////////////////////////////////////////////////////////////
     //                                          Clotho Object                                                //
     ///////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -70,18 +105,18 @@
          * @param {Object} A list of one or more JSON objects describing an instance(s) of Clotho schema.
          * @return {Object} A list of created objects' IDs. Ex: Clotho.create([{"name":"My New Part", "sequence":"GGGGGG"},{"name":"Another Part", "sequence":"AAACCC"}])
          */
-        create: function(object) {
+        create: function(object, options) {
             /** Three cases below (in order):
              *  Input param is a JSON object. Ex: Clotho.create({"name":"My New Part", "sequence":"GGGGGG"})
              *  Input param is an object containing a single JSON. Ex: Clotho.create([{"name":"My New Part", "sequence":"GGGGGG"}])
-             *  Input param is an object containing multiple JSONs. Ex:
+             *  Input param is an object containing multiple JSONs. Ex: 
              */
             if (object.length == undefined) {
-                return socket.emit("create", object);
+                return socket.emit("create", object, options);
             } else if (object.length == 1) {
-                return socket.emit("create", object[0]);
+                return socket.emit("create", object[0], options);
             } else {
-                return socket.emit("createAll", object);
+                return socket.emit("createAll", object, options);
             }
         },
 
@@ -90,13 +125,12 @@
          * Destroys object(s) as defined by the input.
          * @param {Object selector} A string or list of strings describing a particular Clotho object.
          */
-        destroy: function(name) {
+        destroy: function(name, options) {
             if (typeof name == "string") {
-                socket.emit("destroy", name);
-            } else if (name.length >= 1) {
-                socket.emit("destroyAll", name);
+                return socket.emit("destroy", name, options);
+            } else {
+                return socket.emit("destroyAll", name, options);
             }
-            //no return
         },
 
         /**
@@ -105,32 +139,27 @@
          * @param id: ID of the object to be updated, key: field
          * @return {Object} An ID or list of IDs of objects updated.
          */
-        set: function(object) {
-            if (object.length == undefined) {
-                return socket.emit("set", object);
-            } else if (object.length == 1) {
-                return socket.emit("set", object[0]);
+        set: function(object, options) {
+            if (typeof object == "string") {
+                return socket.emit("set", object, options);
             } else {
-                return socket.emit("setAll", object);
+                return socket.emit("setAll", object, options);
             }
         },
 
-        /**
+        /** 
          * Clotho.get
          * Gets object(s) as defined by the input parameter(s).
          * @param {Object} JSON object selector(s) describing an instance(s) of Clotho schema.
          * @return {Object} Object description for every input object requested.
          */
 
-        get: function(name) {
+        get: function(name, options) {
             if (typeof name == "string") {
-                return socket.emit("get", name);
-            } else if (name.length >= 1) {
-                return socket.emit("getAll", name);
+                return socket.emit("get", name, options);
             } else {
-                //Nothing to work with
+                return socket.emit("getAll", name, options);
             }
-
         },
 
         /**
@@ -138,42 +167,40 @@
          * Seeks all Clotho object instances that match the object specification.
          * @param {Object} Clotho object specification.
          * @return {Object} All objects that match the spec.
+         * 2 arg patterns: (String schema, String name, options) searches for {<schema>:<name}
+         * (Object spec, options) searches for spec
          */
-        /*query: function(schema, name) {
-         var obj = {};
-         obj[schema] = name;
-         return socket.emit("query", obj);
-         },*/
-        query: function(object) {
-            //var obj = {};
-            //obj[schema] = name;
-            return socket.emit("query", object);
+        query: function(schema, name, options) {
+            var args = parseQueryArgs(schema,name,options);
+            return socket.emit("query", args.obj, args.options);
         },
+
         /**
-         * Clotho.queryAll
+         * Clotho.queryOne
          * Seeks Clotho object instances that match the object specification.
          * @param {Object} Clotho object specification.
          * @return {Object} The first Clotho object that matches the spec.
          */
-        queryOne: function(object) {
-            //obj = {};
-            //obj[schema] = name;
-            return socket.emit("queryOne", object);
+        queryOne: function(schema, name, options) {
+            var args = parseQueryArgs(schema,name,options);
+            return socket.emit("queryOne", args.obj, args.options);
         },
 
         /**
          * Clotho.run
          * Executes specified function with args as its input.
-         * @param {Object} Object selector with 2 or 3 fields:
-         *  'Object.module' {String} indicates function module to run [OPTIONAL],
+         * @param {Object} Object selector with 2 or 3 fields: 
+         *  'Object.module' {String} indicates function module to run [OPTIONAL], 
          *  'Object.func' {String} indicates the function to run,
-         *  'Object.input' {Object} indicates input arguments for function.
+         *  'Object.input' {Object} indicates input arguments for function. 
          */
-        run: function(object) {
+        run: function(object, options) {
+            if (object.args == undefined)
+                object.args = [];
             if (object.module == undefined) {
-                return socket.emit("run", {"id":object.function, "args":object.args});
+                return socket.emit("run", {"id":object.function, "args":object.args}, options);
             } else {
-                return socket.emit("run", {"id":object.module, "function":object.function, "args":object.args});
+                return socket.emit("run", {"id":object.module, "function":object.function, "args":object.args}, options);
             }
         },
 
@@ -182,26 +209,46 @@
          * Executes script.
          * @param {Object}
          */
-        submit: function(script) {
-            return socket.emit("submit", script);
+        submit: function(script, options) {
+            return socket.emit("submit", script, options);
         },
+
+        /**
+         * Clotho.validate
+         * Validates object against associated schemas
+         */
+        validate: function (object, options) {
+            return socket.emit("validate", object, options);
+        }, 
 
         /**
          * Clotho.login
          * Login to Clotho
-         * @param {Object}
+         * @param {Object} 
          */
         login: function(name, pass) {
-            return socket.emit("login", {"username":name, "password":pass});
+            return socket.emit("login", {"username":name, "credentials":pass});
         },
 
         /**
          * Clotho.logout
          * Login to Clotho
-         * @param {Object}
+         * @param {Object} 
          */
         logout: function() {
             return socket.emit("logout", "");
+        },
+
+        /**
+         * Clotho.grant
+         * Grant permissions to a user on an object
+         * @param {Object}
+         */
+        grant: function(user, id, add, remove){
+            if (id.length == undefined || (typeof id) == "string")
+                return socket.emit("grant", {"user":user, "id":id, "add":add, "remove":remove});
+            else
+                return socket.emit("grantAll", {"user":user, "id":id, "add":add, "remove":remove});
         }
     };
 }(Clotho = window.Clotho || {}));

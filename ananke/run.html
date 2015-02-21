@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html>
+<html onload="initializeRunPage()">
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -7,12 +7,7 @@
     <script type="text/javascript" src="JS/clotho3API.js"></script>
     <script type="text/javascript" src="JS/run.js"></script>
 
-    <link rel="stylesheet" type="text/css" href="styles/style.css">
     <link rel="stylesheet" href="styles/simple-sidebar.css">
-    <!--
-    <link rel="stylesheet" href="styles/2e84f2a0.command.css"/>
-    <link rel="stylesheet" href="styles/773cbfe6.main.css"/>
-    -->
 
     <!-- Latest compiled and minified CSS -->
     <link rel="stylesheet" href="http://maxcdn.bootstrapcdn.com/bootstrap/3.3.1/css/bootstrap.min.css">
@@ -88,15 +83,23 @@
 
         <h2>Run a function</h2>
         <div class="dropdown">
-            <button class="btn btn-default dropdown-toggle" type="button" id="functionDropDown" data-toggle="dropdown" aria-expanded="true">
+            <button class="btn btn-default dropdown-toggle" type="button" id="functionDropDown" onclick="resetFunctionsForm()" data-toggle="dropdown" aria-expanded="true">
                 <label id="buttonContent">Choose a Function..</label>
                 <span class="caret"></span>
             </button>
             <ul class="dropdown-menu" role="menu" aria-labelledby="functionDropDown" id="funcMenu"></ul>
+            <button class="btn btn-danger" onclick="resetForm()">Reset</button>
+        </div>
+        <br>
+        <div id="functionParams">
+            <div id="argsLabelPanel">
+            </div>
+            <table id="functionArgsTable" class="form-inline " style='margin-bottom: 10px;' role="form">
+                <tbody style="text-align: center;">
+            </table>
         </div>
 
         <hr class="divider">
-
 
         <h2>Submit a Clotho Script</h2>
         <!--<label for="jsonText">JSON:</label>-->
