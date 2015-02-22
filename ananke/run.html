@@ -18,7 +18,7 @@
     <script src="http://maxcdn.bootstrapcdn.com/bootstrap/3.2.0/js/bootstrap.min.js"></script>
     <script type="text/javascript" src="http://cdnjs.cloudflare.com/ajax/libs/q.js/1.0.0/q.js"></script>
 
-    <!--
+    <!-load
     <script src="http://netdna.bootstrapcdn.com/bootstrap/3.1.0/js/bootstrap.min.js"></script>
     <script type="text/javascript" src="http://cdnjs.cloudflare.com/ajax/libs/q.js/1.0.0/q.js"></script>
     <script src="http://code.jquery.com/jquery-1.10.1.min.js"></script>
@@ -55,7 +55,7 @@
             <a href="https://github.com/CIDARLAB/clotho3" target="_blank">Download Clotho 3.0</a>
         </li>
         <li>
-            <a href="https://github.com/CIDARLAB/clotho3apps" target="_blank">Download Ananke</a>
+            <a href="https://github.com/CIDARLAB/clotho3apps/tree/master/ananke" target="_blank">Download Ananke</a>
         </li>
         <!--
         <li>
@@ -91,6 +91,14 @@
             <button class="btn btn-danger" onclick="resetForm()">Reset</button>
         </div>
         <br>
+        <div id="detailsPanel">
+            <div id="detailsLabelPanel"></div>
+            <table id="functionDetailsTable" class="form-inline " style='margin-bottom: 10px;' role="form">
+                <tbody style="text-align: center;">
+            </table>
+        </div>
+
+        <br>
         <div id="functionParams">
             <div id="argsLabelPanel">
             </div>
@@ -98,6 +106,10 @@
                 <tbody style="text-align: center;">
             </table>
         </div>
+        <div id="results">
+
+        </div>
+
 
         <hr class="divider">
 

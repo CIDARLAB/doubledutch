@@ -123,6 +123,12 @@ function emptyMenu()
 
 function resetForm()
 {
+
+    var details_table = document.getElementById('functionDetailsTable');
+    while(details_table.rows.length > 0) {
+        deleterow("functionDetailsTable");
+    }
+
     var input_table = document.getElementById("functionArgsTable");
     while(input_table.rows.length > 0) {
         deleterow("functionArgsTable");
@@ -132,6 +138,10 @@ function resetForm()
     var elLabel = document.getElementById('FunctionLabel');
     var elBtn = document.getElementById('runFunctionBtn');
     var elAPanel = document.getElementById('argsLabel');
+
+    var funcDetPan = document.getElementById('funcDetailsLabel');
+
+
     if(el!= undefined){
         document.getElementById('functionParams').removeChild(el);
     }
@@ -147,43 +157,55 @@ function resetForm()
     {
         document.getElementById('argsLabelPanel').removeChild(elAPanel);
     }
+    if(funcDetPan != undefined)
+    {
+        document.getElementById('detailsLabelPanel').removeChild(funcDetPan);
+    }
 
-    //document.getElementById('jsonText').value = "";
-    //initializeForm();
 }
 
 
 
 
-function getJSONquery()
+function getArgs()
 {
     var table = document.getElementById("functionArgsTable");
     len = table.rows.length;
 
     var q = '"';
-    var obj = "{";
+    var obj = "[";
 
 
     var idkey = $('#idKey').val();
     var idvalue = $('#idValue').val();
 
-    if((!(idvalue == "")) && (!(idkey == "")))
+
+    for(i=1;i<len;i++)
     {
-        obj += q + idkey + q+ ":" + q + idvalue +q;
-    }
-    for(i=2;i<=len;i++)
-    {
-        var valNum = "value"+i;
-        var idNum = "key"+i;
-        var keyVal = document.getElementById(idNum).value;
+        var valNum = "argVal"+i;
         var valueVal = document.getElementById(valNum).value;
-        if((!(keyVal=="")) && (!(valueVal== "")))
+        if(!(valueVal== ""))
         {
-            obj += "," + q + keyVal + q+ ":" + q + valueVal +q;
+            obj += q + valueVal +q + ",";
         }
-        //    obj += i;
+        else
+        {
+            alert("Please make sure all Argument fields are filled out");
+            return null;
+        }
     }
-    obj += "}";
+    var valNum = "argVal"+len;
+    var valueVal = document.getElementById(valNum).value;
+    if(!(valueVal== ""))
+    {
+        obj += q + valueVal +q;
+    }
+    else
+    {
+        alert("Please make sure all Argument fields are filled out");
+        return null;
+    }
+    obj += "]";
     return obj;
 }
 
@@ -197,6 +219,33 @@ function isEmpty(obj) {
 }
 
 
+function runFunction()
+{
+    var argStr = getArgs();
+    if(argStr != null)
+    {
+        var argsObj = JSON.parse(argStr);
+        var obj = {};
+        obj.function = document.getElementById('idValue').value;
+        obj.args = argsObj;
+
+        Clotho.run(obj).then(function(dataRun){
+            if (typeof dataRun == "string")
+            {
+                alert(dataRun);
+            }
+            else
+            {
+                alert(JSON.stringify(dataRun));
+            }
+        });
+
+
+        //alert(argStr);
+    }
+}
+
+
 function loadFunction(opt)
 {
 
@@ -207,6 +256,49 @@ function loadFunction(opt)
     Clotho.queryOne(funcQuer).then(function(dataFuncQ) {
 
         resetForm();
+
+        //Set Values for Function Details
+        var funcDetPan = document.createElement("label");
+        funcDetPan.setAttribute("id","funcDetailsLabel");
+        funcDetPan.appendChild(document.createTextNode("Function Details:"));
+        var panDet = document.getElementById('detailsLabelPanel');
+        panDet.appendChild(funcDetPan);
+
+        $('#functionDetailsTable').append("<tr style='margin-top: 10px;'> <td> <div class='form-group' style='margin-bottom: 10px;'>"+
+        "<label class='sr-only' for='nameKey' >NameKey:</label>" +
+        "<input type='text' class='form-control' id='nameKey' value='Name'  disabled>"+
+        "</div> </td>"+
+        "<td> <div class='form-group' style='margin-left: 10px; margin-bottom: 10px;'>"+
+        "<label class='sr-only' for='nameValue'>NameVal:</label>"+
+        "<input type='text' class='form-control' id='nameValue' value='"+dataFuncQ.name+"' disabled>"+
+        "</div> </td>"+
+        "</tr>");
+
+
+        $('#functionDetailsTable').append("<tr style='margin-top: 10px;'> <td> <div class='form-group' style='margin-bottom: 10px;'>"+
+        "<label class='sr-only' for='nameKey' >LangKey:</label>" +
+        "<input type='text' class='form-control' id='langKey' value='Language'  disabled>"+
+        "</div> </td>"+
+        "<td> <div class='form-group' style='margin-left: 10px; margin-bottom: 10px;'>"+
+        "<label class='sr-only' for='nameValue'>LangVal:</label>"+
+        "<input type='text' class='form-control' id='langValue' value='"+dataFuncQ.language+"' disabled>"+
+        "</div> </td>"+
+        "</tr>");
+
+
+
+        $('#functionDetailsTable').append("<tr style='margin-top: 10px;'> <td> <div class='form-group' style='margin-bottom: 10px;'>"+
+        "<label class='sr-only' for='idKey' >IDKey:</label>" +
+        "<input type='text' class='form-control' id='idKey' value='id'  disabled>"+
+        "</div> </td>"+
+        "<td> <div class='form-group' style='margin-left: 10px; margin-bottom: 10px;'>"+
+        "<label class='sr-only' for='idValue'>IDVal:</label>"+
+        "<input type='text' class='form-control' id='idValue' value='"+dataFuncQ.id+"' disabled>"+
+        "</div> </td>"+
+        "</tr>");
+
+
+        //Create Arguments Table
         if(dataFuncQ.args != undefined)
         {
             var first = true;
@@ -242,6 +334,8 @@ function loadFunction(opt)
 
             var btn = document.createElement("button");
             btn.setAttribute("id","runFunctionBtn");
+            btn.setAttribute("onclick","runFunction()");
+
             btn.setAttribute("class","btn btn-primary");
             btn.setAttribute("style","margin-top:10px;");
 
@@ -265,18 +359,6 @@ function loadFunction(opt)
     //alert(optVal.id);
 }
 
-function initializeForm()
-{
-    $('#keyValueForm').append("<tr style='margin-top: 10px;'> <td> <div class='form-group' style='margin-bottom: 10px;'>"+
-    "<label class='sr-only' for='idKey'"+ " >id:</label>" +
-    "<input type='text' class='form-control' id='idKey'"  + " placeholder='id'>"+
-    "</div> </td>"+
-    "<td> <div class='form-group' style='margin-left: 10px; margin-bottom: 10px;'>"+
-    "<label class='sr-only' for='idValue'" + ">Value:</label>"+
-    "<input type='text' class='form-control' id='idValue'" + " placeholder='Value'>"+
-    "</div> </td>"+
-    "<td> <button class='btn btn-info btn-sm' onclick='addNewRow()' style='margin-left: 10px; margin-bottom: 10px;'><span class='glyphicon glyphicon-plus'></span></button> </td> </tr>");
-}
 
 
 
