@@ -2,6 +2,8 @@
 <html>
 <head lang="en">
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+
 
     <script type="text/javascript" src="scripts/demo.js"></script>
 
@@ -11,18 +13,57 @@
     <script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/jquery/1.9.0/jquery.min.js"></script>
     <script src="http://maxcdn.bootstrapcdn.com/bootstrap/3.2.0/js/bootstrap.min.js"></script>
 
+    <script type="text/javascript" src="scripts/jasny-bootstrap.js"></script>
+
 
 
 
     <link rel="stylesheet" href="http://maxcdn.bootstrapcdn.com/bootstrap/3.3.1/css/bootstrap.min.css">
+    <link rel="stylesheet" type="text/css" href="styles/jasny-bootstrap.css">
 
     <title>Clotho App 101</title>
 </head>
 <body>
-    <input id="file" type="file" name="..."></span> <br>
-    <button onclick="uploadCSV()" id="uploadCSVBtn" class="btn btn-primary">Submit </button>
-    <br>
-    <button onclick="test()" id="testBtn" class="btn btn-warning">Test</button>
+<div>
+    <div class="jumbotron">
+        <div class="container text-center">
+            <h1>Building a Clotho App </h1>
+
+            <p class="col-md-offset-3">in 30 minutes or less..</p>
+        </div>
+    </div>
+    <div class="container-fluid">
+        <div class="row">
+            <div class="col-xs-6" >
+                <h2>Upload a CSV File </h2>
+                <div class="fileinput fileinput-new input-group col-xs-7" data-provides="fileinput">
+                    <div class="form-control" data-trigger="fileinput"><i
+                            class="glyphicon glyphicon-file fileinput-exists"></i>
+                        <span class="fileinput-filename"></span></div>
+            <span class="input-group-addon btn btn-default btn-file"><span class="fileinput-new">Select file</span><span
+                    class="fileinput-exists">Change</span>
+
+                    <input id="file" type="file" name="...">
+
+            </span>
+                    <a href="#" class="input-group-addon btn btn-default fileinput-exists"
+                       data-dismiss="fileinput">Remove</a>
+                </div>
+                <button type="button" class="btn btn-primary" onclick="uploadCSV()">Submit</button>
+            </div>
+            <div class="col-xs-6">
+                <h2>Submit a Script </h2>
+                <textarea class="form-control" rows="15" id="scriptVal" ></textarea> <br>
+                <button class="btn btn-primary" >Submit</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+
+
+
 
 </body>
 </html>

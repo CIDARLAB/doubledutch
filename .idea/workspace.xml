@@ -2,18 +2,7 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="4f8a95cc-b2d2-49af-bf3b-7e0ed111c832" name="Default" comment="">
-      <change type="DELETED" beforePath="$PROJECT_DIR$/ananke/.idea/.name" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/ananke/.idea/ananke.iml" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/ananke/.idea/encodings.xml" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/ananke/.idea/misc.xml" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/ananke/.idea/modules.xml" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/ananke/.idea/scopes/scope_settings.xml" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/ananke/.idea/vcs.xml" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/ananke/.idea/workspace.xml" afterPath="" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/.gitignore" afterPath="$PROJECT_DIR$/.gitignore" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/ananke/JS/clotho3API.js" afterPath="$PROJECT_DIR$/ananke/JS/clotho3API.js" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/ananke/JS/run.js" afterPath="$PROJECT_DIR$/ananke/JS/run.js" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/ananke/resources/test.csv" afterPath="$PROJECT_DIR$/ananke/resources/test.csv" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/clothoApp101/index.html" afterPath="$PROJECT_DIR$/clothoApp101/index.html" />
     </list>
     <ignored path="clotho3apps.iws" />
     <ignored path=".idea/workspace.xml" />
@@ -40,33 +29,69 @@
       <file leaf-file-name="create.html" pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/ananke/create.html">
           <provider selected="true" editor-type-id="text-editor">
-            <state vertical-scroll-proportion="0.0" vertical-offset="210" max-vertical-offset="1830">
-              <caret line="14" column="103" selection-start-line="14" selection-start-column="4" selection-end-line="14" selection-end-column="103" />
+            <state vertical-scroll-proportion="27.833334" vertical-offset="803" max-vertical-offset="1830">
+              <caret line="9" column="77" selection-start-line="9" selection-start-column="4" selection-end-line="9" selection-end-column="77" />
               <folding />
             </state>
           </provider>
         </entry>
       </file>
-      <file leaf-file-name="create.js" pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/ananke/JS/create.js">
+      <file leaf-file-name="query.html" pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/ananke/query.html">
           <provider selected="true" editor-type-id="text-editor">
-            <state vertical-scroll-proportion="0.0" vertical-offset="2022" max-vertical-offset="3060">
-              <caret line="175" column="56" selection-start-line="175" selection-start-column="4" selection-end-line="175" selection-end-column="56" />
-              <folding>
-                <marker date="1424588719648" expanded="true" signature="183:200" placeholder="..." />
-                <marker date="1424588719648" expanded="true" signature="239:259" placeholder="..." />
-                <marker date="1424588719648" expanded="true" signature="475:514" placeholder="..." />
-                <marker date="1424588719648" expanded="true" signature="3176:3194" placeholder="..." />
-                <marker date="1424588719648" expanded="true" signature="3234:3254" placeholder="..." />
-                <marker date="1424588719648" expanded="true" signature="3492:3531" placeholder="..." />
-                <marker date="1424588719648" expanded="true" signature="3948:3965" placeholder="..." />
-                <marker date="1424588719648" expanded="true" signature="4004:4024" placeholder="..." />
-                <marker date="1424588719648" expanded="true" signature="4272:4311" placeholder="..." />
-                <marker date="1424588719648" expanded="true" signature="4738:4755" placeholder="..." />
-                <marker date="1424588719648" expanded="true" signature="4794:4814" placeholder="..." />
-                <marker date="1424588719648" expanded="true" signature="5042:5081" placeholder="..." />
-                <marker date="1424588719648" expanded="true" signature="5331:5370" placeholder="..." />
-              </folding>
+            <state vertical-scroll-proportion="-23.416666" vertical-offset="1028" max-vertical-offset="1965">
+              <caret line="106" column="88" selection-start-line="106" selection-start-column="8" selection-end-line="106" selection-end-column="88" />
+              <folding />
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file leaf-file-name="index.html" pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/ananke/index.html">
+          <provider selected="true" editor-type-id="text-editor">
+            <state vertical-scroll-proportion="-26.875" vertical-offset="585" max-vertical-offset="1995">
+              <caret line="82" column="10" selection-start-line="76" selection-start-column="4" selection-end-line="82" selection-end-column="10" />
+              <folding />
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file leaf-file-name="delete.html" pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/ananke/delete.html">
+          <provider selected="true" editor-type-id="text-editor">
+            <state vertical-scroll-proportion="46.875" vertical-offset="1125" max-vertical-offset="2250">
+              <caret line="0" column="0" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
+              <folding />
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file leaf-file-name="index.html" pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/index.html">
+          <provider selected="true" editor-type-id="text-editor">
+            <state vertical-scroll-proportion="-0.0" vertical-offset="0" max-vertical-offset="285">
+              <caret line="0" column="0" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
+              <folding />
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file leaf-file-name="jasny-bootstrap.js" pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/clothoApp101/scripts/jasny-bootstrap.js">
+          <provider selected="true" editor-type-id="text-editor">
+            <state vertical-scroll-proportion="0.0" vertical-offset="0" max-vertical-offset="15390">
+              <caret line="0" column="0" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
+              <folding />
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file leaf-file-name="jasny-bootstrap.css" pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/clothoApp101/styles/jasny-bootstrap.css">
+          <provider selected="true" editor-type-id="text-editor">
+            <state vertical-scroll-proportion="0.0" vertical-offset="0" max-vertical-offset="9405">
+              <caret line="0" column="0" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
+              <folding />
             </state>
           </provider>
         </entry>
@@ -83,11 +108,11 @@
           </provider>
         </entry>
       </file>
-      <file leaf-file-name="run.js" pinned="false" current-in-tab="true">
+      <file leaf-file-name="run.js" pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/ananke/JS/run.js">
           <provider selected="true" editor-type-id="text-editor">
-            <state vertical-scroll-proportion="0.31529656" vertical-offset="2892" max-vertical-offset="6210">
-              <caret line="213" column="30" selection-start-line="213" selection-start-column="30" selection-end-line="213" selection-end-column="30" />
+            <state vertical-scroll-proportion="0.0" vertical-offset="2892" max-vertical-offset="6210">
+              <caret line="222" column="1" selection-start-line="222" selection-start-column="1" selection-end-line="222" selection-end-column="1" />
               <folding>
                 <marker date="1424658743808" expanded="true" signature="7006:7023" placeholder="..." />
                 <marker date="1424658743808" expanded="true" signature="7062:7082" placeholder="..." />
@@ -106,33 +131,11 @@
           </provider>
         </entry>
       </file>
-      <file leaf-file-name="demo.js" pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/clothoApp101/scripts/demo.js">
-          <provider selected="true" editor-type-id="text-editor">
-            <state vertical-scroll-proportion="0.0" vertical-offset="105" max-vertical-offset="345">
-              <caret line="9" column="52" selection-start-line="9" selection-start-column="52" selection-end-line="9" selection-end-column="52" />
-              <folding>
-                <element signature="n#!!doc;n#uploadCSV#0" expanded="false" />
-              </folding>
-            </state>
-          </provider>
-        </entry>
-      </file>
-      <file leaf-file-name="index.html" pinned="false" current-in-tab="false">
+      <file leaf-file-name="index.html" pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/clothoApp101/index.html">
           <provider selected="true" editor-type-id="text-editor">
-            <state vertical-scroll-proportion="0.0" vertical-offset="330" max-vertical-offset="495">
-              <caret line="22" column="28" selection-start-line="22" selection-start-column="28" selection-end-line="22" selection-end-column="28" />
-              <folding />
-            </state>
-          </provider>
-        </entry>
-      </file>
-      <file leaf-file-name="delete.js" pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/ananke/JS/delete.js">
-          <provider selected="true" editor-type-id="text-editor">
-            <state vertical-scroll-proportion="0.0" vertical-offset="0" max-vertical-offset="3240">
-              <caret line="0" column="0" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
+            <state vertical-scroll-proportion="0.13553895" vertical-offset="23" max-vertical-offset="1110">
+              <caret line="10" column="1" selection-start-line="10" selection-start-column="1" selection-end-line="10" selection-end-column="1" />
               <folding />
             </state>
           </provider>
@@ -146,10 +149,10 @@
   <component name="IdeDocumentHistory">
     <option name="CHANGED_PATHS">
       <list>
-        <option value="$PROJECT_DIR$/clothoApp101/index.html" />
         <option value="$PROJECT_DIR$/clothoApp101/scripts/demo.js" />
         <option value="$PROJECT_DIR$/clothoApp101/scripts/clotho3API.js" />
         <option value="$PROJECT_DIR$/ananke/JS/run.js" />
+        <option value="$PROJECT_DIR$/clothoApp101/index.html" />
       </list>
     </option>
   </component>
@@ -169,7 +172,7 @@
     <OptionsSetting value="true" id="Update" />
     <OptionsSetting value="true" id="Status" />
     <OptionsSetting value="true" id="Edit" />
-    <ConfirmationsSetting value="0" id="Add" />
+    <ConfirmationsSetting value="1" id="Add" />
     <ConfirmationsSetting value="0" id="Remove" />
   </component>
   <component name="ProjectView">
@@ -228,11 +231,7 @@
               <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
             </PATH_ELEMENT>
             <PATH_ELEMENT>
-              <option name="myItemId" value="clothoApp101" />
-              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
-            </PATH_ELEMENT>
-            <PATH_ELEMENT>
-              <option name="myItemId" value="scripts" />
+              <option name="myItemId" value="ananke" />
               <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
             </PATH_ELEMENT>
           </PATH>
@@ -247,6 +246,10 @@
             </PATH_ELEMENT>
             <PATH_ELEMENT>
               <option name="myItemId" value="ananke" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="styles" />
               <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
             </PATH_ELEMENT>
           </PATH>
@@ -278,6 +281,12 @@
     <property name="HbShouldOpenHtmlAsHb" value="" />
     <property name="DefaultHtmlFileTemplate" value="Html5" />
     <property name="FullScreen" value="false" />
+  </component>
+  <component name="RecentsManager">
+    <key name="CopyFile.RECENT_KEYS">
+      <recent name="$PROJECT_DIR$/clothoApp101/styles" />
+      <recent name="$PROJECT_DIR$/clothoApp101/scripts" />
+    </key>
   </component>
   <component name="RunManager">
     <configuration default="true" type="DartCommandLineRunConfigurationType" factoryName="Dart Command Line Application">
@@ -341,7 +350,7 @@
       <window_info id="TODO" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="6" side_tool="false" content_ui="tabs" />
       <window_info id="Structure" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.25" sideWeight="0.5" order="1" side_tool="false" content_ui="tabs" />
       <window_info id="Application Servers" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="7" side_tool="false" content_ui="tabs" />
-      <window_info id="Project" active="true" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" weight="0.24959569" sideWeight="0.5" order="0" side_tool="false" content_ui="combo" />
+      <window_info id="Project" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" weight="0.24959569" sideWeight="0.5" order="0" side_tool="false" content_ui="combo" />
       <window_info id="Favorites" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="2" side_tool="true" content_ui="tabs" />
       <window_info id="Event Log" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="7" side_tool="true" content_ui="tabs" />
       <window_info id="Version Control" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="7" side_tool="false" content_ui="tabs" />
@@ -390,19 +399,19 @@
         <state vertical-scroll-proportion="0.0" vertical-offset="2022" max-vertical-offset="3060">
           <caret line="175" column="56" selection-start-line="175" selection-start-column="4" selection-end-line="175" selection-end-column="56" />
           <folding>
-            <marker date="1424588719648" expanded="true" signature="183:200" placeholder="..." />
-            <marker date="1424588719648" expanded="true" signature="239:259" placeholder="..." />
-            <marker date="1424588719648" expanded="true" signature="475:514" placeholder="..." />
-            <marker date="1424588719648" expanded="true" signature="3176:3194" placeholder="..." />
-            <marker date="1424588719648" expanded="true" signature="3234:3254" placeholder="..." />
-            <marker date="1424588719648" expanded="true" signature="3492:3531" placeholder="..." />
-            <marker date="1424588719648" expanded="true" signature="3948:3965" placeholder="..." />
-            <marker date="1424588719648" expanded="true" signature="4004:4024" placeholder="..." />
-            <marker date="1424588719648" expanded="true" signature="4272:4311" placeholder="..." />
-            <marker date="1424588719648" expanded="true" signature="4738:4755" placeholder="..." />
-            <marker date="1424588719648" expanded="true" signature="4794:4814" placeholder="..." />
-            <marker date="1424588719648" expanded="true" signature="5042:5081" placeholder="..." />
-            <marker date="1424588719648" expanded="true" signature="5331:5370" placeholder="..." />
+            <marker date="1424588719648" expanded="true" signature="-1:-1" placeholder="..." />
+            <marker date="1424588719648" expanded="true" signature="-1:-1" placeholder="..." />
+            <marker date="1424588719648" expanded="true" signature="-1:-1" placeholder="..." />
+            <marker date="1424588719648" expanded="true" signature="-1:-1" placeholder="..." />
+            <marker date="1424588719648" expanded="true" signature="-1:-1" placeholder="..." />
+            <marker date="1424588719648" expanded="true" signature="-1:-1" placeholder="..." />
+            <marker date="1424588719648" expanded="true" signature="-1:-1" placeholder="..." />
+            <marker date="1424588719648" expanded="true" signature="-1:-1" placeholder="..." />
+            <marker date="1424588719648" expanded="true" signature="-1:-1" placeholder="..." />
+            <marker date="1424588719648" expanded="true" signature="-1:-1" placeholder="..." />
+            <marker date="1424588719648" expanded="true" signature="-1:-1" placeholder="..." />
+            <marker date="1424588719648" expanded="true" signature="-1:-1" placeholder="..." />
+            <marker date="1424588719648" expanded="true" signature="-1:-1" placeholder="..." />
           </folding>
         </state>
       </provider>
@@ -476,22 +485,9 @@
       <provider selected="true" editor-type-id="text-editor">
         <state vertical-scroll-proportion="-0.18730488" vertical-offset="180" max-vertical-offset="3885">
           <caret line="0" column="0" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/ananke/create.html">
-      <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="0.0" vertical-offset="210" max-vertical-offset="1830">
-          <caret line="14" column="103" selection-start-line="14" selection-start-column="4" selection-end-line="14" selection-end-column="103" />
-          <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/clothoApp101/index.html">
-      <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="0.0" vertical-offset="330" max-vertical-offset="495">
-          <caret line="22" column="28" selection-start-line="22" selection-start-column="28" selection-end-line="22" selection-end-column="28" />
-          <folding />
+          <folding>
+            <element signature="n#!!doc" expanded="false" />
+          </folding>
         </state>
       </provider>
     </entry>
@@ -500,19 +496,19 @@
         <state vertical-scroll-proportion="0.0" vertical-offset="2022" max-vertical-offset="3060">
           <caret line="175" column="56" selection-start-line="175" selection-start-column="4" selection-end-line="175" selection-end-column="56" />
           <folding>
-            <marker date="1424588719648" expanded="true" signature="183:200" placeholder="..." />
-            <marker date="1424588719648" expanded="true" signature="239:259" placeholder="..." />
-            <marker date="1424588719648" expanded="true" signature="475:514" placeholder="..." />
-            <marker date="1424588719648" expanded="true" signature="3176:3194" placeholder="..." />
-            <marker date="1424588719648" expanded="true" signature="3234:3254" placeholder="..." />
-            <marker date="1424588719648" expanded="true" signature="3492:3531" placeholder="..." />
-            <marker date="1424588719648" expanded="true" signature="3948:3965" placeholder="..." />
-            <marker date="1424588719648" expanded="true" signature="4004:4024" placeholder="..." />
-            <marker date="1424588719648" expanded="true" signature="4272:4311" placeholder="..." />
-            <marker date="1424588719648" expanded="true" signature="4738:4755" placeholder="..." />
-            <marker date="1424588719648" expanded="true" signature="4794:4814" placeholder="..." />
-            <marker date="1424588719648" expanded="true" signature="5042:5081" placeholder="..." />
-            <marker date="1424588719648" expanded="true" signature="5331:5370" placeholder="..." />
+            <marker date="1424588719648" expanded="true" signature="-1:-1" placeholder="..." />
+            <marker date="1424588719648" expanded="true" signature="-1:-1" placeholder="..." />
+            <marker date="1424588719648" expanded="true" signature="-1:-1" placeholder="..." />
+            <marker date="1424588719648" expanded="true" signature="-1:-1" placeholder="..." />
+            <marker date="1424588719648" expanded="true" signature="-1:-1" placeholder="..." />
+            <marker date="1424588719648" expanded="true" signature="-1:-1" placeholder="..." />
+            <marker date="1424588719648" expanded="true" signature="-1:-1" placeholder="..." />
+            <marker date="1424588719648" expanded="true" signature="-1:-1" placeholder="..." />
+            <marker date="1424588719648" expanded="true" signature="-1:-1" placeholder="..." />
+            <marker date="1424588719648" expanded="true" signature="-1:-1" placeholder="..." />
+            <marker date="1424588719648" expanded="true" signature="-1:-1" placeholder="..." />
+            <marker date="1424588719648" expanded="true" signature="-1:-1" placeholder="..." />
+            <marker date="1424588719648" expanded="true" signature="-1:-1" placeholder="..." />
           </folding>
         </state>
       </provider>
@@ -539,8 +535,8 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/ananke/JS/run.js">
       <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="0.31529656" vertical-offset="2892" max-vertical-offset="6210">
-          <caret line="213" column="30" selection-start-line="213" selection-start-column="30" selection-end-line="213" selection-end-column="30" />
+        <state vertical-scroll-proportion="0.0" vertical-offset="2892" max-vertical-offset="6210">
+          <caret line="222" column="1" selection-start-line="222" selection-start-column="1" selection-end-line="222" selection-end-column="1" />
           <folding>
             <marker date="1424658743808" expanded="true" signature="7006:7023" placeholder="..." />
             <marker date="1424658743808" expanded="true" signature="7062:7082" placeholder="..." />
@@ -555,6 +551,70 @@
             <marker date="1424658743808" expanded="true" signature="10758:10778" placeholder="..." />
             <marker date="1424658743808" expanded="true" signature="11026:11065" placeholder="..." />
           </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/clothoApp101/scripts/jasny-bootstrap.js">
+      <provider selected="true" editor-type-id="text-editor">
+        <state vertical-scroll-proportion="0.0" vertical-offset="0" max-vertical-offset="15390">
+          <caret line="0" column="0" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/clothoApp101/styles/jasny-bootstrap.css">
+      <provider selected="true" editor-type-id="text-editor">
+        <state vertical-scroll-proportion="0.0" vertical-offset="0" max-vertical-offset="9405">
+          <caret line="0" column="0" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/index.html">
+      <provider selected="true" editor-type-id="text-editor">
+        <state vertical-scroll-proportion="0.0" vertical-offset="0" max-vertical-offset="961">
+          <caret line="0" column="0" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/ananke/index.html">
+      <provider selected="true" editor-type-id="text-editor">
+        <state vertical-scroll-proportion="-26.875" vertical-offset="585" max-vertical-offset="1995">
+          <caret line="82" column="10" selection-start-line="76" selection-start-column="4" selection-end-line="82" selection-end-column="10" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/ananke/delete.html">
+      <provider selected="true" editor-type-id="text-editor">
+        <state vertical-scroll-proportion="46.875" vertical-offset="1125" max-vertical-offset="2250">
+          <caret line="0" column="0" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/ananke/create.html">
+      <provider selected="true" editor-type-id="text-editor">
+        <state vertical-scroll-proportion="27.833334" vertical-offset="803" max-vertical-offset="1830">
+          <caret line="9" column="77" selection-start-line="9" selection-start-column="4" selection-end-line="9" selection-end-column="77" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/ananke/query.html">
+      <provider selected="true" editor-type-id="text-editor">
+        <state vertical-scroll-proportion="-23.416666" vertical-offset="1028" max-vertical-offset="1965">
+          <caret line="106" column="88" selection-start-line="106" selection-start-column="8" selection-end-line="106" selection-end-column="88" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/clothoApp101/index.html">
+      <provider selected="true" editor-type-id="text-editor">
+        <state vertical-scroll-proportion="0.13553895" vertical-offset="23" max-vertical-offset="1110">
+          <caret line="10" column="1" selection-start-line="10" selection-start-column="1" selection-end-line="10" selection-end-column="1" />
+          <folding />
         </state>
       </provider>
     </entry>
