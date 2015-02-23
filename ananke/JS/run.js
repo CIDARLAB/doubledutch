@@ -232,11 +232,11 @@ function runFunction()
         Clotho.run(obj).then(function(dataRun){
             if (typeof dataRun == "string")
             {
-                alert(dataRun);
+                alert("Result : "+dataRun);
             }
             else
             {
-                alert(JSON.stringify(dataRun));
+                alert("Result : "+JSON.stringify(dataRun));
             }
         });
 
