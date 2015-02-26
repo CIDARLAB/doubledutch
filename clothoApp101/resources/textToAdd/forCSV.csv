@@ -1,0 +1,4 @@
+name,sequence,schema
+part1,ATGC,org.clotho101demo.part
+part2,TAGC,org.clotho101demo.part
+part3,GAGC,org.clotho101demo.part

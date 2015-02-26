@@ -1,0 +1,7 @@
+Group	Designs
+Group_1	1	9	16	20	21	24
+Group_2	12	17
+Group_3	2	3	14	22
+Group_4	5	6	8	11	13	18
+Group_5	4	7
+Group_6	10	15	19	23

@@ -1,20 +1,28 @@
-/**
- * Created by prash on 2/22/15.
- */
-
 function uploadCSV()
 {
-    file = document.getElementById('file').files[0];
-    csvOptions = {};
-    csvOptions.header = true;
-    Clotho.uploadCSV(file,csvOptions).then(function(data){
-        alert(JSON.stringify(data));
-    });
+    var file = document.getElementById('file').files[0];
+    //alert(file);
+
+    Clotho.uploadCSV(file, {header: true});
+
+    alert("objects created.");
+
 }
 
-function test(){
-    obj = {"name":"My Part", "sequence":"ACTGACTG"};
-    Clotho.create(obj).then(function(data){
-        alert(JSON.stringify(data));
+function getCluster()
+{
+    var circuitName = document.getElementById('circuitName').value;
+    var matrix = Clotho.run({function:'org.cellocad.assignment',args:[circuitName]}).then(function(result){
+        console.log(JSON.stringify(result));
+        var clusterVal = Clotho.run({function:'org.cellocad.cluster',args:[result]}).then(function(cluster){
+            alert(JSON.stringify(cluster));
+        });
     });
+
+
+}
+
+
+function login(){
+    Clotho.login('write','write');
 }

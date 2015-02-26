@@ -181,6 +181,12 @@ function uploadCSV()
 
             console.log(results);
             var objRes = JSON.stringify(results.data);
+
+
+            console.log(objRes);
+
+
+
             Clotho.create(results.data).then(function(dataCreate){
                 //alert(dataCreate);
                 alert(dataCreate.length +" objects created.");

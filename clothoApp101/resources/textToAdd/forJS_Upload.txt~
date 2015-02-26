@@ -1,0 +1,26 @@
+CSV Function: 
+
+file = document.getElementById('file').files[0];
+    csvOptions = {};
+    csvOptions.header = true;
+    Clotho.uploadCSV(file,csvOptions).then(function(data){
+        alert(JSON.stringify(data));
+    });
+alert("File Uploaded");
+
+
+
+
+Query Function: 
+
+var q = '\"';
+    var quer = "{";
+    var keyVal = document.getElementById('key').value;
+    var valueVal = document.getElementById('value').value;
+
+    quer += q + keyVal + q + ":" + q + valueVal + q  + "}";
+    var objQuer = JSON.parse(quer);
+    Clotho.queryOne(objQuer).then(function(queryResult){
+        var stringVal = JSON.stringify(queryResult,undefined,4);
+        document.getElementById('jsonQueryRes').value = stringVal;
+    });

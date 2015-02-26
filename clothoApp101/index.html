@@ -16,8 +16,6 @@
     <script type="text/javascript" src="scripts/jasny-bootstrap.js"></script>
 
 
-
-
     <link rel="stylesheet" href="http://maxcdn.bootstrapcdn.com/bootstrap/3.3.1/css/bootstrap.min.css">
     <link rel="stylesheet" type="text/css" href="styles/jasny-bootstrap.css">
 
@@ -32,37 +30,42 @@
             <p class="col-md-offset-3">in 30 minutes or less..</p>
         </div>
     </div>
-    <div class="container-fluid">
-        <div class="row">
-            <div class="col-xs-6" >
-                <h2>Upload a CSV File </h2>
-                <div class="fileinput fileinput-new input-group col-xs-7" data-provides="fileinput">
-                    <div class="form-control" data-trigger="fileinput"><i
-                            class="glyphicon glyphicon-file fileinput-exists"></i>
-                        <span class="fileinput-filename"></span></div>
-            <span class="input-group-addon btn btn-default btn-file"><span class="fileinput-new">Select file</span><span
-                    class="fileinput-exists">Change</span>
+    <div class="col-xs-4 col-xs-offset-4" style="text-align: center">
 
-                    <input id="file" type="file" name="...">
+        <button class="btn btn-primary" onclick="login()">Login</button>
+        <h2>Upload a CSV File </h2>
 
-            </span>
-                    <a href="#" class="input-group-addon btn btn-default fileinput-exists"
-                       data-dismiss="fileinput">Remove</a>
-                </div>
-                <button type="button" class="btn btn-primary" onclick="uploadCSV()">Submit</button>
-            </div>
-            <div class="col-xs-6">
-                <h2>Submit a Script </h2>
-                <textarea class="form-control" rows="15" id="scriptVal" ></textarea> <br>
-                <button class="btn btn-primary" >Submit</button>
-            </div>
+        <div class="fileinput fileinput-new input-group" data-provides="fileinput">
+            <div class="form-control" data-trigger="fileinput">
+                <i class="glyphicon glyphicon-file fileinput-exists"></i>
+                <span class="fileinput-filename"></span></div>
+                        <span class="input-group-addon btn btn-default btn-file">
+                            <span class="fileinput-new">Select file</span>
+                            <span class="fileinput-exists">Change</span>
+
+                            <!--MINIMAL CODE REQUIRED-->
+                            <input id="file" type="file" name="...">
+                            <!--MINIMAL CODE REQUIRED-->
+
+                        </span>
+            <a href="#" class="input-group-addon btn btn-default fileinput-exists" data-dismiss="fileinput">Remove</a>
         </div>
+
+        <!--MINIMAL CODE REQUIRED-->
+        <button type="button" class="btn btn-primary" onclick="uploadCSV()">Submit</button>
+        <!--MINIMAL CODE REQUIRED-->
+        <br>
+        <br>
+
+        <h2>Get Assignments </h2>
+        <input type="text" class='form-control' id="circuitName"  placeholder="Circuit Name" /> <br>
+
+        <textarea class="form-control" rows="15" id="jsonQueryRes" disabled></textarea> <br>
+        <button class="btn btn-primary" onclick="getCluster()">Get Assignments</button>
     </div>
+
+
 </div>
-
-
-
-
 
 
 </body>

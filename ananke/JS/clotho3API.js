@@ -122,52 +122,53 @@
 
         //Upload CSV with header = true works. Call back for then function not working. Need to figure out whats going on.
         uploadCSV: function(file,csvOptions,options){
-            if(csvOptions.header == true)
-            {
-                var results = Papa.parse(file, {
-                    header: true,
-                    complete: function(results) {
-                        var lastGarbage = false;
-                        //Check if Final value is junk (needs a better fix)
-                        if(results.data.length>0) {
-                            var last = results.data.length-1;
-                            if(Object.keys(results.data[last]).length == 1){
-                                var keys = Object.keys(results.data[last])[0];
-                                if(results.data[last].keys == undefined) {
-                                    lastGarbage = true;
+
+
+                if(csvOptions.header == true)
+                {
+                    var results = Papa.parse(file, {
+                        header: true,
+                        complete: function(results) {
+                            var lastGarbage = false;
+                            //Check if Final value is junk (needs a better fix)
+                            if(results.data.length>0) {
+                                var last = results.data.length-1;
+                                if(Object.keys(results.data[last]).length == 1){
+                                    var keys = Object.keys(results.data[last])[0];
+                                    if(results.data[last].keys == undefined) {
+                                        lastGarbage = true;
+                                    }
                                 }
                             }
-                        }
-                        var length = results.data.length;
-                        if(lastGarbage){
-                            length--;
-                        }
-
-                        if(length == 1) {
-                            if(results.data[0].id == undefined) {
-                                return socket.emit("create",results.data[0],options);
-                            }
-                            else{
-                                return socket.emit("set",results.data[0],options);
+                            var length = results.data.length;
+                            if(lastGarbage){
+                                length--;
                             }
 
-                        }
-                        else {
-                            objArr =[];
-                            for (var i = 0; i < length; i++){
-                                objArr[i] = results.data[i];
-                            }
-                            return socket.emit("setAll",objArr,options);
-                        }
-                    }
-                });
+                            if(length == 1) {
+                                if(results.data[0].id == undefined) {
+                                    return socket.emit("create",results.data[0],options);
+                                }
+                                else{
+                                    return socket.emit("set",results.data[0],options);
+                                }
 
-            }
-            else
-            {
-                return null;
-                //Handle this later
-            }
+                            }
+                            else {
+                                objArr =[];
+                                for (var i = 0; i < length; i++){
+
+                                    alert(results.data[i].assignment);
+                                    objArr[i] = results.data[i];
+                                }
+                                return socket.emit("setAll",objArr,options);
+                            }
+                        }
+                    });
+
+                }
+                else
+                    return false;
 
         },
 

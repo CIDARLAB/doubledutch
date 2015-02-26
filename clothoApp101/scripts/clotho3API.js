@@ -122,53 +122,98 @@
 
         //Upload CSV with header = true works. Call back for then function not working. Need to figure out whats going on.
         uploadCSV: function(file,csvOptions,options){
-            if(csvOptions.header == true)
+
+            if(csvOptions.cello == true)
             {
-                var results = Papa.parse(file, {
-                    header: true,
-                    complete: function(results) {
-                        var lastGarbage = false;
-                        //Check if Final value is junk (needs a better fix)
-                        if(results.data.length>0) {
-                            var last = results.data.length-1;
-                            if(Object.keys(results.data[last]).length == 1){
-                                var keys = Object.keys(results.data[last])[0];
-                                if(results.data[last].keys == undefined) {
-                                    lastGarbage = true;
-                                }
-                            }
-                        }
-                        var length = results.data.length;
-                        if(lastGarbage){
-                            length--;
-                        }
+                var objects = [];
+                var reader = new FileReader();
+                reader.onload = function(progressEvent){
+                    // Entire file
+                    //console.log(this.result);
 
-                        if(length == 1) {
-                            if(results.data[0].id == undefined) {
-                                return socket.emit("create",results.data[0],options);
-                            }
-                            else{
-                                return socket.emit("set",results.data[0],options);
-                            }
+                    // By lines
+                    var lines = this.result.split('\n');
+                    for(var line = 0; line < lines.length; line++){
+                        if(line == 0)
+                        {
+                            var keys = lines[line].split(',');
 
                         }
-                        else {
-                            objArr =[];
-                            for (var i = 0; i < length; i++){
-                                objArr[i] = results.data[i];
-                            }
-                            return socket.emit("setAll",objArr,options);
+                        else
+                        {
+                            //var array = lines[line].
+
                         }
+                        //console.log(lines[line]);
                     }
-                });
-
+                };
+                reader.readAsText(file);
             }
             else
             {
-                return null;
-                //Handle this later
-            }
+                if(csvOptions.header == true)
+                {
+                    var results = Papa.parse(file, {
+                        header: true,
+                        delimiter: ";",
+                        complete: function(results) {
+                            var lastGarbage = false;
+                            //Check if Final value is junk (needs a better fix)
+                            if(results.data.length>0) {
+                                var last = results.data.length-1;
+                                if(Object.keys(results.data[last]).length == 1){
+                                    var keys = Object.keys(results.data[last])[0];
+                                    if(results.data[last].keys == undefined) {
+                                        lastGarbage = true;
+                                    }
+                                }
+                            }
+                            var length = results.data.length;
+                            if(lastGarbage){
+                                length--;
+                            }
 
+                            if(length == 1) {
+                                if(results.data[0].id == undefined) {
+                                    if(csvOptions.cello == true)
+                                    {
+                                        var line = results.data[0].assignment.split(";");
+                                        results.data[0].assignArray = line;
+                                    }
+                                    return socket.emit("create",results.data[0],options);
+                                }
+                                else{
+                                    if(csvOptions.cello == true)
+                                    {
+                                        var line = results.data[0].assignment.split(";");
+                                        results.data[0].assignArray = line;
+                                    }
+                                    return socket.emit("set",results.data[0],options);
+                                }
+
+                            }
+                            else {
+                                objArr =[];
+                                for (var i = 0; i < length; i++){
+                                    if(csvOptions.cello == true)
+                                    {
+                                        var line = results.data[i].assignment.split(";");
+                                        results.data[i].assignArray = line;
+                                    }
+                                    objArr[i] = results.data[i];
+                                }
+                                return socket.emit("setAll",objArr,options);
+                            }
+                        }
+                    });
+
+                }
+                else
+                {
+                    return null;
+                    //Handle this later
+                }
+            }
         },
 
         /**
