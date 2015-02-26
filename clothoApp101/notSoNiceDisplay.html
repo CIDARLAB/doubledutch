@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html>
+<head lang="en">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+
+
+    <script type="text/javascript" src="scripts/demo.js"></script>
+
+    <script type="text/javascript" src="scripts/clotho3API.js"></script>
+    <script type="text/javascript" src="scripts/papaparse.min.js"></script>
+    <script type="text/javascript" src="http://cdnjs.cloudflare.com/ajax/libs/q.js/1.0.0/q.js"></script>
+    <script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/jquery/1.9.0/jquery.min.js"></script>
+
+    <title>Clotho App 101</title>
+</head>
+<body>
+<div>
+
+    <h1>Building a Clotho App </h1>
+
+
+    <input type="text" class='form-control' id="username" placeholder="UserName"/> <br>
+    <input type="password" class='form-control' id="password" placeholder="Password"/> <br>
+    <button class="btn btn-primary" onclick="login()">Login</button>
+    <h2>Upload a CSV File </h2>
+
+
+    <input id="file" type="file" name="...">
+
+    <button type="button" class="btn btn-primary" onclick="uploadCSV()">Submit</button>
+
+    <input type="text" class='form-control' id="circuitName" placeholder="Circuit Name"/> <br>
+    <textarea class="form-control" rows="15" id="clusterResults" disabled></textarea> <br>
+    <button class="btn btn-primary" onclick="getCluster()">Get Cluster</button>
+
+
+</div>
+
+
+</body>
+</html>

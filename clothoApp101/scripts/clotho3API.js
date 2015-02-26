@@ -123,7 +123,7 @@
         //Upload CSV with header = true works. Call back for then function not working. Need to figure out whats going on.
         uploadCSV: function(file,csvOptions,options){
 
-            if(csvOptions.cello == true)
+            if(csvOptions.celloSpecial == true)
             {
                 var objects = [];
                 var reader = new FileReader();
@@ -155,7 +155,7 @@
                 {
                     var results = Papa.parse(file, {
                         header: true,
-                        delimiter: ";",
+
                         complete: function(results) {
                             var lastGarbage = false;
                             //Check if Final value is junk (needs a better fix)

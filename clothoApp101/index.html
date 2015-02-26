@@ -32,7 +32,12 @@
     </div>
     <div class="col-xs-4 col-xs-offset-4" style="text-align: center">
 
+        <!--MINIMAL CODE REQUIRED-->
+        <input type="text" class='form-control' id="username"  placeholder="UserName" /> <br>
+        <input type="password" class='form-control' id="password"  placeholder="Password" /> <br>
         <button class="btn btn-primary" onclick="login()">Login</button>
+        <!--MINIMAL CODE REQUIRED-->
+
         <h2>Upload a CSV File </h2>
 
         <div class="fileinput fileinput-new input-group" data-provides="fileinput">
@@ -58,10 +63,13 @@
         <br>
 
         <h2>Get Assignments </h2>
-        <input type="text" class='form-control' id="circuitName"  placeholder="Circuit Name" /> <br>
 
-        <textarea class="form-control" rows="15" id="jsonQueryRes" disabled></textarea> <br>
-        <button class="btn btn-primary" onclick="getCluster()">Get Assignments</button>
+        <!--MINIMAL CODE REQUIRED-->
+        <input type="text" class='form-control' id="circuitName"  placeholder="Circuit Name" /> <br>
+        <textarea class="form-control" rows="15" id="clusterResults" disabled></textarea> <br>
+        <button class="btn btn-primary" onclick="getCluster()">Get Cluster</button>
+        <!--MINIMAL CODE REQUIRED-->
+
     </div>
 
 
