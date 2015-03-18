@@ -12,67 +12,92 @@
 </head>
 <body ng-controller="doubleDutchCtrl">
 	<div class="container">
-		
-    <div class="container">
-			<label for="fileUploader">File Upload</label>
-			<input type="file" id="fileUploader" file-input="files" multiple>
-			<br>
-      <label for="gridRadio">Grid</label>
-      <input type="radio" id="gridRadio" name="uploadSelect" value="0" ng-model="uploadSelector"/>
-      <label for="tableRadio">Table</label>
-      <input type="radio" id="tableRadio" name="uploadSelect" value="1" ng-model="uploadSelector"/>
-      <br>
-			<button type="button" class="btn btn-primary" ng-click="uploadDesigns(files, designParsers[uploadSelector])">Upload Designs</button>
-			<button type="button" class="btn btn-primary" ng-click="uploadTemplate(files, doeParser, experimentalDesign)">Upload Template</button>
-			<br><br>
 			<!-- <label for="parameterSelector">Variable</label> -->
 			<!-- <br>
 			<select id="parameterSelector" ng-model="currentVariable" ng-options="x for x in variables"></select>
 			<br><br> -->
-			<label for="targetInput">Target Levels</label>
+     
+			<!-- <label for="targetInput">Target Levels</label>
 			<br>
 			<div ng-repeat="x in targetLevels">
 				<input type="number" step="0.01" style="height:25px" ng-model="x.value">
 			</div>
 			<br>
 			<input type="number" step="0.01" id="targetInput" style="height:25px" ng-model="newTarget" placeholder="New Target">
-			<br><br>
-      <button type="button" class="btn btn-primary" ng-click="clusterLevels()">Generate Targets</button>
+			<br><br> -->
+     <!--  <button type="button" class="btn btn-primary" ng-click="clusterLevels()">Generate Targets</button>
 			<button type="button" class="btn btn-primary" ng-click="addTarget()">Add Target</button>
-			<button type="button" class="btn btn-primary" ng-click="removeTarget()">Remove Target</button>
-			<br><br>
-			<label for="targetInput">Assignment Penalty: {{assignmentPenalty}}</label>
-			<br>
-			<button type="button" class="btn btn-primary" ng-click="assignLevels()">Assign Levels</button>
-			<button type="button" class="btn btn-primary" ng-csv="generateDesigns(experimentalDesign, doeTemplate)" filename="experimental_design.csv" field-separator=",">Generate Designs</button>
-		</div>
+			<button type="button" class="btn btn-primary" ng-click="removeTarget()">Remove Target</button> -->
+    <div class="row">
+      <div class="col-sm-4">
+        <label style="font-size:20pt">Feature Upload (.csv)</label>
+        <br>
+        <label for="gridRadio">Grid</label>
+        <input type="radio" id="gridRadio" name="uploadSelect" value="0" ng-model="uploadSelector"/>
+        <label for="tableRadio">Table</label>
+        <input type="radio" id="tableRadio" name="uploadSelect" value="1" ng-model="uploadSelector"/>
+        <input type="file" file-input="designFiles" multiple>
+        <br>
+        <button type="button" class="btn btn-primary" ng-click="uploadDesigns(designFiles, designParsers[uploadSelector])">Upload Features</button>
+      </div>
+      <div class="col-sm-4">
+        <label style="font-size:20pt">DOE Template Upload (.csv)</label>
+        <input type="file" file-input="templateFiles">
+        <br>
+        <button type="button" class="btn btn-primary" ng-click="uploadTemplate(templateFiles, doeParser, flNodes)">Upload Template</button>
+      </div>
+    </div>
+
+    <br>
+
+    <div class="row">
+      <div class="col-sm-4">
+        <label style="font-size:20pt">Level Assignment</label>
+        <br>
+        <label>Levels per Factor</label>
+        <input type="number" step="1" min="2" style="height:25px; width:50px" ng-model="levelsPerFactor">
+        <br>
+        <button type="button" class="btn btn-primary" ng-click="assignLevels()">Assign Levels</button>
+        <label>Penalty = {{assignmentPenalty | number:1}}</label>
+        <br>
+        <label>Means = {{clusterMeans}}</label>
+      </div>
+      <div class="col-sm-4">
+         <label style="font-size:20pt">Library Generation</label>
+        <br>
+        <button type="button" class="btn btn-primary" ng-csv="generateDesigns(flNodes, doeTemplate)" filename="experimental_design.csv" field-separator=",">Generate Library</button>
+      </div>
+    </div>
+
+    <br>
 
 		<div class="row">
-      		<div class="col-sm-4">
-        		<h3>Available Factors</h3>
-        		<div ui-tree="flTreeOptions">
-          			<ol ui-tree-nodes="" ng-model="factors">
-            			<li ng-repeat="node in factors" ui-tree-node ng-include="'fl_tree_renderer.html'"></li>
-          			</ol>
-        		</div>
-      		</div>
-      		<div class="col-sm-4">
-        		<h3>Experimental Design</h3>
-        		<div ui-tree="edTreeOptions">
-          			<ol ui-tree-nodes="" ng-model="experimentalDesign">
-            			<li ng-repeat="node in experimentalDesign" ui-tree-node ng-include="'fl_tree_renderer.html'"></li>
-          			</ol>
-        		</div>
-      		</div>
-      		<div class="col-sm-4">
-        		<h3>Available Levels</h3>
-        		<div ui-tree="flTreeOptions">
-          			<ol ui-tree-nodes="" ng-model="levels">
-            			<li ng-repeat="node in levels" ui-tree-node ng-include="'fl_tree_renderer.html'"></li>
-          			</ol>
-        		</div>
-      		</div>
-    	</div>
+  		<div class="col-sm-4">
+    		<label style="font-size:20pt">Available Factors</label>
+    		<div ui-tree="flTreeOptions">
+      			<ol ui-tree-nodes="" ng-model="fNodes">
+        			<li ng-repeat="node in fNodes" ui-tree-node ng-include="'fl_tree_renderer.html'"></li>
+      			</ol>
+    		</div>
+  		</div>
+  		<div class="col-sm-4">
+    		<label style="font-size:20pt">Factorial Design</label>
+    		<div ui-tree="edTreeOptions">
+      			<ol ui-tree-nodes="" ng-model="flNodes">
+        			<li ng-repeat="node in flNodes" ui-tree-node ng-include="'fl_tree_renderer.html'"></li>
+      			</ol>
+    		</div>
+  		</div>
+  		<div class="col-sm-4">
+    		<label style="font-size:20pt">Available Levels</label>
+    		<div ui-tree="flTreeOptions">
+      			<ol ui-tree-nodes="" ng-model="lNodes">
+        			<li ng-repeat="node in lNodes" ui-tree-node ng-include="'fl_tree_renderer.html'"></li>
+      			</ol>
+    		</div>
+  		</div>
+  	</div>
+
 	</div>
 
 	<script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.3.9/angular.min.js"></script>
@@ -92,13 +117,13 @@
   	<div ui-tree-handle class="tree-node" style="{{node.backgroundColor}}">
   		<div class="tree-node-content">
         	<a class="btn btn-success btn-xs" data-nodrag ng-click="toggle(this)" style="{{node.toggleDisplay}}"><span class="glyphicon" ng-class="{'glyphicon-chevron-right': collapsed, 'glyphicon-chevron-down': !collapsed}"></span></a>
-        	<a class="pull-right btn btn-primary btn-xs" data-nodrag ng-click="addFeatures('lg', node.fl)" style="margin-right: 8px;"><span class="glyphicon glyphicon-pencil"></span></a>
+        	<a class="pull-right btn btn-primary btn-xs" data-nodrag ng-click="addFeatures('lg', node.fl)" style="margin-right: 8px"><span class="glyphicon glyphicon-pencil"></span></a>
         	<a class="pull-right btn btn-danger btn-xs" data-nodrag ng-click="remove(this)"><span class="glyphicon glyphicon-remove"></span></a>
-			<label for="moduleName" style="{{node.labelColor}}">Module</label><br>
-			<input type="text" id="moduleName" style="height:25px" ng-model="node.fl.design.module.name">
+			<label style="{{node.labelColor}}">Module</label><br>
+			<input type="text" style="height:25px" ng-model="node.fl.design.module.name">
 			<form style="{{node.valueDisplay}}">
-				<label for="levelValue" style="{{node.labelColor}}">{{node.variable.name}}</label><br>
-				<input type="text" id="levelValue" style="height:25px" ng-model="node.parameter.value">
+				<label style="{{node.labelColor}}">{{node.variable.name}}</label><br>
+				<input type="text" style="height:25px" ng-model="node.parameter.value">
 			</form>   
     		</div>
   	</div>
