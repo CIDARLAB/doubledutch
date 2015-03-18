@@ -12,22 +12,7 @@
 </head>
 <body ng-controller="doubleDutchCtrl">
 	<div class="container">
-			<!-- <label for="parameterSelector">Variable</label> -->
-			<!-- <br>
-			<select id="parameterSelector" ng-model="currentVariable" ng-options="x for x in variables"></select>
-			<br><br> -->
-     
-			<!-- <label for="targetInput">Target Levels</label>
-			<br>
-			<div ng-repeat="x in targetLevels">
-				<input type="number" step="0.01" style="height:25px" ng-model="x.value">
-			</div>
-			<br>
-			<input type="number" step="0.01" id="targetInput" style="height:25px" ng-model="newTarget" placeholder="New Target">
-			<br><br> -->
-     <!--  <button type="button" class="btn btn-primary" ng-click="clusterLevels()">Generate Targets</button>
-			<button type="button" class="btn btn-primary" ng-click="addTarget()">Add Target</button>
-			<button type="button" class="btn btn-primary" ng-click="removeTarget()">Remove Target</button> -->
+			
     <div class="row">
       <div class="col-sm-4">
         <label style="font-size:20pt">Feature Upload (.csv)</label>
@@ -55,12 +40,12 @@
         <label style="font-size:20pt">Level Assignment</label>
         <br>
         <label>Levels per Factor</label>
-        <input type="number" step="1" min="2" style="height:25px; width:50px" ng-model="levelsPerFactor">
+        <input type="number" step="1" min="2" max="20" style="height:25px; width:50px" ng-model="levelsPerFactor">
         <br>
         <button type="button" class="btn btn-primary" ng-click="assignLevels()">Assign Levels</button>
-        <label>Penalty = {{assignmentPenalty | number:1}}</label>
-        <br>
-        <label>Means = {{clusterMeans}}</label>
+        <button type="button" class="btn btn-primary" >Advanced Options</button>
+        <br><br>
+        <label>Assignment Penalty = {{assignmentPenalty | number:1}}</label>
       </div>
       <div class="col-sm-4">
          <label style="font-size:20pt">Library Generation</label>
@@ -111,6 +96,7 @@
 	<script src="js/doubleDutchApp.js"></script>
 	<script src="js/doubleDutchCtrl.js"></script>
 	<script src="js/featureWindowCtrl.js"></script>
+  <script src="js/alertWindowCtrl.js"></script>
 	<script src="js/fileInput.js"></script>
 
 	<script type="text/ng-template" id="fl_tree_renderer.html">
@@ -154,6 +140,18 @@
       <div class="modal-footer">
           <button class="btn btn-primary" ng-click="ok()">OK</button>
           <button class="btn btn-warning" ng-click="cancel()">Cancel</button>
+      </div>
+  </script>
+
+  <script type="text/ng-template" id="alertWindow.html">
+      <div class="modal-header">
+          <label style="font-size:20pt">{{alertType}}</label>
+      </div>
+      <div class="modal-body">
+          <p ng-bind-html="alertMessage"></p>
+      </div>
+      <div class="modal-footer">
+          <button class="btn btn-primary" ng-click="ok()">OK</button>
       </div>
   </script>
 </body>
