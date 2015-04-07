@@ -167,9 +167,6 @@ app.controller("doubleDutchCtrl", function($scope, $modal, $log) {
 						usedFeats = this.levelScorings[i][c].level.fl.design.module.getFeatures();
 						if (isHomologous(feats, usedFeats)) {
 							indices.push({i: i, j: b});
-							// if (!getAll) {
-							// 	return indices;
-							// }
 						}
 					}
 				} else {
@@ -179,9 +176,6 @@ app.controller("doubleDutchCtrl", function($scope, $modal, $log) {
 							usedFeats = this.levelScorings[a][c].level.fl.design.module.getFeatures();
 							if (isHomologous(feats, usedFeats)) {
 								indices.push({i: a, j: b});
-								// if (!getAll) {
-								// 	return indices;
-								// }
 							}
 						}
 					}
@@ -235,7 +229,7 @@ app.controller("doubleDutchCtrl", function($scope, $modal, $log) {
 	}
 
 	function flSolver() {
-		this.randomSolve = function(factorCount, levelsPerFactor, levelScorings, mutationTolerance) {
+		this.randomSolve = function(factorCount, levelsPerFactor, levelScorings, progressTolerance) {
 			var levelSelections = [];
 		    var i, j;
 			for (i = 0; i < levelsPerFactor; i++) {
@@ -248,19 +242,17 @@ app.controller("doubleDutchCtrl", function($scope, $modal, $log) {
   			var k;
   			for (i = 0; i < soln.levelSelections.length; i++) {
   				for (j = 0; j < soln.levelSelections[i].length; j++) {
-  					// if (soln.isHomologyRisk(i, j, soln.levelSelections.length)) {
-  					soln = this.mutateSolution(soln, i, j, mutationTolerance);
-  					// }
+  					soln = this.mutateSolution(soln, i, j, progressTolerance);
   				}
   			}
     		return soln;
     	};
-    	this.mutateSolution = function(soln, initialI, initialJ, mutationTolerance) {
+    	this.mutateSolution = function(soln, initialI, initialJ, progressTolerance) {
     		var mutantSoln = soln.copy();
     		var indices = [];
     		indices.push({i: initialI, j: initialJ});
     		var oldLength;
-    		var mutationStreak = 0;
+    		var haltedStreak = 0;
     		var homoIndices;
     		var isIndexed;
     		var i, j, k, a, b;
@@ -289,19 +281,18 @@ app.controller("doubleDutchCtrl", function($scope, $modal, $log) {
     				}
     			}
     			if (indices.length >= oldLength) {
-    				mutationStreak++;
-    				if (mutationStreak > mutationTolerance) {
-
+    				haltedStreak++;
+    				if (haltedStreak > progressTolerance) {
     					return soln;
     				}
     			} else {
-    				mutationStreak = 0;
+    				haltedStreak = 0;
     			}
     		} while (indices.length > 0);
     		return mutantSoln;
     	};
-    	this.annealSolve = function(factorCount, levelsPerFactor, levelScorings, initialTemp, cycleLimit, mutationTolerance) {
-			var bestSoln = this.randomSolve(factorCount, levelsPerFactor, levelScorings, mutationTolerance);
+    	this.annealSolve = function(factorCount, levelsPerFactor, levelScorings, initialTemp, cycleLimit, progressTolerance) {
+			var bestSoln = this.randomSolve(factorCount, levelsPerFactor, levelScorings, progressTolerance);
 			var soln = bestSoln.copy();
 			var cycleCount = 0;
 			var temp;
@@ -312,7 +303,7 @@ app.controller("doubleDutchCtrl", function($scope, $modal, $log) {
 				while (temp >= 0) {
 					i = Math.floor(Math.random()*soln.levelSelections.length);
 					j = Math.floor(Math.random()*soln.levelSelections[i].length);
-					mutantSoln = this.mutateSolution(soln, i, j, mutationTolerance);
+					mutantSoln = this.mutateSolution(soln, i, j, progressTolerance);
 					if (mutantSoln.getScore() <= soln.getScore()) {
 						soln = mutantSoln;
 						if (soln.getScore() < bestSoln.getScore()) {
@@ -330,10 +321,9 @@ app.controller("doubleDutchCtrl", function($scope, $modal, $log) {
 	}
 
 	function lClusterer() { 
-		this.cluster = function(lNodes, clusterCount, minClusterSize) {
+		this.cluster = function(lNodes, clusterCount, minClusterSize, clusteringLimit) {
     		var clusters;
 	    	var oldClusters; 
-	    	var clusteringLimit = 3;
 	    	var clusteringCount = 0;
 	    	var means;
 	    	var usedNodes;
@@ -448,6 +438,20 @@ app.controller("doubleDutchCtrl", function($scope, $modal, $log) {
 	}
 	hash.current = 0;
 
+	basicStats = function(arr) {
+		var result = {mean: 0, stdDev: 0};
+		var i;
+		for (i = 0; i < arr.length; i++) {
+			result.mean += arr[i];
+		}
+		result.mean /= arr.length;
+		for (i = 0; i < arr.length; i++) {
+			result.stdDev += Math.pow(arr[i] - result.mean, 2);
+		}
+		result.stdDev = Math.sqrt(result.stdDev/arr.length);
+		return result;
+	}
+
 	function homologyCounter() {
 		this.countHomologies = function(lNodes) {
 			var dict = {};
@@ -507,9 +511,40 @@ app.controller("doubleDutchCtrl", function($scope, $modal, $log) {
 		};
 	}
 
-	var doeTemplateParser = {
-		parseTemplate: function(data) {
-			var doeTemplate = {grid: [], range: []};
+	function doeTemplate(name, grid, range) {
+		this.name = name;
+		this.grid = grid;
+		this.range = range;
+	}
+
+	function doeTemplater() {
+		this.fullFactorial = function(numFactors, levelsPerFactor) {
+			var range = [];
+			var i;
+			for (i = -Math.floor(levelsPerFactor/2); i <= Math.floor(levelsPerFactor/2); i++) {
+  				if (i != 0 || levelsPerFactor%2 != 0) {
+  					range.push(i);
+  				}
+  			}
+  			var grid = [];
+  			var numDesigns = Math.pow(levelsPerFactor, numFactors);
+  			for (i = 0; i < numDesigns; i++) {
+  				grid.push([]);
+  			}
+  			var designsPerLevel = numDesigns; 
+  			var j, k;
+  			for (j = 0; j < numFactors; j++) {
+  				designsPerLevel /= levelsPerFactor;
+   				for (i = 0; i < numDesigns; i++) {
+   					k = Math.floor(i%(designsPerLevel*levelsPerFactor)/designsPerLevel);
+					grid[i].push(range[k]);
+  				}
+  			}
+  			return new doeTemplate("Full Factorial (" + numFactors + "x" + levelsPerFactor + ")", grid, range);
+		};
+		this.parseTemplate = function(name, data) {
+			var grid = [];
+			var range = [];
 			if (data != null) {
 				var i;
 				var j;
@@ -523,39 +558,116 @@ app.controller("doubleDutchCtrl", function($scope, $modal, $log) {
 								&& !isNaN(data[i][j - 1]) && data[i][j - 1] !== "") {
 							minJ = j;
 							minI = i;
+						} else {
+							j++;
 						}
-						j++;
 					}
 					while (j < data[i].length && maxJ < 0) {
 						if (!isNaN(data[i][j]) && data[i][j] !== ""
 								&& (j + 1 == data[i].length || isNaN(data[i][j + 1]) || data[i][j + 1] === "")) {
 							maxJ = j;
+						} else {
+							j++;
 						}
-						j++;
 					}
-					if (minJ >= 0 && maxJ >= 0) {
+					if (minJ >= 0 && maxJ >= minJ && data[i].length > minJ) {
 						j = minJ;
-						doeTemplate.grid.push([]);
+						grid.push([]);
 						while (!isNaN(data[i][j]) && data[i][j] !== "" && j <= maxJ) {
-							doeTemplate.grid[i - minI].push(data[i][j]);
-							if (doeTemplate.range.indexOf(data[i][j]) < 0) {
-								doeTemplate.range.push(data[i][j]);
+							grid[i - minI].push(data[i][j]);
+							if (range.indexOf(data[i][j]) < 0) {
+								range.push(data[i][j]);
 							}
 							j++;
 						}
-						if (j <= maxJ) {
-							doeTemplate.grid.splice(i, 1);
-							i = data.length;
-						}
-					} else if (minJ >= 0) {
-						return null;
 					}
 				}
-				doeTemplate.range.sort(function(a, b){return a - b});
+				range.sort(function(a, b){return a - b});
 			}
-			return doeTemplate;
-		}
-	};
+			return new doeTemplate(name, grid, range);
+		};
+		this.validateTemplate = function(template) {
+			if (template.grid.length == 0 || template.range.length == 0) {
+				return {isValidParse: false, isValidRange: false, isValidGrid: false};
+			} else {
+				var i;
+				for (i = 1; i < template.grid.length; i++) {
+					if (template.grid[i].length != template.grid[i - 1].length) {
+						return {isValidParse: true, isValidRange: template.range.length > 1, isValidGrid: false};
+					}
+				}
+				return {isValidParse: true, isValidRange: template.range.length > 1, isValidGrid: true};
+			}
+		};
+		this.validateTemplateVsDesign = function(template, flNodes) {
+		  	return {isValidRange: template.range.length == flNodes[0].nodes.length, 
+					isValidGrid: template.grid[0].length == flNodes.length};
+		};
+	}
+
+	// var doeTemplateParser = {
+	// 	parseTemplate: function(name, data) {
+	// 		var grid = [];
+	// 		var range = [];
+	// 		if (data != null) {
+	// 			var i;
+	// 			var j;
+	// 			var minI;
+	// 			var minJ = -1;
+	// 			var maxJ = -1;
+	// 			for (i = 0; i < data.length; i++) {
+	// 				j = 0;
+	// 				while (j < data[i].length && minJ < 0) {
+	// 					if (j > 0 && !isNaN(data[i][j]) && data[i][j] !== ""
+	// 							&& !isNaN(data[i][j - 1]) && data[i][j - 1] !== "") {
+	// 						minJ = j;
+	// 						minI = i;
+	// 					}
+	// 					j++;
+	// 				}
+	// 				while (j < data[i].length && maxJ < 0) {
+	// 					if (!isNaN(data[i][j]) && data[i][j] !== ""
+	// 							&& (j + 1 == data[i].length || isNaN(data[i][j + 1]) || data[i][j + 1] === "")) {
+	// 						maxJ = j;
+	// 					}
+	// 					j++;
+	// 				}
+	// 				if (minJ >= 0 && maxJ >= 0) {
+	// 					j = minJ;
+	// 					grid.push([]);
+	// 					while (!isNaN(data[i][j]) && data[i][j] !== "" && j <= maxJ) {
+	// 						grid[i - minI].push(data[i][j]);
+	// 						if (range.indexOf(data[i][j]) < 0) {
+	// 							range.push(data[i][j]);
+	// 						}
+	// 						j++;
+	// 					}
+	// 					if (j <= maxJ) {
+	// 						grid.splice(i, 1);
+	// 						i = data.length;
+	// 					}
+	// 				} else if (minJ >= 0) {
+	// 					return null;
+	// 				}
+	// 			}
+	// 			range.sort(function(a, b){return a - b});
+	// 		}
+	// 		return new doeTemplate(name, grid, range);
+	// 	},
+	// 	validateTemplate: function(template) {
+	// 		if (template.grid.length == 0 || template.range.length == 0) {
+	// 			return {isValidParse: false, isValidRange: false, isValidGrid: false};
+	// 		} else {
+	// 			var i;
+	// 			for (i = 1; i < template.grid.length; i++) {
+	// 				if (template.grid[i].length != template.grid[i - 1].length) {
+	// 					return {isValidParse: true, isValidRange: template.range.length == 1, isValidGrid: false};
+	// 				}
+	// 			}
+	// 			return {isValidParse: true, isValidRange: template.range.length == 1, isValidGrid: true};
+	// 		}
+	// 	}
+	// };
 
 	var expressGrammar = {
 		name: "Expression Grammar",
@@ -808,21 +920,26 @@ app.controller("doubleDutchCtrl", function($scope, $modal, $log) {
 		}
 	};
 
-	$scope.selectedFL;
 	$scope.lNodes = [];
 	$scope.fNodes = [];
 	$scope.flNodes = [];
-	$scope.designParsers = [gridParser, tableParser];
-	// $scope.currentParser = $scope.parsers[0];
-	$scope.spareFeatures = [];
-	$scope.doeParser = doeTemplateParser;
-	$scope.doeTemplate;
-	$scope.assignmentPenalty = 0;
-	$scope.uploadSelector = "0";
-	$scope.levelsPerFactor = 2;
 
-	$scope.addFeatures = function(size, fl) {
-		$scope.selectedFL = fl;
+	$scope.uploadSelector = "0";
+	$scope.designParsers = [gridParser, tableParser];
+	$scope.spareFeatures = [];
+
+	$scope.doeTemplates = [{name: "Full Factorial (Any Size)", grid: [], range: []}];
+
+	$scope.clusteringLimit = 3;
+
+	$scope.assignmentPenalty = 0;
+	$scope.levelsPerFactor = 2;
+	$scope.initialTemp = 100;
+	$scope.cycleLimit = 10;
+	$scope.toleranceModifier = 1;
+	$scope.levelTargets = "N/A";
+
+	$scope.addFeatures = function(size, selectedFl) {
 	    var modalInstance = $modal.open({
 	    	templateUrl: 'featureWindow.html',
 	    	controller: 'featureWindowCtrl',
@@ -854,32 +971,50 @@ app.controller("doubleDutchCtrl", function($scope, $modal, $log) {
 	        			}
 	        		}
 	        		feats = addUniqueFeatures(feats, $scope.spareFeatures);
-	          		return {selectedFeatures: $scope.selectedFL.design.module.getFeatures(), features: feats};
+	          		return {selectedFl: selectedFl, features: feats};
 	        	}
 	      	}
 	    });
-	    modalInstance.result.then(function(selectedItem) {
-	    	$scope.selectedFL.design.module = $scope.selectedFL.design.grammar.inferModule(selectedItem);
-	    	$scope.selectedFL.design.constructNameFromFeatures();
+	    modalInstance.result.then(function(feats) {
+	    	selectedFl.design.module = selectedFl.design.grammar.inferModule(feats);
+	    	selectedFl.design.constructNameFromFeatures();
+	    });
+	};
+
+	$scope.assignmentOptions = function(size) {
+	    var modalInstance = $modal.open({
+	    	templateUrl: 'assignmentWindow.html',
+	    	controller: 'assignmentWindowCtrl',
+		    size: size,
+		    resolve: {
+	        	items: function() {
+	          		return {clusteringLimit: $scope.clusteringLimit, initialTemp: $scope.initialTemp, cycleLimit: $scope.cycleLimit, 
+	          				toleranceModifier: $scope.toleranceModifier};
+	        	}
+	      	}
+	    });
+	    modalInstance.result.then(function(items) {
+	    	$scope.clusteringLimit = items.clusteringLimit;
+	    	$scope.initialTemp = items.initialTemp;
+	    	$scope.cycleLimit = items.cycleLimit;
+	    	$scope.toleranceModifier = items.toleranceModifier;
 	    });
 	};
 
 	alertUser = function(size, alertType, alertMessage) {
-		$scope.alertType = alertType;
-		$scope.alertMessage = alertMessage;
 	    var modalInstance = $modal.open({
 	    	templateUrl: 'alertWindow.html',
 	    	controller: 'alertWindowCtrl',
 		    size: size,
 		    resolve: {
 	        	items: function() {
-	          		return {alertType: $scope.alertType, alertMessage: $scope.alertMessage};
+	          		return {alertType: alertType, alertMessage: alertMessage};
 	        	}
 	      	}
 	    });
 	};
 
-    $scope.edTreeOptions = {
+    $scope.fldTreeOptions = {
     	accept: function(sourceNodeScope, destNodesScope, destIndex) {
     		if (sourceNodeScope.$modelValue.rootable) {
     			return destNodesScope.maxDepth == 0;
@@ -907,41 +1042,143 @@ app.controller("doubleDutchCtrl", function($scope, $modal, $log) {
     	}
   	};
 
-  	$scope.generateDesigns = function(experimentalDesign, doeTemplate) {
-  		if (experimentalDesign.length == doeTemplate.grid[0].length 
-  				&& experimentalDesign[0].nodes.length == doeTemplate.range.length) {
-  			var outputData = [[]];
-  			var i;
-  			for (i = 0; i < experimentalDesign.length; i++) {
-  				experimentalDesign[i].nodes.sort(function(a, b){return a.parameter.value - b.parameter.value})
-  				outputData[0].push(experimentalDesign[i].fl.design.name);
-  			}
-  			var j;
-  			var k;
-  			for (i = 0; i < doeTemplate.grid.length; i++) {
-  				outputData.push([]);
-  				for (j = 0; j < doeTemplate.grid[i].length; j++) {
-  					k = doeTemplate.range.indexOf(doeTemplate.grid[i][j]);
-  					outputData[i + 1].push(experimentalDesign[j].nodes[k].fl.design.name);
-  				}
-  			}
-  			return outputData;
+  	$scope.generateDesigns = function() {
+  		var outputData = [[]];
+  		if ($scope.flNodes.length == 0) {
+  			alertUser("lg", "Error", "Experimental design contains no factors. Upload one or more coding sequences and drag a factor from the leftmost column " 
+					+ "to the center column.");
+  		} else {
+  			var isValidExperimentalDesign = function(flNodes) {
+  				var i;
+				for (i = 1; i < flNodes.length; i++) {
+					if (flNodes[i].nodes.length < 2 || flNodes[i].nodes.length != flNodes[i - 1].nodes.length) {
+						return false;
+					}
+				}
+				return true;
+  			};
+			if (!isValidExperimentalDesign($scope.flNodes)) {
+				alertUser("lg", "Error", "Experimental design does not have the same number of levels associated with each factor or this number is less "
+						+ "than two. Upload parameterized features and select 'Assign Levels' or drag levels from the rightmost column to the center "
+						+ "column.");
+			} else {
+				var templater = new doeTemplater();
+				var i;
+		  		if ($scope.selectedTemplate.name === "Full Factorial (Any Size)" && $scope.selectedTemplate.range.length == 0) {
+		  			for (i = 0; i < $scope.doeTemplates.length; i++) {
+		  				if ($scope.flNodes[0].nodes.length == $scope.doeTemplates[i].range.length 
+			  					&& $scope.doeTemplates[i].grid.length == Math.pow($scope.doeTemplates[i].range.length, $scope.doeTemplates[i].grid[0].length)) {
+		  					$scope.selectedTemplate = $scope.doeTemplates[i];
+		  					i = $scope.doeTemplates[i].length;
+		  				}
+		  			}
+		  			if ($scope.selectedTemplate.name === "Full Factorial (Any Size)" && $scope.selectedTemplate.range.length == 0) { 
+					  	$scope.doeTemplates.push(templater.fullFactorial($scope.flNodes.length, $scope.flNodes[0].nodes.length));
+						$scope.selectedTemplate = $scope.doeTemplates[$scope.doeTemplates.length - 1];	
+						$scope.doeTemplates.sort(function(a, b) {
+							var nameA = a.name;
+							var nameB = b.name;
+							if (nameA < nameB) {
+								return -1;
+							} else if (nameA > nameB) {
+								return 1;
+							} else {
+								return 0;
+							}
+						});
+			  		}
+		  		}
+		  		var templateValidation = templater.validateTemplateVsDesign($scope.selectedTemplate, $scope.flNodes);
+		  		if (!templateValidation.isValidRange || !templateValidation.isValidGrid) {
+		  			var errorMessage = "";
+		  			if (!templateValidation.isValidRange) {
+	  					errorMessage += "Range of values in DOE template is not equal in size to the number of levels associated with each factor in the "
+	  							+ "experimental design. Upload or select a template that has a range of " + $scope.flNodes[0].nodes.length + " non-identical "
+	  							+ "numbers.";
+		  			}
+		  			if (!templateValidation.isValidGrid) {
+		  				if (errorMessage.length > 0) {
+		  					errorMessage += "<br><br>";
+		  				}
+		  				errorMessage += "The length of rows in DOE template is not equal to the number of factors in the experimental design. "
+		  						+ "Upload or select a template that contains rows of length " + $scope.flNodes.length + ".";
+		  			}
+		  			alertUser("lg", "Error", errorMessage);
+		  		}
+		  		if (templateValidation.isValidRange && templateValidation.isValidGrid) {
+		  			for (i = 0; i < $scope.flNodes.length; i++) {
+		  				$scope.flNodes[i].nodes.sort(function(a, b){return a.parameter.value - b.parameter.value})
+		  				outputData[0].push($scope.flNodes[i].fl.design.name);
+		  			}
+		  			var j, k;
+		  			for (i = 0; i < $scope.selectedTemplate.grid.length; i++) {
+		  				outputData.push([]);
+		  				for (j = 0; j < $scope.selectedTemplate.grid[i].length; j++) {
+		  					k = $scope.selectedTemplate.range.indexOf($scope.selectedTemplate.grid[i][j]);
+		  					outputData[i + 1].push($scope.flNodes[j].nodes[k].fl.design.name);
+		  				}
+		  			}
+		  		}
+	  		}
   		}
+  		return outputData;
   	}
 
-  	$scope.uploadTemplate = function(files, templateParser, experimentalDesign) {
-		Papa.parse(files[0], {dynamicTyping: true, templateParser: templateParser, experimentalDesign: experimentalDesign,
-			complete: function(results) {
-				$scope.doeTemplate = templateParser.parseTemplate(results.data);
+  	$scope.uploadTemplate = function() {
+  		if ($scope.templateFiles == null || $scope.templateFiles.length == 0) {
+			alertUser("lg", "Error", "No file selected. Browse and select a DOE template file (.csv) to upload.");
+		} else {
+			if ($scope.templateFiles[0].name.length < 4 || $scope.templateFiles[0].name.substring($scope.templateFiles[0].name.length - 4) !== ".csv") {
+				alertUser("lg", "Error", "Selected file lacks the .csv file extension. Browse and select a DOE template file (.csv) to upload.");
+			} else {
+				Papa.parse($scope.templateFiles[0], {dynamicTyping: true, 
+					complete: function(results) {
+						var templater = new doeTemplater();
+						var template = templater.parseTemplate($scope.templateFiles[0].name.substring(0, $scope.templateFiles[0].name.length - 4), 
+								results.data);
+						var templateValidation = templater.validateTemplate(template);
+						if (!templateValidation.isValidParse) {
+							alertUser("lg", "Error", "Failed to parse DOE template. Check file format.");
+						} else if (!templateValidation.isValidRange || !templateValidation.isValidGrid) {
+							var errorMessage = "";
+							if (!templateValidation.isValidRange) {
+								errorMessage += "DOE template has a range of size one. Upload template that has a range of at least two non-identical numbers.";
+							}
+							if (!templateValidation.isValidGrid) {
+								if (errorMessage.length > 0) {
+									errorMessage += "<br><br>";
+								}
+								errorMessage += "DOE template is not a grid. Upload template that contains rows of equal length.";
+							}
+							alertUser("lg", "Error", errorMessage);
+						} 		
+						if (templateValidation.isValidParse && templateValidation.isValidRange && templateValidation.isValidGrid) {
+							$scope.doeTemplates.push(template);
+							$scope.selectedTemplate = template;	
+							$scope.doeTemplates.sort(function(a, b) {
+								var nameA = a.name;
+								var nameB = b.name;
+								if (nameA < nameB) {
+									return -1;
+								} else if (nameA > nameB) {
+									return 1;
+								} else {
+									return 0;
+								}
+							});
+							$scope.$apply();
+						}
+					}
+				});
 			}
-		});
+		}
   	}
 
 	$scope.uploadDesigns = function(files, designParser) {
 		var i;
 		if (files != null) {
 	    	for (i = 0; i < files.length; i++) {
-	    		Papa.parse(files[i], {dynamicTyping: true, designParser: designParser,
+	    		Papa.parse(files[i], {dynamicTyping: true, 
 					complete: function(results) {
 						var isCodedExpression = function(design) {
 							if ('module' in design) { 
@@ -986,7 +1223,7 @@ app.controller("doubleDutchCtrl", function($scope, $modal, $log) {
 								return -1;
 							}
 						};
-						var designs = this.designParser.parseDesigns(results.data);
+						var designs = designParser.parseDesigns(results.data);
 						var i;
 						var j;
 						var spareFeats;
@@ -1025,15 +1262,120 @@ app.controller("doubleDutchCtrl", function($scope, $modal, $log) {
     	}
     };
 
+  //   $scope.testAssign = function() {
+    	
+  //   	var factorCounts = [5, 6, 7, 8, 9];
+		// var levelCounts = [2, 3, 4, 5];
+		// var randomPenalties = [];
+		// var annealPenalties = [];
+		// var randomTimes = [];
+		// var annealTimes = [];
+		// var randomPStats = []; 
+		// var annealPStats = [];
+	 //    var randomTStats = [];
+	 //    var annealTStats = [];
+	 //    var combinedPStats = [];
+
+		// var j;
+		// for (i = 0; i < levelCounts.length; i++) {
+		// 	randomPenalties.push([]);
+		// 	annealPenalties.push([]);
+		// 	randomTimes.push([]);
+		// 	annealTimes.push([]);
+		// 	randomPStats.push([]);
+		// 	annealPStats.push([]);
+		// 	randomTStats.push([]);
+		// 	annealTStats.push([]);
+		// 	combinedPStats.push([]);
+		// 	for (j = 0; j < factorCounts.length; j++) {
+		// 		randomPenalties[i].push([]);
+		// 		annealPenalties[i].push([]);
+		// 		randomTimes[i].push([]);
+		// 		annealTimes[i].push([]);
+		// 	}
+		// }
+
+		// var clusterer = new lClusterer();
+		// var clusterResults;
+		// var clusterValidation;
+
+		// var counter = new homologyCounter();
+	 //    var homologyCount = counter.countHomologies($scope.lNodes);
+	   
+	 //    var scorer = new lScorer();
+	 //    var levelScorings;
+
+	 //    var progressTolerance; 
+
+		// var solver = new flSolver();
+
+		// var trials = 100;
+		// var randomSoln, annealSoln;
+		// var refTime;
+		// var k;
+		// for (i = 0; i < levelCounts.length; i++) {
+		// 	for (j = 0; j < factorCounts.length; j++) {
+	 //    		for (k = 0; k < trials; k++) {
+	 //    			clusterResults = clusterer.cluster($scope.lNodes, levelCounts[i], factorCounts[j], $scope.clusteringLimit);
+	 //    			clusterValidation = clusterer.validateClusters(clusterResults.clusters, factorCounts[j]);
+	 //    			if (clusterValidation.result) {
+		//     			levelScorings = scorer.scoreClusters(clusterResults.clusters);
+		//     			progressTolerance = $scope.toleranceModifier*Math.ceil(1/Math.pow(1 - 2*homologyCount/Math.pow($scope.lNodes.length, 2), 
+		// 		    			factorCounts[j]*levelCounts[i] - 1));
+		//     			refTime = new Date().getTime();
+		//     			randomSoln = solver.randomSolve(factorCounts[j], levelCounts[i], levelScorings, progressTolerance);
+		//     			randomTimes[i][j].push(new Date().getTime() - refTime);
+		//     			if (!randomSoln.isHomologyRisk()) {
+		// 					randomPenalties[i][j].push(randomSoln.getScore());
+		// 				} 
+		// 				refTime = new Date().getTime();
+		// 				annealSoln = solver.annealSolve(factorCounts[j], levelCounts[i], levelScorings, 
+		// 						$scope.initialTemp, $scope.cycleLimit, progressTolerance);
+		// 				annealTimes[i][j].push(new Date().getTime() - refTime);
+		// 				if (!annealSoln.isHomologyRisk()) {
+		// 					annealPenalties[i][j].push(annealSoln.getScore());
+		// 				} 
+		// 			}
+	 //    		}
+	 //    	}
+	 //    }
+
+		// for (i = 0; i < levelCounts.length; i++) {
+		// 	for (j = 0; j < factorCounts.length; j++) {
+		// 		randomPStats[i].push(basicStats(randomPenalties[i][j]));
+		// 		annealPStats[i].push(basicStats(annealPenalties[i][j]));
+		// 		randomTStats[i].push(basicStats(randomTimes[i][j]));
+		// 		annealTStats[i].push(basicStats(annealTimes[i][j]));
+		// 	}
+		// }
+		// var combinedMean;
+		// var combinedStdDev;
+		// for (i = 0; i < levelCounts.length; i++) {
+		// 	for (j = 0; j < factorCounts.length; j++) {
+		// 		combinedMean = randomPStats[i][j].mean/annealPStats[i][j].mean;
+		// 		combinedStdDev = combinedMean*(randomPStats[i][j].stdDev/randomPStats[i][j].mean + annealPStats[i][j].stdDev/annealPStats[i][j].mean);
+		// 		combinedPStats[i].push({mean: combinedMean, stdDev: combinedStdDev});
+		// 	}
+		// }
+
+		// for (i = 0; i < levelCounts.length; i++) {
+		// 	for (j = 0; j < factorCounts.length; j++) {
+		// 		console.log("fl(" + factorCounts[j] + "," + levelCounts[i] + "): " + combinedPStats[i][j].mean + " +/- " + combinedPStats[i][j].stdDev + ", " 
+		// 				+ annealTStats[i][j].mean + " +/- " + annealTStats[i][j].stdDev);
+		// 	}
+		// }
+  //   }
+
 	$scope.assignLevels = function() {
 		if ($scope.flNodes.length == 0) {
-			alertUser("lg", "Error", "Your design has no factors. Upload one or more coding sequence features and/or drag and drop a factor from the leftmost column to the center column.");
+			alertUser("lg", "Error", "Experimental design contains no factors. Upload one or more coding sequences and drag a factor from the leftmost column " 
+					+ "to the center column.");
 		} else if ($scope.lNodes.length < $scope.levelsPerFactor*$scope.flNodes.length) {
-			alertUser("lg", "Error", "The number of available levels does not satisfy the number of levels per factor that you've selected for your design. " +  
-					"Select a lower number of levels per factor or upload additional parameterized features.");
+			alertUser("lg", "Error", "The number of available levels does not satisfy the number of levels per factor that you've selected for the experimental " +  
+					"design. Select a lower number of levels per factor or upload additional parameterized features.");
 		} else {
 			var clusterer = new lClusterer();
-			var clusterResults = clusterer.cluster($scope.lNodes, $scope.levelsPerFactor, $scope.flNodes.length);
+			var clusterResults = clusterer.cluster($scope.lNodes, $scope.levelsPerFactor, $scope.flNodes.length, $scope.clusteringLimit);
 			var clusterValidation = clusterer.validateClusters(clusterResults.clusters, $scope.flNodes.length);
 			
 			if (!clusterValidation.result) {
@@ -1043,31 +1385,39 @@ app.controller("doubleDutchCtrl", function($scope, $modal, $log) {
 				var i;
 				for (i = 0; i < clusterValidation.indices.length; i++) {
 					invalidIndex = clusterValidation.indices[i];
-					invalidMean = clusterResults.means[invalidIndex].toFixed(4);
+					invalidMean = clusterResults.means[invalidIndex].toFixed(3);
 					clusterErrorMessage += ", " + invalidMean;
 				}
 				clusterErrorMessage = clusterErrorMessage.substring(2);
-				clusterErrorMessage += "<br><br>The available non-homologous levels that cluster around the above targets are not at least equal " + 
-	    					"in number to the factors of your design. Upload additional non-homologous features with parameters of a similar value " + 
-	    					"or select a lower number of levels per factor for your design.";
+				clusterErrorMessage += "<br><br>The available non-homologous levels that cluster around these targets are not at least equal " + 
+	    					"in number to the factors in the experimental design. Upload additional non-homologous features with parameters that are close " + 
+	    					"to these targets or select a lower number of levels per factor for the design.";
 				alertUser("lg", "Error", clusterErrorMessage);
 			} else {
+				$scope.levelTargets = "";
+				for (i = 0; i < clusterResults.means.length; i++) {
+					$scope.levelTargets += ", " + clusterResults.means[i].toFixed(3); 
+				}
+				$scope.levelTargets = $scope.levelTargets.substring(2);
+
 				var scorer = new lScorer();
 				var levelScorings = scorer.scoreClusters(clusterResults.clusters);
 
 				var counter = new homologyCounter();
 	    		var homologyCount = counter.countHomologies($scope.lNodes);
-	    		var mutationTolerance = Math.ceil(1/Math.pow(1 - 2*homologyCount/Math.pow($scope.lNodes.length, 2), 
+	    		// var test = 2*homologyCount/Math.pow($scope.lNodes.length, 2)*$scope.flNodes.length*$scope.levelsPerFactor - 1;
+	    		// console.log("expected: " + test);
+	    		var progressTolerance = $scope.toleranceModifier*Math.ceil(1/Math.pow(1 - 2*homologyCount/Math.pow($scope.lNodes.length, 2), 
 		    			$scope.flNodes.length*$scope.levelsPerFactor - 1));
-				
+
 				var solver = new flSolver();
-				// var soln = solver.randomSolve($scope.flNodes.length, $scope.levelsPerFactor, levelScorings, mutationTolerance);
-				var soln = solver.annealSolve($scope.flNodes.length, $scope.levelsPerFactor, levelScorings, 100, 10, mutationTolerance);
+				// var soln = solver.randomSolve($scope.flNodes.length, $scope.levelsPerFactor, levelScorings, progressTolerance);
+				var soln = solver.annealSolve($scope.flNodes.length, $scope.levelsPerFactor, levelScorings, 
+						$scope.initialTemp, $scope.cycleLimit, progressTolerance);
 
 				if (soln.isHomologyRisk()) {
-					alertUser("lg", "Warning", "Level assignment failed to make expected progress. Unable to determine whether assignment is possible. " +  
-						"If assignment is possible, then increasing tolerance (see advanced options) will eventually yield assignment, " + 
-						"but its determination will take longer.");
+					alertUser("lg", "Warning", "Level assignment failed to make tolerable progress. Unable to determine whether a valid assignment exists. " +  
+						"Increase progress tolerance (see advanced options) to increase the time spent looking for an assignment.");
 				} else {
 					$scope.assignmentPenalty = soln.getScore();
 					

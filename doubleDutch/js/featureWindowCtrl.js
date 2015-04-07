@@ -2,9 +2,10 @@ app.controller('featureWindowCtrl', function ($scope, $modalInstance, items) {
   
   $scope.features = items.features;
   $scope.selected = [];
+  var selectedFeats = items.selectedFl.design.module.getFeatures();
   var i;
-  for (i = 0; i < items.selectedFeatures.length; i++ ) {
-    $scope.selected.push({feature: items.selectedFeatures[i]});
+  for (i = 0; i < selectedFeats.length; i++ ) {
+    $scope.selected.push({feature: selectedFeats[i]});
   }
 
   $scope.ok = function () {

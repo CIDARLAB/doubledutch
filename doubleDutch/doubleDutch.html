@@ -29,7 +29,7 @@
         <label style="font-size:20pt">DOE Template Upload (.csv)</label>
         <input type="file" file-input="templateFiles">
         <br>
-        <button type="button" class="btn btn-primary" ng-click="uploadTemplate(templateFiles, doeParser, flNodes)">Upload Template</button>
+        <button type="button" class="btn btn-primary" ng-click="uploadTemplate()">Upload Template</button>
       </div>
     </div>
 
@@ -40,17 +40,22 @@
         <label style="font-size:20pt">Level Assignment</label>
         <br>
         <label>Levels per Factor</label>
-        <input type="number" step="1" min="2" max="20" style="height:25px; width:50px" ng-model="levelsPerFactor">
+        <input type="number" step="1" min="2" max="100" style="height:25px; width:50px" ng-model="levelsPerFactor">
         <br>
         <button type="button" class="btn btn-primary" ng-click="assignLevels()">Assign Levels</button>
-        <button type="button" class="btn btn-primary" >Advanced Options</button>
+        <button type="button" class="btn btn-primary" ng-click="assignmentOptions()">Advanced Options</button>
         <br><br>
         <label>Assignment Penalty = {{assignmentPenalty | number:1}}</label>
+        <br>
+        <label>Level Targets = {{levelTargets}}</label>
       </div>
       <div class="col-sm-4">
          <label style="font-size:20pt">Library Generation</label>
         <br>
-        <button type="button" class="btn btn-primary" ng-csv="generateDesigns(flNodes, doeTemplate)" filename="experimental_design.csv" field-separator=",">Generate Library</button>
+        <label>DOE Template</label>
+        <select ng-init="selectedTemplate = selectedTemplate || doeTemplates[0]" ng-model="selectedTemplate" ng-options="template as template.name for template in doeTemplates"></select>
+        <br>
+        <button type="button" class="btn btn-primary" ng-csv="generateDesigns()" filename="experimental_design.csv" field-separator=",">Generate Library</button>
       </div>
     </div>
 
@@ -67,7 +72,7 @@
   		</div>
   		<div class="col-sm-4">
     		<label style="font-size:20pt">Factorial Design</label>
-    		<div ui-tree="edTreeOptions">
+    		<div ui-tree="fldTreeOptions">
       			<ol ui-tree-nodes="" ng-model="flNodes">
         			<li ng-repeat="node in flNodes" ui-tree-node ng-include="'fl_tree_renderer.html'"></li>
       			</ol>
@@ -97,6 +102,7 @@
 	<script src="js/doubleDutchCtrl.js"></script>
 	<script src="js/featureWindowCtrl.js"></script>
   <script src="js/alertWindowCtrl.js"></script>
+  <script src="js/assignmentWindowCtrl.js"></script>
 	<script src="js/fileInput.js"></script>
 
 	<script type="text/ng-template" id="fl_tree_renderer.html">
@@ -152,6 +158,39 @@
       </div>
       <div class="modal-footer">
           <button class="btn btn-primary" ng-click="ok()">OK</button>
+      </div>
+  </script>
+
+  <script type="text/ng-template" id="assignmentWindow.html">
+      <div class="modal-header">
+          <label style="font-size:20pt">Level Assignment Options</label>
+      </div>
+      <div class="modal-body">
+          <div class="row">
+              <div class="col-sm-6">
+                  <label style="font-size:20pt">Simulated Annealing</label>
+                  <br>
+                  <label>Initial Temperature</label>
+                  <input type="number" step="1" min="1" max="1000" style="height:25px; width:50px" ng-model="initialTemp">
+                  <br>
+                  <label># of Cycles</label>
+                  <input type="number" step="1" min="1" max="100" style="height:25px; width:50px" ng-model="cycleLimit">
+                  <br>
+                  <label>Progress Tolerance</label>
+                  <input type="number" step="1" min="1" max="100" style="height:25px; width:50px" ng-model="toleranceModifier">
+              </div>
+              <div class="col-sm-6">
+                  <label style="font-size:20pt">K-Means Clustering</label>
+                  <br>
+                  <label>Maximum Attempts</label>
+                  <input type="number" step="1" min="1" max="100" style="height:25px; width:50px" ng-model="clusteringLimit">
+              </div>
+              
+          </div>
+      </div>
+      <div class="modal-footer">
+          <button class="btn btn-primary" ng-click="ok()">OK</button>
+          <button class="btn btn-warning" ng-click="cancel()">Cancel</button>
       </div>
   </script>
 </body>
