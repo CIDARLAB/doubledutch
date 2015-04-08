@@ -24,7 +24,7 @@
         <input type="file" file-input="featFiles" multiple>
         <br>
         <button type="button" class="btn btn-primary" ng-click="uploadFeatures()">Upload Features</button>
-        <label>{{numFeatsUploaded | number:0}} feats uploaded.</label>
+        {{numFeatsUploaded | number:0}} features uploaded.
       </div>
       <div class="col-sm-4">
         <label style="font-size:20pt">DOE Template Upload (.csv)</label>
@@ -46,9 +46,9 @@
         <button type="button" class="btn btn-primary" ng-click="assignLevels()">Assign Levels</button>
         <button type="button" class="btn btn-primary" ng-click="assignmentOptions()">Advanced Options</button>
         <br><br>
-        <label>Assignment Penalty = {{assignmentPenalty | number:1}}</label>
+        Assignment penalty is {{assignmentPenalty | number:1}}.
         <br>
-        <label>Level Targets = {{levelTargets}}</label>
+        Level targets are {{levelTargets}}.
       </div>
       <div class="col-sm-4">
          <label style="font-size:20pt">Library Generation</label>
@@ -131,16 +131,18 @@
           <h3 class="modal-title">Add Feature</h3>
       </div>
       <div class="modal-body">
+          <label>Current Features</label>
+          <br>
+           <ul>
+              <li ng-repeat="item in selected">
+                  <a ng-click="moveFeature(item)">{{item.feature.name}}</a>
+              </li>
+          </ul>
+          <label>Available Features</label>
+          <br>
           <ul>
               <li ng-repeat="feat in features">
                   <a ng-click="selected.push({feature: feat})">{{feat.name}}</a>
-              </li>
-          </ul>
-          Selected: 
-          <br>
-          <ul>
-              <li ng-repeat="item in selected">
-                  <a ng-click="moveFeature(item)">{{item.feature.name}}</a>
               </li>
           </ul>
       </div>
