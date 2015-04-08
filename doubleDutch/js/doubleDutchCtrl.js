@@ -183,9 +183,6 @@ app.controller("doubleDutchCtrl", function($scope, $modal, $log) {
 			}
 			return indices;	
 		};
-		// this.isHomologyRisk = function(i, j, iMax) {
-		// 	return this.getHomology(i, j, iMax, false).length > 0;
-		// };
 		this.isHomologyRisk = function() {
 			var i, j;
 			for (i = 0; i < this.levelSelections.length; i++) {
@@ -605,70 +602,6 @@ app.controller("doubleDutchCtrl", function($scope, $modal, $log) {
 		};
 	}
 
-	// var doeTemplateParser = {
-	// 	parseTemplate: function(name, data) {
-	// 		var grid = [];
-	// 		var range = [];
-	// 		if (data != null) {
-	// 			var i;
-	// 			var j;
-	// 			var minI;
-	// 			var minJ = -1;
-	// 			var maxJ = -1;
-	// 			for (i = 0; i < data.length; i++) {
-	// 				j = 0;
-	// 				while (j < data[i].length && minJ < 0) {
-	// 					if (j > 0 && !isNaN(data[i][j]) && data[i][j] !== ""
-	// 							&& !isNaN(data[i][j - 1]) && data[i][j - 1] !== "") {
-	// 						minJ = j;
-	// 						minI = i;
-	// 					}
-	// 					j++;
-	// 				}
-	// 				while (j < data[i].length && maxJ < 0) {
-	// 					if (!isNaN(data[i][j]) && data[i][j] !== ""
-	// 							&& (j + 1 == data[i].length || isNaN(data[i][j + 1]) || data[i][j + 1] === "")) {
-	// 						maxJ = j;
-	// 					}
-	// 					j++;
-	// 				}
-	// 				if (minJ >= 0 && maxJ >= 0) {
-	// 					j = minJ;
-	// 					grid.push([]);
-	// 					while (!isNaN(data[i][j]) && data[i][j] !== "" && j <= maxJ) {
-	// 						grid[i - minI].push(data[i][j]);
-	// 						if (range.indexOf(data[i][j]) < 0) {
-	// 							range.push(data[i][j]);
-	// 						}
-	// 						j++;
-	// 					}
-	// 					if (j <= maxJ) {
-	// 						grid.splice(i, 1);
-	// 						i = data.length;
-	// 					}
-	// 				} else if (minJ >= 0) {
-	// 					return null;
-	// 				}
-	// 			}
-	// 			range.sort(function(a, b){return a - b});
-	// 		}
-	// 		return new doeTemplate(name, grid, range);
-	// 	},
-	// 	validateTemplate: function(template) {
-	// 		if (template.grid.length == 0 || template.range.length == 0) {
-	// 			return {isValidParse: false, isValidRange: false, isValidGrid: false};
-	// 		} else {
-	// 			var i;
-	// 			for (i = 1; i < template.grid.length; i++) {
-	// 				if (template.grid[i].length != template.grid[i - 1].length) {
-	// 					return {isValidParse: true, isValidRange: template.range.length == 1, isValidGrid: false};
-	// 				}
-	// 			}
-	// 			return {isValidParse: true, isValidRange: template.range.length == 1, isValidGrid: true};
-	// 		}
-	// 	}
-	// };
-
 	var expressGrammar = {
 		name: "Expression Grammar",
 		inferModule: function(feats) {
@@ -753,43 +686,41 @@ app.controller("doubleDutchCtrl", function($scope, $modal, $log) {
 		grammar: expressGrammar,
 		parseDesigns: function(data) {
 			var designs = [];
-			if (data != null) {
-				var parsedMod;
-				var rowFeats = [];
-				var i;
-				for (i = 0; i < data.length; i++) {
-					if (data[i].length > 0) {
-						rowFeats[i] = this.parseFeature(data[i][0]);
-						if (rowFeats[i] != null) {
-							parsedMod = this.grammar.inferModule([rowFeats[i]]);
-							if (parsedMod != null) {
-								designs.push(new design(parsedMod, [], this.grammar));
-							}
-						}
-					}
-				}
-				var colFeats = [];
-				var j;
-				for (j = 1; data.length > 0 && j < data[0].length; j++) {
-					colFeats[j] = this.parseFeature(data[0][j]);
-					if (colFeats[j] != null) {
-						parsedMod = this.grammar.inferModule([colFeats[j]]);
+			var parsedMod;
+			var rowFeats = [];
+			var i;
+			for (i = 0; i < data.length; i++) {
+				if (data[i].length > 0) {
+					rowFeats[i] = this.parseFeature(data[i][0]);
+					if (rowFeats[i] != null) {
+						parsedMod = this.grammar.inferModule([rowFeats[i]]);
 						if (parsedMod != null) {
 							designs.push(new design(parsedMod, [], this.grammar));
 						}
 					}
 				}
-				var parsedParam;
-				var parsedDesign;
-				for (i = 1; i < data.length; i++) {
-					for (j = 1; j < data[i].length; j++) {
-						if (rowFeats[i] != null && colFeats[j] != null) {
-							parsedMod = this.grammar.inferModule([rowFeats[i], colFeats[j]]);
-							if (parsedMod != null) {
-								parsedParam = this.parseParameter(data[i][j], parsedMod.role);
-								if (parsedParam != null) {
-									designs.push(new design(parsedMod, parsedParam, this.grammar));
-								}
+			}
+			var colFeats = [];
+			var j;
+			for (j = 1; data.length > 0 && j < data[0].length; j++) {
+				colFeats[j] = this.parseFeature(data[0][j]);
+				if (colFeats[j] != null) {
+					parsedMod = this.grammar.inferModule([colFeats[j]]);
+					if (parsedMod != null) {
+						designs.push(new design(parsedMod, [], this.grammar));
+					}
+				}
+			}
+			var parsedParam;
+			var parsedDesign;
+			for (i = 1; i < data.length; i++) {
+				for (j = 1; j < data[i].length; j++) {
+					if (rowFeats[i] != null && colFeats[j] != null) {
+						parsedMod = this.grammar.inferModule([rowFeats[i], colFeats[j]]);
+						if (parsedMod != null) {
+							parsedParam = this.parseParameter(data[i][j], parsedMod.role);
+							if (parsedParam != null) {
+								designs.push(new design(parsedMod, parsedParam, this.grammar));
 							}
 						}
 					}
@@ -844,7 +775,7 @@ app.controller("doubleDutchCtrl", function($scope, $modal, $log) {
 		grammar: expressGrammar,
 		parseDesigns: function(data) {
 			var designs = [];
-			if (data != null && data.length > 1 && data[0].length >= 7
+			if (data[0].length == 7
 					&& data[0][0] === "Part" && data[0][1] === "Part Type" && data[0][2] === "Strength" 
 					&& data[0][3] === "Strength_SD" && data[0][4] === "REU" && data[0][5] === "REU_SD"
 					&& data[0][6] === "Part Sequence") {
@@ -925,8 +856,9 @@ app.controller("doubleDutchCtrl", function($scope, $modal, $log) {
 	$scope.flNodes = [];
 
 	$scope.uploadSelector = "0";
-	$scope.designParsers = [gridParser, tableParser];
-	$scope.spareFeatures = [];
+	$scope.featParsers = [gridParser, tableParser];
+	$scope.feats = [];
+	$scope.numFeatsUploaded = 0;
 
 	$scope.doeTemplates = [{name: "Full Factorial (Any Size)", grid: [], range: []}];
 
@@ -946,32 +878,7 @@ app.controller("doubleDutchCtrl", function($scope, $modal, $log) {
 		    size: size,
 		    resolve: {
 	        	items: function() {
-	        		var addUniqueFeatures = function(feats, targetFeats) {
-	        			var i;
-	        			for (i = 0; i < targetFeats.length; i++) {
-	        				if (feats.indexOf(targetFeats[i]) < 0) {
-	        					feats.push(targetFeats[i]);
-	        				}
-	        			}
-	        			return feats;
-	        		};
-	        		var feats = [];
-	        		var i;
-	        		for (i = 0; i < $scope.fNodes.length; i++) {
-	        			feats = addUniqueFeatures(feats, $scope.fNodes[i].fl.design.module.getFeatures());
-	        		}
-	        		for (i = 0; i < $scope.lNodes.length; i++) {
-	        			feats = addUniqueFeatures(feats, $scope.lNodes[i].fl.design.module.getFeatures());
-	        		}
-	        		var j;
-	        		for (i = 0; i < $scope.flNodes.length; i++) {
-	        			feats = addUniqueFeatures(feats, $scope.flNodes[i].fl.design.module.getFeatures());
-	        			for (j = 0; j < $scope.flNodes[i].nodes.length; j++) {
-	        				feats = addUniqueFeatures(feats, $scope.flNodes[i].nodes[j].fl.design.module.getFeatures());
-	        			}
-	        		}
-	        		feats = addUniqueFeatures(feats, $scope.spareFeatures);
-	          		return {selectedFl: selectedFl, features: feats};
+	          		return {selectedFl: selectedFl, features: $scope.feats};
 	        	}
 	      	}
 	    });
@@ -1044,101 +951,101 @@ app.controller("doubleDutchCtrl", function($scope, $modal, $log) {
 
   	$scope.generateDesigns = function() {
   		var outputData = [[]];
-  		if ($scope.flNodes.length == 0) {
-  			alertUser("lg", "Error", "Experimental design contains no factors. Upload one or more coding sequences and drag a factor from the leftmost column " 
-					+ "to the center column.");
-  		} else {
-  			var isValidExperimentalDesign = function(flNodes) {
-  				var i;
-				for (i = 1; i < flNodes.length; i++) {
-					if (flNodes[i].nodes.length < 2 || flNodes[i].nodes.length != flNodes[i - 1].nodes.length) {
-						return false;
-					}
+  		var isValidExperimentalDesign = function(flNodes) {
+			var i;
+			for (i = 1; i < flNodes.length; i++) {
+				if (flNodes[i].nodes.length < 2 || flNodes[i].nodes.length != flNodes[i - 1].nodes.length) {
+					return false;
 				}
-				return true;
-  			};
-			if (!isValidExperimentalDesign($scope.flNodes)) {
-				alertUser("lg", "Error", "Experimental design does not have the same number of levels associated with each factor or this number is less "
-						+ "than two. Upload parameterized features and select 'Assign Levels' or drag levels from the rightmost column to the center "
-						+ "column.");
-			} else {
-				var templater = new doeTemplater();
-				var i;
-		  		if ($scope.selectedTemplate.name === "Full Factorial (Any Size)" && $scope.selectedTemplate.range.length == 0) {
-		  			for (i = 0; i < $scope.doeTemplates.length; i++) {
-		  				if ($scope.flNodes[0].nodes.length == $scope.doeTemplates[i].range.length 
-			  					&& $scope.doeTemplates[i].grid.length == Math.pow($scope.doeTemplates[i].range.length, $scope.doeTemplates[i].grid[0].length)) {
-		  					$scope.selectedTemplate = $scope.doeTemplates[i];
-		  					i = $scope.doeTemplates[i].length;
-		  				}
-		  			}
-		  			if ($scope.selectedTemplate.name === "Full Factorial (Any Size)" && $scope.selectedTemplate.range.length == 0) { 
-					  	$scope.doeTemplates.push(templater.fullFactorial($scope.flNodes.length, $scope.flNodes[0].nodes.length));
-						$scope.selectedTemplate = $scope.doeTemplates[$scope.doeTemplates.length - 1];	
-						$scope.doeTemplates.sort(function(a, b) {
-							var nameA = a.name;
-							var nameB = b.name;
-							if (nameA < nameB) {
-								return -1;
-							} else if (nameA > nameB) {
-								return 1;
-							} else {
-								return 0;
-							}
-						});
-			  		}
+			}
+			return true;
+		};
+  		if ($scope.flNodes.length == 0) {
+  			alertUser("lg", "Error", "Factorial design contains no factors. Upload one or more coding sequences and drag a factor from the leftmost column " 
+					+ "to the center column.");
+  		} else if (!isValidExperimentalDesign($scope.flNodes)) {
+			alertUser("lg", "Error", "Factorial design does not have the same number of levels associated with each factor or this number is less "
+					+ "than two. Upload parameterized features and select 'Assign Levels' or drag levels from the rightmost column to the center "
+					+ "column.");
+		} else {
+			var templater = new doeTemplater();
+			var i;
+	  		if ($scope.selectedTemplate.name === "Full Factorial (Any Size)" && $scope.selectedTemplate.range.length == 0) {
+	  			for (i = 0; i < $scope.doeTemplates.length; i++) {
+	  				if ($scope.flNodes[0].nodes.length == $scope.doeTemplates[i].range.length 
+		  					&& $scope.doeTemplates[i].grid.length == Math.pow($scope.doeTemplates[i].range.length, $scope.doeTemplates[i].grid[0].length)) {
+	  					$scope.selectedTemplate = $scope.doeTemplates[i];
+	  					i = $scope.doeTemplates[i].length;
+	  				}
+	  			}
+	  			if ($scope.selectedTemplate.name === "Full Factorial (Any Size)" && $scope.selectedTemplate.range.length == 0) { 
+				  	$scope.doeTemplates.push(templater.fullFactorial($scope.flNodes.length, $scope.flNodes[0].nodes.length));
+					$scope.selectedTemplate = $scope.doeTemplates[$scope.doeTemplates.length - 1];	
+					$scope.doeTemplates.sort(function(a, b) {
+						var nameA = a.name;
+						var nameB = b.name;
+						if (nameA < nameB) {
+							return -1;
+						} else if (nameA > nameB) {
+							return 1;
+						} else {
+							return 0;
+						}
+					});
 		  		}
-		  		var templateValidation = templater.validateTemplateVsDesign($scope.selectedTemplate, $scope.flNodes);
-		  		if (!templateValidation.isValidRange || !templateValidation.isValidGrid) {
-		  			var errorMessage = "";
-		  			if (!templateValidation.isValidRange) {
-	  					errorMessage += "Range of values in DOE template is not equal in size to the number of levels associated with each factor in the "
-	  							+ "experimental design. Upload or select a template that has a range of " + $scope.flNodes[0].nodes.length + " non-identical "
-	  							+ "numbers.";
-		  			}
-		  			if (!templateValidation.isValidGrid) {
-		  				if (errorMessage.length > 0) {
-		  					errorMessage += "<br><br>";
-		  				}
-		  				errorMessage += "The length of rows in DOE template is not equal to the number of factors in the experimental design. "
-		  						+ "Upload or select a template that contains rows of length " + $scope.flNodes.length + ".";
-		  			}
-		  			alertUser("lg", "Error", errorMessage);
-		  		}
-		  		if (templateValidation.isValidRange && templateValidation.isValidGrid) {
-		  			for (i = 0; i < $scope.flNodes.length; i++) {
-		  				$scope.flNodes[i].nodes.sort(function(a, b){return a.parameter.value - b.parameter.value})
-		  				outputData[0].push($scope.flNodes[i].fl.design.name);
-		  			}
-		  			var j, k;
-		  			for (i = 0; i < $scope.selectedTemplate.grid.length; i++) {
-		  				outputData.push([]);
-		  				for (j = 0; j < $scope.selectedTemplate.grid[i].length; j++) {
-		  					k = $scope.selectedTemplate.range.indexOf($scope.selectedTemplate.grid[i][j]);
-		  					outputData[i + 1].push($scope.flNodes[j].nodes[k].fl.design.name);
-		  				}
-		  			}
-		  		}
+	  		}
+	  		var templateValidation = templater.validateTemplateVsDesign($scope.selectedTemplate, $scope.flNodes);
+	  		if (!templateValidation.isValidRange || !templateValidation.isValidGrid) {
+	  			var errorMessage = "";
+	  			if (!templateValidation.isValidRange) {
+  					errorMessage += "Range of values in DOE template is not equal in size to the number of levels associated with each factor in the "
+  							+ "factorial design. Upload or select a template that has a range of " + $scope.flNodes[0].nodes.length + " non-identical "
+  							+ "numbers.";
+	  			}
+	  			if (!templateValidation.isValidGrid) {
+	  				if (errorMessage.length > 0) {
+	  					errorMessage += "<br><br>";
+	  				}
+	  				errorMessage += "The length of rows in DOE template is not equal to the number of factors in the factorial design. "
+	  						+ "Upload or select a template that contains rows of length " + $scope.flNodes.length + ".";
+	  			}
+	  			alertUser("lg", "Error", errorMessage);
+	  		}
+	  		if (templateValidation.isValidRange && templateValidation.isValidGrid) {
+	  			for (i = 0; i < $scope.flNodes.length; i++) {
+	  				$scope.flNodes[i].nodes.sort(function(a, b){return a.parameter.value - b.parameter.value})
+	  				outputData[0].push($scope.flNodes[i].fl.design.name);
+	  			}
+	  			var j, k;
+	  			for (i = 0; i < $scope.selectedTemplate.grid.length; i++) {
+	  				outputData.push([]);
+	  				for (j = 0; j < $scope.selectedTemplate.grid[i].length; j++) {
+	  					k = $scope.selectedTemplate.range.indexOf($scope.selectedTemplate.grid[i][j]);
+	  					outputData[i + 1].push($scope.flNodes[j].nodes[k].fl.design.name);
+	  				}
+	  			}
 	  		}
   		}
   		return outputData;
-  	}
+  	};
 
   	$scope.uploadTemplate = function() {
   		if ($scope.templateFiles == null || $scope.templateFiles.length == 0) {
-			alertUser("lg", "Error", "No file selected. Browse and select a DOE template file (.csv) to upload.");
+			alertUser("lg", "Warning", "No file selected. Browse and select a DOE template file (.csv) to upload.");
+		} else if ($scope.templateFiles[0].name.length < 4 || $scope.templateFiles[0].name.substring($scope.templateFiles[0].name.length - 4) !== ".csv") {
+			alertUser("lg", "Error", "Selected file lacks the .csv file extension. Browse and select a DOE template file (.csv) to upload.");
 		} else {
-			if ($scope.templateFiles[0].name.length < 4 || $scope.templateFiles[0].name.substring($scope.templateFiles[0].name.length - 4) !== ".csv") {
-				alertUser("lg", "Error", "Selected file lacks the .csv file extension. Browse and select a DOE template file (.csv) to upload.");
-			} else {
-				Papa.parse($scope.templateFiles[0], {dynamicTyping: true, 
-					complete: function(results) {
+			Papa.parse($scope.templateFiles[0], {dynamicTyping: true, 
+				complete: function(results) {
+					if (results.data.length == 0) {
+						alertUser("lg", "Error", "DOE template file contains no data. Browse and select a new DOE template file (.csv) to upload.");
+					} else {
 						var templater = new doeTemplater();
 						var template = templater.parseTemplate($scope.templateFiles[0].name.substring(0, $scope.templateFiles[0].name.length - 4), 
 								results.data);
 						var templateValidation = templater.validateTemplate(template);
 						if (!templateValidation.isValidParse) {
-							alertUser("lg", "Error", "Failed to parse DOE template. Check file format.");
+							alertUser("lg", "Error", "Failed to parse DOE template file. Check file format.");
 						} else if (!templateValidation.isValidRange || !templateValidation.isValidGrid) {
 							var errorMessage = "";
 							if (!templateValidation.isValidRange) {
@@ -1169,97 +1076,119 @@ app.controller("doubleDutchCtrl", function($scope, $modal, $log) {
 							$scope.$apply();
 						}
 					}
-				});
-			}
+				}
+			});
 		}
-  	}
+  	};
 
-	$scope.uploadDesigns = function(files, designParser) {
-		var i;
-		if (files != null) {
-	    	for (i = 0; i < files.length; i++) {
-	    		Papa.parse(files[i], {dynamicTyping: true, 
+	$scope.uploadFeatures = function() {
+		var isCSV = function(files) {
+			var i;
+			for (i = 0; i < $scope.featFiles.length; i++) {
+				if ($scope.featFiles[i].name.substring($scope.featFiles[i].name.length - 4) !== ".csv") {
+					return false;
+				}
+			}
+			return true;
+		}
+		if ($scope.featFiles == null) {
+			alertUser("lg", "Warning", "No files selected. Browse and select one or more feature files (.csv) to upload.");
+		} else if (!isCSV($scope.featFiles)) {
+			alertUser("lg", "Error", "One or more of selected files lack the .csv file extension. Browse and select feature files (.csv) to upload.");
+		} else {
+			var i;
+	    	for (i = 0; i < $scope.featFiles.length; i++) {
+	    		Papa.parse($scope.featFiles[i], {i: i, dynamicTyping: true, 
 					complete: function(results) {
-						var isCodedExpression = function(design) {
-							if ('module' in design) { 
-								if (design.module.role === modRole.EXPRESSION) {
-									var feats = design.module.getFeatures();
-									var i;
-									for (i = 0; i < feats.length; i++) {
-										if (feats[i].role === featRole.CDS) {
-											return true;
+						if (results.data.length == 0) {
+							alertUser("lg", "Error", $scope.featFiles[this.i].name + " contains no data. Browse and select a new feature file (.csv) to upload.");
+						} else {
+							var designs = $scope.featParsers[$scope.uploadSelector].parseDesigns(results.data);
+							if (designs.length == 0) {
+								alertUser("lg", "Error", "Failed to parse contents of " + $scope.featFiles[this.i].name + ". Check file format.");
+							} else {
+								var isCodedExpression = function(design) {
+									if ('module' in design) { 
+										if (design.module.role === modRole.EXPRESSION) {
+											var feats = design.module.getFeatures();
+											var i;
+											for (i = 0; i < feats.length; i++) {
+												if (feats[i].role === featRole.CDS) {
+													return true;
+												}
+											}
+											return false;
+										} else {
+											return false;
+										}
+									} else {
+										return false;
+									}
+								};
+								var isParameterizedExpression = function(design) {
+									if ('module' in design && 'parameters' in design) { 
+										var varia;
+										if (design.module.role === modRole.EXPRESSION) {
+											varia = expressStrength;
+										} else if (design.module.role === modRole.TRANSCRIPTION) {
+											varia = transcStrength;
+										} else if (design.module.role === modRole.TRANSLATION) {
+											varia = translStrength;
+										} else {
+											return -1;
+										}
+										var i = 0;
+										while (i < design.parameters.length) {
+											if (design.parameters[i].variable.name === varia.name) {
+												return i;
+											} else {
+												i++;
+											}
+										}
+										return -1;
+									} else {
+										return -1;
+									}
+								};
+								var i, j;
+								var feats;
+								$scope.numFeatsUploaded = 0;
+								for (i = 0; i < designs.length; i++) {
+									if (isCodedExpression(designs[i])) {
+										$scope.fNodes.push(new flNode(new factor(dummyVaria, designs[i])));
+									} else {
+										j = isParameterizedExpression(designs[i]);
+										if (j >= 0) {
+											$scope.lNodes.push(new flNode(new level(designs[i].parameters[j], designs[i])));
+										} 
+									}
+									feats = designs[i].module.getFeatures();
+									for (j = 0; j < feats.length; j++) {
+										if ($scope.feats.indexOf(feats[j]) < 0) {
+											$scope.feats.push(feats[j]);
+											$scope.numFeatsUploaded++;
 										}
 									}
-									return false;
-								} else {
-									return false;
 								}
-							} else {
-								return false;
-							}
-						};
-						var isParameterizedExpression = function(design) {
-							if ('module' in design && 'parameters' in design) { 
-								var varia;
-								if (design.module.role === modRole.EXPRESSION) {
-									varia = expressStrength;
-								} else if (design.module.role === modRole.TRANSCRIPTION) {
-									varia = transcStrength;
-								} else if (design.module.role === modRole.TRANSLATION) {
-									varia = translStrength;
-								} else {
-									return -1;
-								}
-								var i = 0;
-								while (i < design.parameters.length) {
-									if (design.parameters[i].variable.name === varia.name) {
-										return i;
+								$scope.fNodes.sort(function(a, b) {
+									var nameA = a.fl.design.module.name;
+									var nameB = b.fl.design.module.name;
+									if (nameA < nameB) {
+										return -1;
+									} else if (nameA > nameB) {
+										return 1;
 									} else {
-										i++;
+										return 0;
 									}
-								}
-								return -1;
-							} else {
-								return -1;
-							}
-						};
-						var designs = designParser.parseDesigns(results.data);
-						var i;
-						var j;
-						var spareFeats;
-						for (i = 0; i < designs.length; i++) {
-							if (isCodedExpression(designs[i])) {
-								$scope.fNodes.push(new flNode(new factor(dummyVaria, designs[i])));
-							} else {
-								j = isParameterizedExpression(designs[i]);
-								if (j >= 0) {
-									$scope.lNodes.push(new flNode(new level(designs[i].parameters[j], designs[i])));
-								} else {
-									spareFeats = designs[i].module.getFeatures();
-									for (j = 0; j < spareFeats.length; j++) {
-										$scope.spareFeatures.push(spareFeats[j]);
-									}
-									
-								}
+								});
+								$scope.lNodes.sort(function(a, b){return a.parameter.value - b.parameter.value});
+								$scope.$apply();
 							}
 						}
-						$scope.fNodes.sort(function(a, b) {
-							var nameA = a.fl.design.module.name;
-							var nameB = b.fl.design.module.name;
-							if (nameA < nameB) {
-								return -1;
-							} else if (nameA > nameB) {
-								return 1;
-							} else {
-								return 0;
-							}
-						});
-						$scope.lNodes.sort(function(a, b){return a.parameter.value - b.parameter.value});
-						$scope.$apply();
 					}
 				});
 	    	}
-    	}
+		}
     };
 
   //   $scope.testAssign = function() {
@@ -1405,8 +1334,7 @@ app.controller("doubleDutchCtrl", function($scope, $modal, $log) {
 
 				var counter = new homologyCounter();
 	    		var homologyCount = counter.countHomologies($scope.lNodes);
-	    		// var test = 2*homologyCount/Math.pow($scope.lNodes.length, 2)*$scope.flNodes.length*$scope.levelsPerFactor - 1;
-	    		// console.log("expected: " + test);
+	    
 	    		var progressTolerance = $scope.toleranceModifier*Math.ceil(1/Math.pow(1 - 2*homologyCount/Math.pow($scope.lNodes.length, 2), 
 		    			$scope.flNodes.length*$scope.levelsPerFactor - 1));
 

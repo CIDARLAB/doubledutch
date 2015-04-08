@@ -21,9 +21,10 @@
         <input type="radio" id="gridRadio" name="uploadSelect" value="0" ng-model="uploadSelector"/>
         <label for="tableRadio">Table</label>
         <input type="radio" id="tableRadio" name="uploadSelect" value="1" ng-model="uploadSelector"/>
-        <input type="file" file-input="designFiles" multiple>
+        <input type="file" file-input="featFiles" multiple>
         <br>
-        <button type="button" class="btn btn-primary" ng-click="uploadDesigns(designFiles, designParsers[uploadSelector])">Upload Features</button>
+        <button type="button" class="btn btn-primary" ng-click="uploadFeatures()">Upload Features</button>
+        <label>{{numFeatsUploaded | number:0}} feats uploaded.</label>
       </div>
       <div class="col-sm-4">
         <label style="font-size:20pt">DOE Template Upload (.csv)</label>
