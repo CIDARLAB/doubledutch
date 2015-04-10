@@ -157,7 +157,7 @@ app.controller("doubleDutchCtrl", function($scope, $modal, $log) {
 		this.calculateHomologyCost = function() {
 			// var repeat;
 			// do {
-			var secondOpinion = this.countHomology();
+			// var secondOpinion = this.countHomology();
 			var globalDict = {};
 			var localDict;
     		var feats;
@@ -599,34 +599,34 @@ app.controller("doubleDutchCtrl", function($scope, $modal, $log) {
 		return result;
 	}
 
-	function homologyCounter() {
-		this.countHomologies = function(lNodes) {
-			var dict = {};
-    		var feats;
-    		var featHash;
-    		var homologyCount = 0;
-    		var i, j;
-    		for (i = 0; i < lNodes.length; i++) {
-    			feats = lNodes[i].fl.design.module.getFeatures();
-    			for (j = 0; j < feats.length; j++) {
-    				featHash = hash(feats[j]);
-    				if (dict[featHash] == null) {
-    					dict[featHash] = 0;
-    				} else if (dict[featHash] > 0) {
-    					homologyCount += dict[featHash];
-    					dict[featHash]++;
-    				}
-    			}
-    			for (j = 0; j < feats.length; j++) {
-    				featHash = hash(feats[j]);
-    				if (dict[featHash] == 0) {
-    					dict[featHash]++;
-    				}
-    			}
-    		}
-    		return homologyCount;
-		};
-	}
+	// function homologyCounter() {
+	// 	this.countHomologies = function(lNodes) {
+	// 		var dict = {};
+ //    		var feats;
+ //    		var featHash;
+ //    		var homologyCount = 0;
+ //    		var i, j;
+ //    		for (i = 0; i < lNodes.length; i++) {
+ //    			feats = lNodes[i].fl.design.module.getFeatures();
+ //    			for (j = 0; j < feats.length; j++) {
+ //    				featHash = hash(feats[j]);
+ //    				if (dict[featHash] == null) {
+ //    					dict[featHash] = 0;
+ //    				} else if (dict[featHash] > 0) {
+ //    					homologyCount += dict[featHash];
+ //    					dict[featHash]++;
+ //    				}
+ //    			}
+ //    			for (j = 0; j < feats.length; j++) {
+ //    				featHash = hash(feats[j]);
+ //    				if (dict[featHash] == 0) {
+ //    					dict[featHash]++;
+ //    				}
+ //    			}
+ //    		}
+ //    		return homologyCount;
+	// 	};
+	// }
 
 	function doeTemplate(name, grid, range) {
 		this.name = name;
@@ -1452,8 +1452,8 @@ app.controller("doubleDutchCtrl", function($scope, $modal, $log) {
 
 				var levelCosts = clusterer.costClusters(clusterResult.clusters);
 
-				var counter = new homologyCounter();
-	    		var homologyCount = counter.countHomologies($scope.lNodes);
+				// var counter = new homologyCounter();
+	    		// var homologyCount = counter.countHomologies($scope.lNodes);
 	    
 	    		// var progressTolerance = $scope.toleranceModifier*Math.ceil(1/Math.pow(1 - 2*homologyCount/Math.pow($scope.lNodes.length, 2), 
 		    	// 		$scope.flNodes.length*$scope.levelsPerFactor - 1));
