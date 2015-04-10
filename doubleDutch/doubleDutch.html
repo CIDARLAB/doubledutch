@@ -46,7 +46,11 @@
         <button type="button" class="btn btn-primary" ng-click="assignLevels()">Assign Levels</button>
         <button type="button" class="btn btn-primary" ng-click="assignmentOptions()">Advanced Options</button>
         <br><br>
-        Assignment penalty is {{assignmentPenalty | number:1}}.
+        Level matching cost is {{levelMatchCost | number:1}}.
+        <br>
+        Homology cost is {{homologyCost | number:0}}.
+        <br>
+        Total assignment cost is {{assignmentCost | number:1}}.
         <br>
         Level targets are {{levelTargets}}.
       </div>
@@ -120,8 +124,8 @@
 			</form>   
     		</div>
   	</div>
-  	<ol ui-tree-nodes="" data-max-depth="{{node.depth}}" ng-model="node.nodes" ng-class="{hidden: collapsed}">
-    		<li ng-repeat="node in node.nodes" ui-tree-node ng-include="'fl_tree_renderer.html'">
+  	<ol ui-tree-nodes="" data-max-depth="{{node.depth}}" ng-model="node.children" ng-class="{hidden: collapsed}">
+    		<li ng-repeat="node in node.children" ui-tree-node ng-include="'fl_tree_renderer.html'">
     		</li>
   	</ol>
 	</script>
