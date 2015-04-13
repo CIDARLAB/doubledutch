@@ -46,13 +46,17 @@
         <button type="button" class="btn btn-primary" ng-click="assignLevels()">Assign Levels</button>
         <button type="button" class="btn btn-primary" ng-click="assignmentOptions()">Advanced Options</button>
         <br><br>
-        Level matching cost is {{levelMatchCost | number:1}}.
-        <br>
-        Homology cost is {{homologyCost | number:0}}.
-        <br>
-        Total assignment cost is {{assignmentCost | number:1}}.
-        <br>
         Level targets are {{levelTargets}}.
+        <br><br>
+        Level matching cost is {{levelMatchCost | number:2}}.
+        <br>
+        Homology cost is {{homologyCost | number:2}}.
+        <br>
+        Reuse cost is {{reuseCost | number:2}}.
+        <br>
+        ______________________
+        <br>
+        Total assignment cost is {{assignmentCost | number:2}}.
       </div>
       <div class="col-sm-4">
          <label style="font-size:20pt">Library Generation</label>
@@ -180,8 +184,8 @@
                   <label>Initial Temperature</label>
                   <input type="number" step="1" min="1" max="1000" style="height:25px; width:50px" ng-model="initialTemp">
                   <br>
-                  <label># of Cycles</label>
-                  <input type="number" step="1" min="1" max="100" style="height:25px; width:50px" ng-model="cycleLimit">
+                  <label># of Trials</label>
+                  <input type="number" step="1" min="1" max="100" style="height:25px; width:50px" ng-model="trialLimit">
                   <br>
                   <label>Progress Tolerance</label>
                   <input type="number" step="1" min="1" max="100" style="height:25px; width:50px" ng-model="toleranceModifier">
