@@ -206,11 +206,12 @@ app.controller("doubleDutchCtrl", function($scope, $modal, $log) {
 			}
 		}
 		this.clusterGrid = clusterGrid;
-		this.calculateCost = function() {
+		this.calculateCost = function(weights) {
 			var levelMatchCost = this.calculateLevelMatchCost();
 			var homologyCost = this.calculateHomologyCost();
 			var reuseCost = this.calculateReuseCost();
-			return {total: levelMatchCost + homologyCost + reuseCost, levelMatch: levelMatchCost, homology: homologyCost, reuse: reuseCost};
+			return {weightedTotal: weights.levelMatch*levelMatchCost + weights.homology*homologyCost + weights.reuse*reuseCost, 
+					total: levelMatchCost + homologyCost + reuseCost, levelMatch: levelMatchCost, homology: homologyCost, reuse: reuseCost};
 		};
 		this.calculateLevelMatchCost = function() {
 			var levelMatchCost = 0;
@@ -299,7 +300,7 @@ app.controller("doubleDutchCtrl", function($scope, $modal, $log) {
 	}
 
 	function flSolver() {
-		this.randomSolve = function(numFactors, levelsPerFactor, clusterGrid, numTrials) {
+		this.randomSolve = function(numFactors, levelsPerFactor, clusterGrid, weights, numTrials) {
   			var soln;
   			var solnCost;
 			var bestSoln;
@@ -311,8 +312,8 @@ app.controller("doubleDutchCtrl", function($scope, $modal, $log) {
 	  			for (i = 0; i < soln.levelSelections.length; i++) {
 	  				for (j = 0; j < soln.levelSelections[i].length; j++) {
 	  					soln = this.mutateSolution(soln, i, j);
-	  					solnCost = soln.calculateCost();
-			  			if (trialCount == 0 || solnCost.total < bestSoln.total) {
+	  					solnCost = soln.calculateCost(weights);
+			  			if (trialCount == 0 || solnCost.weightedTotal < bestSoln.weightedTotal) {
 			  				bestSoln = soln;
 			  				bestCost = solnCost;
 			  			}
@@ -331,7 +332,7 @@ app.controller("doubleDutchCtrl", function($scope, $modal, $log) {
 			mutantSoln.levelSelections[i][j] = k;
     		return mutantSoln;
     	};
-    	this.annealSolve = function(numFactors, levelsPerFactor, clusterGrid, initialTemp, numAnnealings) {
+    	this.annealSolve = function(numFactors, levelsPerFactor, clusterGrid, initialTemp, weights, numAnnealings) {
 			var soln;
 			var solnCost;
 			var bestSoln;
@@ -342,19 +343,20 @@ app.controller("doubleDutchCtrl", function($scope, $modal, $log) {
 			var mutantCost;
 			var i, j;
 			while (annealCount < numAnnealings) {
-				soln = this.randomSolve(numFactors, levelsPerFactor, clusterGrid, 1);
-				solnCost = soln.calculateCost();
+				soln = this.randomSolve(numFactors, levelsPerFactor, clusterGrid, weights, 1);
+				solnCost = soln.calculateCost(weights);
 				temp = initialTemp;
 				while (temp >= 0) {
 					i = Math.floor(Math.random()*soln.levelSelections.length);
 					j = Math.floor(Math.random()*soln.levelSelections[i].length);
 					mutantSoln = this.mutateSolution(soln, i, j);
-					mutantCost = mutantSoln.calculateCost();
-					if (mutantCost.total <= solnCost.total || Math.random() <= Math.exp((solnCost.total - mutantCost.total)/temp)) {
+					mutantCost = mutantSoln.calculateCost(weights);
+					if (mutantCost.weightedTotal <= solnCost.weightedTotal 
+							|| Math.random() <= Math.exp((solnCost.weightedTotal - mutantCost.weightedTotal)/temp)) {
 						soln = mutantSoln;
 						solnCost = mutantCost;
 					}
-					if (annealCount == 0 || solnCost.total < bestCost.total) {
+					if (annealCount == 0 || solnCost.weightedTotal < bestCost.weightedTotal) {
 						 bestSoln = soln
 						 bestCost = solnCost;
 					}
@@ -904,6 +906,9 @@ app.controller("doubleDutchCtrl", function($scope, $modal, $log) {
 	$scope.levelMatchCost = 0;
 	$scope.homologyCost = 0;
 	$scope.reuseCost = 0;
+
+	$scope.weights = {levelMatch: 1, homology: 1, reuse: 1};
+
 	$scope.levelsPerFactor = 2;
 	$scope.initialTemp = 100;
 	$scope.numAnnealings = 10;
@@ -934,16 +939,21 @@ app.controller("doubleDutchCtrl", function($scope, $modal, $log) {
 		    size: size,
 		    resolve: {
 	        	items: function() {
-	          		return {numClusterings: $scope.numClusterings, initialTemp: $scope.initialTemp, numAnnealings: $scope.numAnnealings, 
-	          				toleranceModifier: $scope.toleranceModifier};
+	          		return {initialTemp: $scope.initialTemp, numAnnealings: $scope.numAnnealings, toleranceModifier: $scope.toleranceModifier, 
+			          		weights: $scope.weights, numClusterings: $scope.numClusterings};
 	        	}
 	      	}
 	    });
 	    modalInstance.result.then(function(items) {
-	    	$scope.numClusterings = items.numClusterings;
 	    	$scope.initialTemp = items.initialTemp;
 	    	$scope.numAnnealings = items.numAnnealings;
 	    	$scope.toleranceModifier = items.toleranceModifier;
+
+	    	$scope.numClusterings = items.numClusterings;
+
+	    	$scope.weights.levelMatch = items.weights.levelMatch;
+	    	$scope.weights.homology = items.weights.homology;
+	    	$scope.weights.reuse = items.weights.reuse;
 	    });
 	};
 
@@ -1345,8 +1355,9 @@ app.controller("doubleDutchCtrl", function($scope, $modal, $log) {
 				$scope.levelTargets = $scope.levelTargets.substring(2);
 
 				var solver = new flSolver();
-				// var soln = solver.randomSolve($scope.flNodes.length, $scope.levelsPerFactor, clusterGrid, $scope.trialLimit);
-				var soln = solver.annealSolve($scope.flNodes.length, $scope.levelsPerFactor, clusterGrid, $scope.initialTemp, $scope.numAnnealings);
+				// var soln = solver.randomSolve($scope.flNodes.length, $scope.levelsPerFactor, clusterGrid, $scope.weights, $scope.trialLimit);
+				var soln = solver.annealSolve($scope.flNodes.length, $scope.levelsPerFactor, clusterGrid, $scope.initialTemp, $scope.weights, 
+						$scope.numAnnealings);
 				for (i = 0; i < $scope.flNodes.length; i++) {
 					$scope.flNodes[i].children = [];
 				}
@@ -1358,7 +1369,7 @@ app.controller("doubleDutchCtrl", function($scope, $modal, $log) {
 					}
 				}
 
-				var solnCost = soln.calculateCost();
+				var solnCost = soln.calculateCost($scope.weights);
 				$scope.levelMatchCost = solnCost.levelMatch;
 				$scope.homologyCost = solnCost.homology;
 				$scope.reuseCost = solnCost.reuse;
