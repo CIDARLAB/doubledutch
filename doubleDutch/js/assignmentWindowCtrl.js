@@ -1,12 +1,12 @@
 app.controller('assignmentWindowCtrl', function ($scope, $modalInstance, items) {
   
-  $scope.clusteringLimit = items.clusteringLimit;
+  $scope.numClusterings = items.numClusterings;
   $scope.initialTemp = items.initialTemp;
-  $scope.trialLimit = items.trialLimit;
+  $scope.numAnnealings = items.numAnnealings;
   $scope.toleranceModifier = items.toleranceModifier;
   
   $scope.ok = function () {
-    $modalInstance.close({clusteringLimit: $scope.clusteringLimit, initialTemp: $scope.initialTemp, trialLimit: $scope.trialLimit, 
+    $modalInstance.close({numClusterings: $scope.numClusterings, initialTemp: $scope.initialTemp, numAnnealings: $scope.numAnnealings, 
                     toleranceModifier: $scope.toleranceModifier});
   };
 

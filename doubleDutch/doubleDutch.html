@@ -185,16 +185,13 @@
                   <input type="number" step="1" min="1" max="1000" style="height:25px; width:50px" ng-model="initialTemp">
                   <br>
                   <label># of Trials</label>
-                  <input type="number" step="1" min="1" max="100" style="height:25px; width:50px" ng-model="trialLimit">
-                  <br>
-                  <label>Progress Tolerance</label>
-                  <input type="number" step="1" min="1" max="100" style="height:25px; width:50px" ng-model="toleranceModifier">
+                  <input type="number" step="1" min="1" max="1000" style="height:25px; width:50px" ng-model="numAnnealings">
               </div>
               <div class="col-sm-6">
                   <label style="font-size:20pt">K-Means Clustering</label>
                   <br>
                   <label>Maximum Attempts</label>
-                  <input type="number" step="1" min="1" max="100" style="height:25px; width:50px" ng-model="clusteringLimit">
+                  <input type="number" step="1" min="1" max="100" style="height:25px; width:50px" ng-model="numClusterings">
               </div>
               
           </div>
