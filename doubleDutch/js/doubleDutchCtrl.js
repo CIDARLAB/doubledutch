@@ -118,6 +118,7 @@ app.controller("doubleDutchCtrl", function($scope, $modal, $log) {
 			this.backgroundColor = "background-color:#787878"
 			this.variable = fl.variable;
 			this.parameter = new parameter(0, dummyVaria, dummyUnits);
+			this.levelTargets = [];
 		} else if (fl.schema === "org.clothocad.model.Level") {
 			this.depth = 2;
 			this.rootable = false;
@@ -128,6 +129,7 @@ app.controller("doubleDutchCtrl", function($scope, $modal, $log) {
 			this.variable = fl.parameter.variable;
 			this.parameter = fl.parameter;
 		}
+		this.targetDisplay = "display:none";
 		this.children = [];
 	}
 
@@ -901,6 +903,7 @@ app.controller("doubleDutchCtrl", function($scope, $modal, $log) {
 	$scope.doeTemplates = [{name: "Full Factorial (Any Size)", grid: [], range: []}];
 
 	$scope.numClusterings = 3;
+	$scope.chooseTargets = false;
 
 	$scope.assignmentCost = 0;
 	$scope.levelMatchCost = 0;
@@ -913,7 +916,6 @@ app.controller("doubleDutchCtrl", function($scope, $modal, $log) {
 	$scope.initialTemp = 100;
 	$scope.numAnnealings = 10;
 	$scope.toleranceModifier = 1;
-	$scope.levelTargets = "N/A";
 
 	$scope.addFeatures = function(size, selectedFl) {
 	    var modalInstance = $modal.open({
@@ -932,6 +934,22 @@ app.controller("doubleDutchCtrl", function($scope, $modal, $log) {
 	    });
 	};
 
+	$scope.viewTargets = function(size, fNode) {
+		var modalInstance = $modal.open({
+	    	templateUrl: 'targetWindow.html',
+	    	controller: 'targetWindowCtrl',
+		    size: size,
+		    resolve: {
+	        	items: function() {
+	          		return {levelTargets: fNode.levelTargets, chooseTargets: $scope.chooseTargets};
+	        	}
+	      	}
+	    });
+	    modalInstance.result.then(function(levelTargets) {
+	    	fNode.levelTargets = levelTargets;
+	    });
+	};
+
 	$scope.assignmentOptions = function(size) {
 	    var modalInstance = $modal.open({
 	    	templateUrl: 'assignmentWindow.html',
@@ -940,7 +958,7 @@ app.controller("doubleDutchCtrl", function($scope, $modal, $log) {
 		    resolve: {
 	        	items: function() {
 	          		return {initialTemp: $scope.initialTemp, numAnnealings: $scope.numAnnealings, toleranceModifier: $scope.toleranceModifier, 
-			          		weights: $scope.weights, numClusterings: $scope.numClusterings};
+			          		weights: $scope.weights, numClusterings: $scope.numClusterings, chooseTargets: $scope.chooseTargets};
 	        	}
 	      	}
 	    });
@@ -950,6 +968,7 @@ app.controller("doubleDutchCtrl", function($scope, $modal, $log) {
 	    	$scope.toleranceModifier = items.toleranceModifier;
 
 	    	$scope.numClusterings = items.numClusterings;
+	    	$scope.chooseTargets = items.chooseTargets;
 
 	    	$scope.weights.levelMatch = items.weights.levelMatch;
 	    	$scope.weights.homology = items.weights.homology;
@@ -993,6 +1012,7 @@ app.controller("doubleDutchCtrl", function($scope, $modal, $log) {
     			} else {
     				copyNode = new flNode(new factor(dummyVaria, fl.design));
     			}
+    			event.source.nodeScope.$modelValue.targetDisplay = "";
     			event.source.nodesScope.$modelValue.splice(event.source.index, 0, copyNode);
     		}
     	}
@@ -1322,13 +1342,24 @@ app.controller("doubleDutchCtrl", function($scope, $modal, $log) {
 					+ "design. Select a lower number of levels per factor or upload additional parameterized features.");
 		} else {
 			var clusterer = new lClusterer();
+			var clusterGrid;
+			if (!$scope.chooseTargets) {
+				clusterGrid = clusterer.lfMeansCluster($scope.levelsPerFactor, $scope.flNodes.length, $scope.numClusterings, $scope.lNodes);
+			} else {
+				var levelTargetGrid = [];
+				var i;
+				for (i = 0; i < $scope.flNodes.length; i++) {
+					if ($scope.flNodes[i].levelTargets.length > 0) {
+						levelTargetGrid.push($scope.flNodes[i].levelTargets);
+					} else {
+						levelTargetGrid.push([0]);
+					}
+				}
+				clusterGrid = clusterer.targetedCluster(levelTargetGrid, $scope.lNodes);
+			}
 			var clusterGrid = clusterer.lfMeansCluster($scope.levelsPerFactor, $scope.flNodes.length, $scope.numClusterings, $scope.lNodes);
-			// var targetGrid = [];
-			// targetGrid.push([1900, 24000]);
-			// targetGrid.push([20000, 50000]);
-			// var clusterGrid = clusterer.targetedCluster(targetGrid, $scope.lNodes);
 			var invalidClusters = [];
-			var i, j;
+			var j;
 			for (i = 0; i < clusterGrid.length; i++) {
 				for (j = 0; j < clusterGrid[i].length; j++) {
 					if (clusterGrid[i][j].lNodes.length == 0) {
@@ -1339,21 +1370,21 @@ app.controller("doubleDutchCtrl", function($scope, $modal, $log) {
 			if (invalidClusters.length > 0) {
 				var clusterErrorMessage = "";
 				for (j = 0; j < invalidClusters.length; j++) {
-					clusterErrorMessage += ", " + invalidClusters[i].target.toFixed(3);
+					clusterErrorMessage += ", " + invalidClusters[i].target.toFixed(2);
 				}
 				clusterErrorMessage = clusterErrorMessage.substring(2);
 				clusterErrorMessage += "<br><br>There are no available levels that cluster around the above targets. Change these targets or upload additional "
 						+ "features with parameters that are close to them in magnitude.";
 				alertUser("lg", "Error", clusterErrorMessage);
 			} else {
-				$scope.levelTargets = "";
-				for (i = 0; i < clusterGrid.length; i++) {
-					for (j = 0; j < clusterGrid[i].length; j++) {
-						$scope.levelTargets += ", " + clusterGrid[i][j].target.toFixed(3); 
+				if (!$scope.chooseTargets) {
+					for (i = 0; i < clusterGrid.length; i++) {
+						$scope.flNodes[i].levelTargets = [];
+						for (j = 0; j < clusterGrid[i].length; j++) {
+							$scope.flNodes[i].levelTargets.push(parseFloat(clusterGrid[i][j].target.toFixed(2)));
+						}
 					}
 				}
-				$scope.levelTargets = $scope.levelTargets.substring(2);
-
 				var solver = new flSolver();
 				// var soln = solver.randomSolve($scope.flNodes.length, $scope.levelsPerFactor, clusterGrid, $scope.weights, $scope.trialLimit);
 				var soln = solver.annealSolve($scope.flNodes.length, $scope.levelsPerFactor, clusterGrid, $scope.initialTemp, $scope.weights, 
@@ -1368,7 +1399,6 @@ app.controller("doubleDutchCtrl", function($scope, $modal, $log) {
 						$scope.flNodes[i].children.push(clusterGrid[i][j].lNodes[k]);
 					}
 				}
-
 				var solnCost = soln.calculateCost($scope.weights);
 				$scope.levelMatchCost = solnCost.levelMatch;
 				$scope.homologyCost = solnCost.homology;

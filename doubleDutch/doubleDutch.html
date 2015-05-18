@@ -40,13 +40,11 @@
       <div class="col-sm-4">
         <label style="font-size:20pt">Level Assignment</label>
         <br>
-        <label>Levels per Factor</label>
-        <input type="number" step="1" min="2" max="100" style="height:25px; width:50px" ng-model="levelsPerFactor">
-        <br>
+        <label ng-hide="chooseTargets">Levels per Factor</label>
+        <input type="number" step="1" min="2" max="100" style="height:25px; width:50px" ng-hide="chooseTargets" ng-model="levelsPerFactor">
+        <br ng-hide="chooseTargets">
         <button type="button" class="btn btn-primary" ng-click="assignLevels()">Assign Levels</button>
         <button type="button" class="btn btn-primary" ng-click="assignmentOptions()">Advanced Options</button>
-        <br><br>
-        Level targets are {{levelTargets}}.
         <br><br>
         Level matching cost is {{levelMatchCost | number:2}}.
         <br>
@@ -112,14 +110,16 @@
 	<script src="js/featureWindowCtrl.js"></script>
   <script src="js/alertWindowCtrl.js"></script>
   <script src="js/assignmentWindowCtrl.js"></script>
+  <script src="js/targetWindowCtrl.js"></script>
 	<script src="js/fileInput.js"></script>
 
 	<script type="text/ng-template" id="fl_tree_renderer.html">
   	<div ui-tree-handle class="tree-node" style="{{node.backgroundColor}}">
   		<div class="tree-node-content">
         	<a class="btn btn-success btn-xs" data-nodrag ng-click="toggle(this)" style="{{node.toggleDisplay}}"><span class="glyphicon" ng-class="{'glyphicon-chevron-right': collapsed, 'glyphicon-chevron-down': !collapsed}"></span></a>
-        	<a class="pull-right btn btn-primary btn-xs" data-nodrag ng-click="addFeatures('lg', node.fl)" style="margin-right: 8px"><span class="glyphicon glyphicon-pencil"></span></a>
-        	<a class="pull-right btn btn-danger btn-xs" data-nodrag ng-click="remove(this)"><span class="glyphicon glyphicon-remove"></span></a>
+          <a class="pull-right btn btn-danger btn-xs" data-nodrag ng-click="remove(this)"><span class="glyphicon glyphicon-remove"></span></a>
+          <a class="pull-right btn btn-primary btn-xs" data-nodrag ng-click="addFeatures('lg', node.fl)"><span class="glyphicon glyphicon-pencil"></span></a>
+          <a class="pull-right btn btn-primary btn-xs" style="{{node.targetDisplay}}" data-nodrag ng-click="viewTargets('lg', node)"><span class="glyphicon glyphicon-screenshot"></span></a>
 			<label style="{{node.labelColor}}">Module</label><br>
 			<input type="text" style="height:25px" ng-model="node.fl.design.module.name">
 			<form style="{{node.valueDisplay}}">
@@ -153,6 +153,27 @@
                   <a ng-click="selected.push({feature: feat})">{{feat.name}}</a>
               </li>
           </ul>
+      </div>
+      <div class="modal-footer">
+          <button class="btn btn-primary" ng-click="ok()">OK</button>
+          <button class="btn btn-warning" ng-click="cancel()">Cancel</button>
+      </div>
+  </script>
+
+  <script type="text/ng-template" id="targetWindow.html">
+      <div class="modal-header">
+          <h3 class="modal-title">Level Targets</h3>
+      </div>
+      <div class="modal-body">
+        <button class="btn btn-primary" ng-disabled="areTargetsDisabled" ng-click="addTarget()">Add Target</button>
+        <button class="btn btn-primary" ng-disabled="areTargetsDisabled" ng-click="removeTarget()">Remove Target</button>
+        <br><br>
+        <ul class="list-unstyled">
+          <li ng-repeat="levelTarget in levelTargets">
+              <input type="number" step="0.01" min="0" max="100000" style="height:25px; width:95px" ng-disabled="areTargetsDisabled" ng-model="levelTarget.value">
+              <br>
+          </li>
+        </ul>
       </div>
       <div class="modal-footer">
           <button class="btn btn-primary" ng-click="ok()">OK</button>
@@ -201,6 +222,9 @@
                   <br>
                   <label># of Trials</label>
                   <input type="number" step="1" min="1" max="1000" style="height:25px; width:50px" ng-model="numClusterings">
+                  <br>
+                  <label>Choose Level Targets</label>
+                  <input type="checkbox" ng-model="chooseTargets">
               </div>
               
           </div>
