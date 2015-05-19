@@ -111,9 +111,6 @@ app.controller("doubleDutchCtrl", function($scope, $modal, $log) {
 		this.fl = fl;
 		if (fl.schema === "org.clothocad.model.Factor") {
 			this.depth = 1;
-			this.rootable = true;
-			this.valueDisplay = "display:none";
-			this.toggleDisplay = "";
 			this.labelColor = "color:#ffffff";
 			this.backgroundColor = "background-color:#787878"
 			this.variable = fl.variable;
@@ -121,15 +118,12 @@ app.controller("doubleDutchCtrl", function($scope, $modal, $log) {
 			this.levelTargets = [];
 		} else if (fl.schema === "org.clothocad.model.Level") {
 			this.depth = 2;
-			this.rootable = false;
-			this.valueDisplay = "";
-			this.toggleDisplay = "display:none";
 			this.labelColor = "";
 			this.backgroundColor = ""
 			this.variable = fl.parameter.variable;
 			this.parameter = fl.parameter;
 		}
-		this.targetDisplay = "display:none";
+		this.displayTargets = "display:none";
 		this.children = [];
 	}
 
@@ -258,7 +252,7 @@ app.controller("doubleDutchCtrl", function($scope, $modal, $log) {
 		};
 		this.calculateHomologyCost = function() {
 			var homologyCost = 0;
-			if (this.levelsPerFactor>= 2) {
+			if (this.levelsPerFactor >= 2 && this.numFactors > 1) {
 				var featDict = {};
 	    		var feats;
 	    		var featHash;
@@ -969,6 +963,14 @@ app.controller("doubleDutchCtrl", function($scope, $modal, $log) {
 
 	    	$scope.numClusterings = items.numClusterings;
 	    	$scope.chooseTargets = items.chooseTargets;
+    		var i;
+    		for (i = 0; i < $scope.flNodes.length; i++) {
+    			if ($scope.chooseTargets) {
+    				$scope.flNodes[i].displayTargets = "";
+    			} else if ($scope.flNodes[i].levelTargets.length == 0) {
+    				$scope.flNodes[i].displayTargets = "display:none";
+    			}
+    		}
 
 	    	$scope.weights.levelMatch = items.weights.levelMatch;
 	    	$scope.weights.homology = items.weights.homology;
@@ -991,7 +993,7 @@ app.controller("doubleDutchCtrl", function($scope, $modal, $log) {
 
     $scope.fldTreeOptions = {
     	accept: function(sourceNodeScope, destNodesScope, destIndex) {
-    		if (sourceNodeScope.$modelValue.rootable) {
+    		if (sourceNodeScope.$modelValue.fl.schema === "org.clothocad.model.Factor") {
     			return destNodesScope.maxDepth == 0;
       		} else {
       			return destNodesScope.maxDepth == 1;
@@ -1012,7 +1014,9 @@ app.controller("doubleDutchCtrl", function($scope, $modal, $log) {
     			} else {
     				copyNode = new flNode(new factor(dummyVaria, fl.design));
     			}
-    			event.source.nodeScope.$modelValue.targetDisplay = "";
+    			if ($scope.chooseTargets) {
+	    			event.source.nodeScope.$modelValue.displayTargets = "";
+	    		}
     			event.source.nodesScope.$modelValue.splice(event.source.index, 0, copyNode);
     		}
     	}
@@ -1397,6 +1401,9 @@ app.controller("doubleDutchCtrl", function($scope, $modal, $log) {
 					for (j = 0; j < soln.levelSelections[i].length; j++) {
 						k = soln.levelSelections[i][j];
 						$scope.flNodes[i].children.push(clusterGrid[i][j].lNodes[k]);
+					}
+					if (!$scope.chooseTargets) {
+						$scope.flNodes[i].displayTargets = "";
 					}
 				}
 				var solnCost = soln.calculateCost($scope.weights);

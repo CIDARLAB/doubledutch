@@ -116,13 +116,13 @@
 	<script type="text/ng-template" id="fl_tree_renderer.html">
   	<div ui-tree-handle class="tree-node" style="{{node.backgroundColor}}">
   		<div class="tree-node-content">
-        	<a class="btn btn-success btn-xs" data-nodrag ng-click="toggle(this)" style="{{node.toggleDisplay}}"><span class="glyphicon" ng-class="{'glyphicon-chevron-right': collapsed, 'glyphicon-chevron-down': !collapsed}"></span></a>
+        	<a class="btn btn-success btn-xs" data-nodrag ng-click="toggle(this)" ng-hide="{{node.fl.schema === 'org.clothocad.model.Level'}}"><span class="glyphicon" ng-class="{'glyphicon-chevron-right': collapsed, 'glyphicon-chevron-down': !collapsed}"></span></a>
           <a class="pull-right btn btn-danger btn-xs" data-nodrag ng-click="remove(this)"><span class="glyphicon glyphicon-remove"></span></a>
           <a class="pull-right btn btn-primary btn-xs" data-nodrag ng-click="addFeatures('lg', node.fl)"><span class="glyphicon glyphicon-pencil"></span></a>
-          <a class="pull-right btn btn-primary btn-xs" style="{{node.targetDisplay}}" data-nodrag ng-click="viewTargets('lg', node)"><span class="glyphicon glyphicon-screenshot"></span></a>
+          <a class="pull-right btn btn-primary btn-xs" style="{{node.displayTargets}}" data-nodrag ng-click="viewTargets('lg', node)"><span class="glyphicon glyphicon-screenshot"></span></a>
 			<label style="{{node.labelColor}}">Module</label><br>
 			<input type="text" style="height:25px" ng-model="node.fl.design.module.name">
-			<form style="{{node.valueDisplay}}">
+      <form ng-hide="{{node.fl.schema === 'org.clothocad.model.Factor'}}">
 				<label style="{{node.labelColor}}">{{node.variable.name}}</label><br>
 				<input type="text" style="height:25px" ng-model="node.parameter.value">
 			</form>   
