@@ -40,11 +40,11 @@
       <div class="col-sm-4">
         <label style="font-size:20pt">Level Assignment</label>
         <br>
-        <label ng-hide="chooseTargets">Levels per Factor</label>
-        <input type="number" step="1" min="2" max="100" style="height:25px; width:50px" ng-hide="chooseTargets" ng-model="levelsPerFactor">
-        <br ng-hide="chooseTargets">
+        <label ng-show="autoTarget">Levels per Factor</label>
+        <input type="number" step="1" min="2" max="100" style="height:25px; width:50px" ng-show="autoTarget" ng-model="levelsPerFactor">
+        <br ng-show="autoTarget">
         <button type="button" class="btn btn-primary" ng-click="assignLevels()">Assign Levels</button>
-        <button type="button" class="btn btn-primary" ng-click="assignmentOptions()">Advanced Options</button>
+        <button type="button" class="btn btn-primary" ng-click="assignmentOptions('md')">Advanced Options</button>
         <br><br>
         Level matching cost is {{levelMatchCost | number:2}}.
         <br>
@@ -118,8 +118,8 @@
   		<div class="tree-node-content">
         	<a class="btn btn-success btn-xs" data-nodrag ng-click="toggle(this)" ng-hide="{{node.fl.schema === 'org.clothocad.model.Level'}}"><span class="glyphicon" ng-class="{'glyphicon-chevron-right': collapsed, 'glyphicon-chevron-down': !collapsed}"></span></a>
           <a class="pull-right btn btn-danger btn-xs" data-nodrag ng-click="remove(this)"><span class="glyphicon glyphicon-remove"></span></a>
-          <a class="pull-right btn btn-primary btn-xs" data-nodrag ng-click="addFeatures('lg', node.fl)"><span class="glyphicon glyphicon-pencil"></span></a>
-          <a class="pull-right btn btn-primary btn-xs" style="{{node.displayTargets}}" data-nodrag ng-click="viewTargets('lg', node)"><span class="glyphicon glyphicon-screenshot"></span></a>
+          <a class="pull-right btn btn-primary btn-xs" data-nodrag ng-click="addFeatures('md', node.fl)"><span class="glyphicon glyphicon-pencil"></span></a>
+          <a class="pull-right btn btn-primary btn-xs" style="{{node.displayTargets}}" data-nodrag ng-click="viewTargets('md', node)"><span class="glyphicon glyphicon-screenshot"></span></a>
 			<label style="{{node.labelColor}}">Module</label><br>
 			<input type="text" style="height:25px" ng-model="node.fl.design.module.name">
       <form ng-hide="{{node.fl.schema === 'org.clothocad.model.Factor'}}">
@@ -136,7 +136,7 @@
 
 	<script type="text/ng-template" id="featureWindow.html">
       <div class="modal-header">
-          <h3 class="modal-title">Add Feature</h3>
+          <label style="font-size:20pt">Add/Remove Features</label>
       </div>
       <div class="modal-body">
           <label>Current Features</label>
@@ -162,15 +162,15 @@
 
   <script type="text/ng-template" id="targetWindow.html">
       <div class="modal-header">
-          <h3 class="modal-title">Level Targets</h3>
+          <label style="font-size:20pt">Level Targets</label>
       </div>
       <div class="modal-body">
-        <button class="btn btn-primary" ng-disabled="areTargetsDisabled" ng-click="addTarget()">Add Target</button>
-        <button class="btn btn-primary" ng-disabled="areTargetsDisabled" ng-click="removeTarget()">Remove Target</button>
+        <button class="btn btn-primary" ng-disabled="autoTarget" ng-click="addTarget()">Add Target</button>
+        <button class="btn btn-primary" ng-disabled="autoTarget" ng-click="removeTarget()">Remove Target</button>
         <br><br>
         <ul class="list-unstyled">
           <li ng-repeat="levelTarget in levelTargets">
-              <input type="number" step="0.01" min="0" max="100000" style="height:25px; width:95px" ng-disabled="areTargetsDisabled" ng-model="levelTarget.value">
+              <input type="number" step="0.01" min="0" max="100000" style="height:25px; width:95px" ng-disabled="autoTarget" ng-model="levelTarget.value">
               <br>
           </li>
         </ul>
@@ -195,12 +195,12 @@
 
   <script type="text/ng-template" id="assignmentWindow.html">
       <div class="modal-header">
-          <label style="font-size:20pt">Level Assignment Options</label>
+          <label style="font-size:20pt">Advanced Options</label>
       </div>
       <div class="modal-body">
           <div class="row">
               <div class="col-sm-6">
-                  <label style="font-size:20pt">Simulated Annealing</label>
+                  <label style="font-size:20pt">Level Assignment</label>
                   <br>
                   <label>Initial Temperature</label>
                   <input type="number" step="1" min="1" max="1000" style="height:25px; width:50px" ng-model="initialTemp">
@@ -218,13 +218,13 @@
                   <input type="number" step="1" min="0" max="1000" style="height:25px; width:50px" ng-model="weights.reuse">
               </div>
               <div class="col-sm-6">
-                  <label style="font-size:20pt">K-Means Clustering</label>
+                  <label style="font-size:20pt">Level Targets</label>
                   <br>
-                  <label># of Trials</label>
-                  <input type="number" step="1" min="1" max="1000" style="height:25px; width:50px" ng-model="numClusterings">
+                  <label>Automatically Determine Targets</label>
+                  <input type="checkbox" ng-model="autoTarget">
                   <br>
-                  <label>Choose Level Targets</label>
-                  <input type="checkbox" ng-model="chooseTargets">
+                  <label ng-show="autoTarget"># of Trials</label>
+                  <input ng-show="autoTarget" type="number" step="1" min="1" max="1000" style="height:25px; width:50px" ng-model="numClusterings">
               </div>
               
           </div>

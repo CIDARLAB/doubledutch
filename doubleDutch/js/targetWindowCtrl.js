@@ -10,7 +10,7 @@ app.controller('targetWindowCtrl', function ($scope, $modalInstance, items) {
     }
   }
  
-  $scope.areTargetsDisabled = !items.chooseTargets;
+  $scope.autoTarget = items.autoTarget;
 
   $scope.ok = function () {
     var levelTargets = [];

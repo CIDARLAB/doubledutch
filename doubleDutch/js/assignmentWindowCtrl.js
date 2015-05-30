@@ -7,12 +7,12 @@ app.controller('assignmentWindowCtrl', function ($scope, $modalInstance, items) 
   $scope.weights = {levelMatch: items.weights.levelMatch, homology: items.weights.homology, reuse: items.weights.reuse};
 
   $scope.numClusterings = items.numClusterings;
-  $scope.chooseTargets = items.chooseTargets;
+  $scope.autoTarget = items.autoTarget;
   $scope.clustModes = items.clustModes;
   
   $scope.ok = function () {
     $modalInstance.close({initialTemp: $scope.initialTemp, numAnnealings: $scope.numAnnealings, toleranceModifier: $scope.toleranceModifier, 
-        weights: $scope.weights, numClusterings: $scope.numClusterings, chooseTargets: $scope.chooseTargets});
+        weights: $scope.weights, numClusterings: $scope.numClusterings, autoTarget: $scope.autoTarget});
   };
 
   $scope.cancel = function () {
