@@ -1,18 +1,24 @@
 app.controller('assignmentWindowCtrl', function ($scope, $modalInstance, items) {
 
-  $scope.initialTemp = items.initialTemp;
+  $scope.onRepeat = items.onRepeat;
+
   $scope.numAnnealings = items.numAnnealings;
-  $scope.toleranceModifier = items.toleranceModifier;
+  $scope.initialTemp = items.initialTemp;
 
-  $scope.weights = {levelMatch: items.weights.levelMatch, homology: items.weights.homology, reuse: items.weights.reuse};
+  if (!$scope.onRepeat) {
+    $scope.weights = {levelMatch: items.weights.levelMatch, homology: items.weights.homology, reuse: items.weights.reuse};
+    
+    $scope.numClusterings = items.numClusterings;
+    $scope.autoTarget = items.autoTarget;
+  }
 
-  $scope.numClusterings = items.numClusterings;
-  $scope.autoTarget = items.autoTarget;
-  $scope.clustModes = items.clustModes;
-  
   $scope.ok = function () {
-    $modalInstance.close({initialTemp: $scope.initialTemp, numAnnealings: $scope.numAnnealings, toleranceModifier: $scope.toleranceModifier, 
-        weights: $scope.weights, numClusterings: $scope.numClusterings, autoTarget: $scope.autoTarget});
+    if ($scope.onRepeat) {
+      $modalInstance.close({initialTemp: $scope.initialTemp, numAnnealings: $scope.numAnnealings});
+    } else {
+      $modalInstance.close({initialTemp: $scope.initialTemp, numAnnealings: $scope.numAnnealings,  
+          weights: $scope.weights, autoTarget: $scope.autoTarget, numClusterings: $scope.numClusterings});
+    }
   };
 
   $scope.cancel = function () {

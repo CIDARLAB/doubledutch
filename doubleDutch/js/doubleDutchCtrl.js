@@ -125,6 +125,13 @@ app.controller("doubleDutchCtrl", function($scope, $modal, $log) {
 		}
 		this.displayTargets = "display:none";
 		this.children = [];
+		this.copy = function() {
+			if (this.fl.schema === "org.clothocad.model.Level") {
+				return new flNode(new level(this.fl.parameter, this.fl.design));
+			} else {
+				return new flNode(new factor(dummyVaria, this.fl.design));
+			}
+		};
 	}
 
 	function lCluster(lNodes, target) {
@@ -353,7 +360,7 @@ app.controller("doubleDutchCtrl", function($scope, $modal, $log) {
 			mutantSoln.levelSelections[i][j] = k;
     		return mutantSoln;
     	};
-    	this.annealSolve = function(clusterGrid, initialTemp, weights, numAnnealings) {
+    	this.annealSolve = function(clusterGrid, numAnnealings, initialTemp, weights) {
 			var soln;
 			var solnCost;
 			var bestSoln;
@@ -1092,26 +1099,47 @@ app.controller("doubleDutchCtrl", function($scope, $modal, $log) {
 	    });
 	};
 
-	$scope.assignmentOptions = function(size) {
+	$scope.viewAssignmentResults = function(size, soln, solver) {
+		var factorDesignNames = [];
+		for (i = 0; i < $scope.flNodes.length; i++) {
+			factorDesignNames.push($scope.flNodes[i].fl.design.name);
+		}
+		var modalInstance = $modal.open({
+	    	templateUrl: 'assignmentResultsWindow.html',
+	    	controller: 'assignmentResultsWindowCtrl',
+		    size: size,
+		    resolve: {
+	        	items: function() {
+	          		return {factorDesignNames: factorDesignNames, soln: soln, solver: solver, 
+		          			numAnnealings: $scope.numAnnealings, initialTemp: $scope.initialTemp, weights: $scope.weights};
+	        	}
+	      	}
+	    });
+	    modalInstance.result.then(function(items) {
+	 		$scope.bestSoln = items.bestSoln;
+	 		$scope.numAnnealings = items.numAnnealings;
+	 		$scope.initialTemp = items.initialTemp;
+	    });
+	};
+
+	$scope.editAssignmentOptions = function(size, onRepeat) {
 	    var modalInstance = $modal.open({
 	    	templateUrl: 'assignmentWindow.html',
 	    	controller: 'assignmentWindowCtrl',
 		    size: size,
 		    resolve: {
 	        	items: function() {
-	          		return {initialTemp: $scope.initialTemp, numAnnealings: $scope.numAnnealings, toleranceModifier: $scope.toleranceModifier, 
-			          		weights: $scope.weights, numClusterings: $scope.numClusterings, autoTarget: $scope.autoTarget};
+	          		return {onRepeat: onRepeat, numAnnealings: $scope.numAnnealings, initialTemp: $scope.initialTemp,   
+			          		weights: $scope.weights, autoTarget: $scope.autoTarget, numClusterings: $scope.numClusterings};
 	        	}
 	      	}
 	    });
 	    modalInstance.result.then(function(items) {
-	    	$scope.initialTemp = items.initialTemp;
 	    	$scope.numAnnealings = items.numAnnealings;
-	    	$scope.toleranceModifier = items.toleranceModifier;
-
-	    	$scope.numClusterings = items.numClusterings;
+	    	$scope.initialTemp = items.initialTemp;
+	    	$scope.weights = items.weights;
 	    	$scope.autoTarget = items.autoTarget;
-    		var i;
+	    	var i;
     		for (i = 0; i < $scope.flNodes.length; i++) {
     			if ($scope.autoTarget) {
     				$scope.flNodes[i].displayTargets = "display:none";
@@ -1119,10 +1147,7 @@ app.controller("doubleDutchCtrl", function($scope, $modal, $log) {
     				$scope.flNodes[i].displayTargets = "";
     			}
     		}
-
-	    	$scope.weights.levelMatch = items.weights.levelMatch;
-	    	$scope.weights.homology = items.weights.homology;
-	    	$scope.weights.reuse = items.weights.reuse;
+	    	$scope.numClusterings = items.numClusterings;
 	    });
 	};
 
@@ -1155,13 +1180,7 @@ app.controller("doubleDutchCtrl", function($scope, $modal, $log) {
     	},
     	beforeDrop: function(event) {
     		if (event.dest.nodesScope.$id !== event.source.nodesScope.$id) {
-    			var fl = event.source.nodeScope.$modelValue.fl;
-    			var copyNode;
-    			if (fl.schema === "org.clothocad.model.Level") {
-    				copyNode = new flNode(new level(fl.parameter, fl.design));
-    			} else {
-    				copyNode = new flNode(new factor(dummyVaria, fl.design));
-    			}
+    			var copyNode = event.source.nodeScope.$modelValue.copy();
     			if (!$scope.autoTarget) {
 	    			event.source.nodeScope.$modelValue.displayTargets = "";
 	    		}
@@ -1464,7 +1483,7 @@ app.controller("doubleDutchCtrl", function($scope, $modal, $log) {
 	 //    			randomSoln = solver.randomSolve(clusterGrid, $scope.weights, $scope.numAnnealings);
 	 //    			randomCosts[n].push(randomSoln.calculateCost($scope.weights));
 		// 			refTime = new Date().getTime();
-		// 			annealSoln = solver.annealSolve(clusterGrid, $scope.initialTemp, $scope.weights, $scope.numAnnealings);
+		// 			annealSoln = solver.annealSolve(clusterGrid, $scope.numAnnealings, $scope.initialTemp, $scope.weights);
 		// 			annealTimes[n].push(new Date().getTime() - refTime);
 		// 			annealCosts[n].push(annealSoln.calculateCost($scope.weights));
 	 //    		}
@@ -1582,23 +1601,19 @@ app.controller("doubleDutchCtrl", function($scope, $modal, $log) {
 					}
 				}
 				var solver = new flSolver();
-				// var soln = solver.randomSolve(clusterGrid, $scope.weights, $scope.numAnnealings);
-				var soln = solver.annealSolve(clusterGrid, $scope.initialTemp, $scope.weights, $scope.numAnnealings);
+				// $scope.bestSoln = solver.randomSolve(clusterGrid, $scope.weights, $scope.numAnnealings);
+				$scope.bestSoln = solver.annealSolve(clusterGrid, $scope.numAnnealings, $scope.initialTemp, $scope.weights);
+				$scope.viewAssignmentResults('md', $scope.bestSoln, solver);
 				for (i = 0; i < $scope.flNodes.length; i++) {
 					$scope.flNodes[i].children = [];
 				}
 				var k;
-				for (i = 0; i < soln.levelSelections.length; i++) {
-					for (j = 0; j < soln.levelSelections[i].length; j++) {
-						k = soln.levelSelections[i][j];
+				for (i = 0; i < $scope.bestSoln.levelSelections.length; i++) {
+					for (j = 0; j < $scope.bestSoln.levelSelections[i].length; j++) {
+						k = $scope.bestSoln.levelSelections[i][j];
 						$scope.flNodes[i].children.push(clusterGrid[i][j].lNodes[k]);
 					}
 				}
-				var solnCost = soln.calculateCost($scope.weights);
-				$scope.levelMatchCost = solnCost.levelMatch;
-				$scope.homologyCost = solnCost.homology;
-				$scope.reuseCost = solnCost.reuse;
-				$scope.assignmentCost = solnCost.total;
 			}
 		} 
 	};

@@ -44,17 +44,7 @@
         <input type="number" step="1" min="2" max="100" style="height:25px; width:50px" ng-show="autoTarget" ng-model="levelsPerFactor">
         <br ng-show="autoTarget">
         <button type="button" class="btn btn-primary" ng-click="assignLevels()">Assign Levels</button>
-        <button type="button" class="btn btn-primary" ng-click="assignmentOptions('md')">Advanced Options</button>
-        <br><br>
-        Level matching cost is {{levelMatchCost | number:2}}.
-        <br>
-        Feature Homology cost is {{homologyCost | number:2}}.
-        <br>
-        Feature Reuse cost is {{reuseCost | number:2}}.
-        <br>
-        ______________________
-        <br>
-        Total assignment cost is {{assignmentCost | number:2}}.
+        <button type="button" class="btn btn-primary" ng-click="editAssignmentOptions('md', false)">Edit Options</button>
       </div>
       <div class="col-sm-4">
          <label style="font-size:20pt">Library Generation</label>
@@ -110,6 +100,7 @@
 	<script src="js/featureWindowCtrl.js"></script>
   <script src="js/alertWindowCtrl.js"></script>
   <script src="js/assignmentWindowCtrl.js"></script>
+  <script src="js/assignmentResultsWindowCtrl.js"></script>
   <script src="js/targetWindowCtrl.js"></script>
 	<script src="js/fileInput.js"></script>
 
@@ -181,6 +172,29 @@
       </div>
   </script>
 
+  <script type="text/ng-template" id="assignmentResultsWindow.html">
+      <div class="modal-header">
+          <label style="font-size:20pt">Assignment Results</label>
+      </div>
+      <div class="modal-body">
+          <p>The results of level assignment are included below. Would you like to perform {{numAnnealings}} more trials?</p>
+          Level matching cost is {{bestSolnCost.levelMatch | number:2}}.
+          <br>
+          Feature Homology cost is {{bestSolnCost.homology | number:2}}.
+          <br>
+          Feature Reuse cost is {{bestSolnCost.reuse | number:2}}.
+          <br>
+          ______________________
+          <br>
+          Total assignment cost is {{bestSolnCost.total | number:2}}.
+      </div>
+      <div class="modal-footer">
+          <button type="button" class="pull-left btn btn-primary" ng-click="editAssignmentOptions('md', true)">Edit Options</button>
+          <button class="btn btn-primary" ng-click="ok()">OK</button>
+          <button class="btn btn-warning" ng-click="cancel()">Cancel</button>
+      </div>
+  </script>
+
   <script type="text/ng-template" id="alertWindow.html">
       <div class="modal-header">
           <label style="font-size:20pt">{{alertType}}</label>
@@ -195,38 +209,39 @@
 
   <script type="text/ng-template" id="assignmentWindow.html">
       <div class="modal-header">
-          <label style="font-size:20pt">Advanced Options</label>
+          <label style="font-size:20pt">Assignment Options</label>
       </div>
       <div class="modal-body">
           <div class="row">
               <div class="col-sm-6">
                   <label style="font-size:20pt">Level Assignment</label>
                   <br>
-                  <label>Initial Temperature</label>
-                  <input type="number" step="1" min="1" max="1000" style="height:25px; width:50px" ng-model="initialTemp">
-                  <br>
                   <label># of Trials</label>
-                  <input type="number" step="1" min="1" max="1000" style="height:25px; width:50px" ng-model="numAnnealings">
+                  <input type="number" step="1" min="1" max="100000" style="height:25px; width:50px" ng-model="numAnnealings">
+                  <br>
+                  <label>Initial Temperature</label>
+                  <input type="number" step="1" min="1" max="10000" style="height:25px; width:50px" ng-model="initialTemp">
+                  <div ng-hide="onRepeat">
                   <br>
                   <label>Level Matching Weight</label>
-                  <input type="number" step="1" min="0" max="1000" style="height:25px; width:50px" ng-model="weights.levelMatch">
+                  <input ng-hide="onRepeat" type="number" step="1" min="0" max="1000" style="height:25px; width:50px" ng-model="weights.levelMatch">
                   <br>
                   <label>Feature Homology Weight</label>
                   <input type="number" step="1" min="0" max="1000" style="height:25px; width:50px" ng-model="weights.homology">
                   <br>
                   <label>Feature Reuse Weight</label>
                   <input type="number" step="1" min="0" max="1000" style="height:25px; width:50px" ng-model="weights.reuse">
+                  </div>
               </div>
-              <div class="col-sm-6">
+              <div ng-hide="onRepeat" class="col-sm-6">
                   <label style="font-size:20pt">Level Targets</label>
                   <br>
                   <label>Automatically Determine Targets</label>
                   <input type="checkbox" ng-model="autoTarget">
                   <br>
                   <label ng-show="autoTarget"># of Trials</label>
-                  <input ng-show="autoTarget" type="number" step="1" min="1" max="1000" style="height:25px; width:50px" ng-model="numClusterings">
-              </div>
-              
+                  <input ng-show="autoTarget" type="number" step="1" min="1" max="100000" style="height:25px; width:50px" ng-model="numClusterings">
+              </div>     
           </div>
       </div>
       <div class="modal-footer">
