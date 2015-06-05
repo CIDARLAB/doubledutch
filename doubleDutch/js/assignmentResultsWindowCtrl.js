@@ -1,8 +1,10 @@
 app.controller('assignmentResultsWindowCtrl', function ($scope, $modal, $modalInstance, items) {
-  $scope.bestSoln = items.soln;
-  $scope.bestSolnCost = items.soln.calculateCost(items.weights);
+  $scope.experimentalDesign = items.experimentalDesign;
+  $scope.bestSoln = items.bestSoln;
+  $scope.bestSolnCost = items.bestSoln.calculateCost(items.weights);
   $scope.solver = items.solver;
   $scope.numAnnealings = items.numAnnealings;
+  $scope.iterPerAnnealing = items.iterPerAnnealing;
   $scope.initialTemp = items.initialTemp;
   $scope.weights = items.weights;
  
@@ -13,18 +15,19 @@ app.controller('assignmentResultsWindowCtrl', function ($scope, $modal, $modalIn
         size: size,
         resolve: {
             items: function() {
-                return {onRepeat: onRepeat, numAnnealings: $scope.numAnnealings, initialTemp: $scope.initialTemp};
+                return {onRepeat: onRepeat, numAnnealings: $scope.numAnnealings, iterPerAnnealing: $scope.iterPerAnnealing, initialTemp: $scope.initialTemp};
             }
           }
       });
       modalInstance.result.then(function(items) {
         $scope.numAnnealings = items.numAnnealings;
+        $scope.iterPerAnnealing = items.iterPerAnnealing;
         $scope.initialTemp = items.initialTemp;
       });
   };
 
   $scope.ok = function () {
-    var soln = $scope.solver.annealSolve($scope.bestSoln.clusterGrid, $scope.numAnnealings, $scope.initialTemp, $scope.weights);
+    var soln = $scope.solver.annealSolve($scope.bestSoln.clusterGrid, $scope.numAnnealings, $scope.iterPerAnnealing, $scope.initialTemp, $scope.weights);
     var solnCost = soln.calculateCost($scope.weights);
     if (solnCost.total < $scope.bestSolnCost.total) {
       $scope.bestSoln = soln;
@@ -33,7 +36,8 @@ app.controller('assignmentResultsWindowCtrl', function ($scope, $modal, $modalIn
   };
 
   $scope.cancel = function () {
-    $modalInstance.close({bestSoln: $scope.bestSoln, numAnnealings: $scope.numAnnealings, initialTemp: $scope.initialTemp});
+    $modalInstance.close({bestSoln: $scope.bestSoln, numAnnealings: $scope.numAnnealings, iterPerAnnealing: $scope.iterPerAnnealing, 
+        initialTemp: $scope.initialTemp});
   };
 
 });

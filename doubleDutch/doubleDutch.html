@@ -23,7 +23,7 @@
         <input type="radio" id="tableRadio" name="uploadSelect" value="1" ng-model="uploadSelector"/>
         <input type="file" file-input="featFiles" multiple>
         <br>
-        <button type="button" class="btn btn-primary" ng-click="uploadFeatures()">Upload Features</button>
+        <button type="button" class="btn btn-primary" ng-click="uploadBioDesigns()">Upload Features</button>
         {{numFeatsUploaded | number:0}} features uploaded.
       </div>
       <div class="col-sm-4">
@@ -44,6 +44,7 @@
         <input type="number" step="1" min="2" max="100" style="height:25px; width:50px" ng-show="autoTarget" ng-model="levelsPerFactor">
         <br ng-show="autoTarget">
         <button type="button" class="btn btn-primary" ng-click="assignLevels()">Assign Levels</button>
+        <!-- <button type="button" class="btn btn-primary" ng-click="assignLevels()">Assign Levels</button> -->
         <button type="button" class="btn btn-primary" ng-click="editAssignmentOptions('md', false)">Edit Options</button>
       </div>
       <div class="col-sm-4">
@@ -70,8 +71,8 @@
   		<div class="col-sm-4">
     		<label style="font-size:20pt">Factorial Design</label>
     		<div ui-tree="fldTreeOptions">
-      			<ol ui-tree-nodes="" ng-model="flNodes">
-        			<li ng-repeat="node in flNodes" ui-tree-node ng-include="'fl_tree_renderer.html'"></li>
+      			<ol ui-tree-nodes="" ng-model="fldNodes">
+        			<li ng-repeat="node in fldNodes" ui-tree-node ng-include="'fl_tree_renderer.html'"></li>
       			</ol>
     		</div>
   		</div>
@@ -107,14 +108,14 @@
 	<script type="text/ng-template" id="fl_tree_renderer.html">
   	<div ui-tree-handle class="tree-node" style="{{node.backgroundColor}}">
   		<div class="tree-node-content">
-        	<a class="btn btn-success btn-xs" data-nodrag ng-click="toggle(this)" ng-hide="{{node.fl.schema === 'org.clothocad.model.Level'}}"><span class="glyphicon" ng-class="{'glyphicon-chevron-right': collapsed, 'glyphicon-chevron-down': !collapsed}"></span></a>
+        	<a class="btn btn-success btn-xs" data-nodrag ng-click="toggle(this)" ng-hide="{{node.flType === 'l'}}"><span class="glyphicon" ng-class="{'glyphicon-chevron-right': collapsed, 'glyphicon-chevron-down': !collapsed}"></span></a>
           <a class="pull-right btn btn-danger btn-xs" data-nodrag ng-click="remove(this)"><span class="glyphicon glyphicon-remove"></span></a>
-          <a class="pull-right btn btn-primary btn-xs" data-nodrag ng-click="addFeatures('md', node.fl)"><span class="glyphicon glyphicon-pencil"></span></a>
+          <a class="pull-right btn btn-primary btn-xs" data-nodrag ng-click="addFeatures('md', node.fl, expressGrammar)"><span class="glyphicon glyphicon-pencil"></span></a>
           <a class="pull-right btn btn-primary btn-xs" style="{{node.displayTargets}}" data-nodrag ng-click="viewTargets('md', node)"><span class="glyphicon glyphicon-screenshot"></span></a>
 			<label style="{{node.labelColor}}">Module</label><br>
-			<input type="text" style="height:25px" ng-model="node.fl.design.module.name">
-      <form ng-hide="{{node.fl.schema === 'org.clothocad.model.Factor'}}">
-				<label style="{{node.labelColor}}">{{node.variable.name}}</label><br>
+			<input type="text" style="height:25px" ng-model="node.bioDesign.module.name">
+      <form ng-hide="{{node.flType === 'f'}}">
+				<label style="{{node.labelColor}}">{{node.parameter.variable.name}}</label><br>
 				<input type="text" style="height:25px" ng-model="node.parameter.value">
 			</form>   
     		</div>
@@ -187,6 +188,18 @@
           ______________________
           <br>
           Total assignment cost is {{bestSolnCost.total | number:2}}.
+          <ul class="list-unstyled">
+            <li ng-repeat="factor in experimentalDesign.factors">
+                <br>
+                {{factor.bioDesign.name}} expressed via
+                <ul class="list-unstyled">
+                  <li ng-repeat="level in factor.levels">
+                    {{level.bioDesign.name}} with {{factor.variable.name}} of {{level.parameter.value}}
+                    <br>
+                  </li>
+                </ul>
+            </li>
+          </ul>
       </div>
       <div class="modal-footer">
           <button type="button" class="pull-left btn btn-primary" ng-click="editAssignmentOptions('md', true)">Edit Options</button>
@@ -219,18 +232,21 @@
                   <label># of Trials</label>
                   <input type="number" step="1" min="1" max="100000" style="height:25px; width:50px" ng-model="numAnnealings">
                   <br>
+                  <label>Iterations per Trial</label>
+                  <input type="number" step="1" min="1" max="10000" style="height:25px; width:50px" ng-model="iterPerAnnealing">
+                  <br>
                   <label>Initial Temperature</label>
                   <input type="number" step="1" min="1" max="10000" style="height:25px; width:50px" ng-model="initialTemp">
                   <div ng-hide="onRepeat">
-                  <br>
-                  <label>Level Matching Weight</label>
-                  <input ng-hide="onRepeat" type="number" step="1" min="0" max="1000" style="height:25px; width:50px" ng-model="weights.levelMatch">
-                  <br>
-                  <label>Feature Homology Weight</label>
-                  <input type="number" step="1" min="0" max="1000" style="height:25px; width:50px" ng-model="weights.homology">
-                  <br>
-                  <label>Feature Reuse Weight</label>
-                  <input type="number" step="1" min="0" max="1000" style="height:25px; width:50px" ng-model="weights.reuse">
+                    <br>
+                    <label>Level Matching Weight</label>
+                    <input ng-hide="onRepeat" type="number" step="1" min="0" max="1000" style="height:25px; width:50px" ng-model="weights.levelMatch">
+                    <br>
+                    <label>Feature Homology Weight</label>
+                    <input type="number" step="1" min="0" max="1000" style="height:25px; width:50px" ng-model="weights.homology">
+                    <br>
+                    <label>Feature Reuse Weight</label>
+                    <input type="number" step="1" min="0" max="1000" style="height:25px; width:50px" ng-model="weights.reuse">
                   </div>
               </div>
               <div ng-hide="onRepeat" class="col-sm-6">

@@ -3,6 +3,7 @@ app.controller('assignmentWindowCtrl', function ($scope, $modalInstance, items) 
   $scope.onRepeat = items.onRepeat;
 
   $scope.numAnnealings = items.numAnnealings;
+  $scope.iterPerAnnealing = items.iterPerAnnealing;
   $scope.initialTemp = items.initialTemp;
 
   if (!$scope.onRepeat) {
@@ -14,9 +15,9 @@ app.controller('assignmentWindowCtrl', function ($scope, $modalInstance, items) 
 
   $scope.ok = function () {
     if ($scope.onRepeat) {
-      $modalInstance.close({initialTemp: $scope.initialTemp, numAnnealings: $scope.numAnnealings});
+      $modalInstance.close({numAnnealings: $scope.numAnnealings, iterPerAnnealing: $scope.iterPerAnnealing, initialTemp: $scope.initialTemp});
     } else {
-      $modalInstance.close({initialTemp: $scope.initialTemp, numAnnealings: $scope.numAnnealings,  
+      $modalInstance.close({numAnnealings: $scope.numAnnealings, iterPerAnnealing: $scope.iterPerAnnealing, initialTemp: $scope.initialTemp,
           weights: $scope.weights, autoTarget: $scope.autoTarget, numClusterings: $scope.numClusterings});
     }
   };
