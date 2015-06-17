@@ -1,11 +1,15 @@
 app.controller('assignmentResultsWindowCtrl', function ($scope, $modal, $modalInstance, items) {
   $scope.fldNodes = items.bestSoln.makeNodeDesign(items.fldNodes);
+
   $scope.bestSoln = items.bestSoln;
   $scope.bestSolnCost = items.bestSoln.calculateCost(items.weights);
   $scope.solver = items.solver;
+
   $scope.annealingOptions = items.annealingOptions;
   $scope.defaultAnnealingOptions = items.defaultAnnealingOptions;
   $scope.weights = items.weights;
+
+  $scope.trialCount = items.annealingOptions.numAnnealings;
  
   $scope.assignLevels = function() {
     var soln = $scope.solver.annealSolve($scope.bestSoln.clusterGrid, $scope.annealingOptions, $scope.weights);
@@ -15,6 +19,7 @@ app.controller('assignmentResultsWindowCtrl', function ($scope, $modal, $modalIn
       $scope.bestSoln = soln;
       $scope.bestSolnCost = solnCost;
     }
+    $scope.trialCount += $scope.annealingOptions.numAnnealings;
   };
 
   $scope.editAssignmentOptions = function(size, onRepeat) {
@@ -33,23 +38,25 @@ app.controller('assignmentResultsWindowCtrl', function ($scope, $modal, $modalIn
     });
   };
 
-  $scope.downloadAssignment = function() {
-    var outputData = [];
-    var i, j;
-    var k = 0;
-    for (i = 0; i < $scope.fldNodes.length; i++) {
-      outputData.push([]);
-      outputData[k].push($scope.fldNodes[i].bioDesign.name);
-      $scope.fldNodes[i].children.sort(function(a, b){return a.parameter.value - b.parameter.value});
-      for (j = 0; j < $scope.fldNodes[i].children.length; j++) {
-        outputData.push([]);
-        outputData[k + j + 1].push($scope.fldNodes[i].children[j].bioDesign.name);
-        outputData[k + j + 1].push($scope.fldNodes[i].children[j].parameter.value);
-      }
-      k += (1 + $scope.fldNodes[i].children.length);
-    }
-    return outputData;
-  };
+  $scope.downloadAssignment = items.downloadAssignment;
+
+  // $scope.downloadAssignment = function() {
+  //   var outputData = [];
+  //   var i, j;
+  //   var k = 0;
+  //   for (i = 0; i < $scope.fldNodes.length; i++) {
+  //     outputData.push([]);
+  //     outputData[k].push($scope.fldNodes[i].bioDesign.name);
+  //     $scope.fldNodes[i].children.sort(function(a, b){return a.parameter.value - b.parameter.value});
+  //     for (j = 0; j < $scope.fldNodes[i].children.length; j++) {
+  //       outputData.push([]);
+  //       outputData[k + j + 1].push($scope.fldNodes[i].children[j].bioDesign.name);
+  //       outputData[k + j + 1].push($scope.fldNodes[i].children[j].parameter.value);
+  //     }
+  //     k += (1 + $scope.fldNodes[i].children.length);
+  //   }
+  //   return outputData;
+  // };
 
   $scope.quit = function() {
     $modalInstance.close({bestSoln: $scope.bestSoln, annealingOptions: $scope.annealingOptions});

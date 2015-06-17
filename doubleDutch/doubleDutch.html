@@ -46,7 +46,7 @@
         <button type="button" class="btn btn-primary" ng-click="assignLevels()">Assign Levels</button>
         <button type="button" class="btn btn-primary" ng-click="editAssignmentOptions('md', false)">Edit Options</button>
         <br><br>
-        <button type="button" class="btn btn-primary" ng-csv="downloadAssignment()" filename="level_assignment.csv" field-separator=",">Download Assignment</button>
+        <button type="button" class="btn btn-primary" ng-csv="downloadAssignment(0, {levelMatch: 'na', homology: 'na', reuse: 'na', total: 'na'})" filename="level_assignment.csv" field-separator=",">Download Assignment</button>
       </div>
       <div class="col-sm-4">
          <label style="font-size:20pt">Library Generation</label>
@@ -179,10 +179,10 @@
           <label style="font-size:20pt">Assignment Results</label>
       </div>
       <div class="modal-body">
-          <p>The results of level assignment are included below. Would you like to perform {{annealingOptions.numAnnealings}} more trials?</p>
+          <p>The best level assignment after {{trialCount}} trials is shown below. Would you like to perform {{annealingOptions.numAnnealings}} more trials?</p>
           Level matching cost is {{bestSolnCost.levelMatch | number:2}}.
           <br>
-          Feature Homology cost is {{bestSolnCost.homology | number:2}}.
+          Pathway Homology cost is {{bestSolnCost.homology | number:2}}.
           <br>
           Feature Reuse cost is {{bestSolnCost.reuse | number:2}}.
           <br>
@@ -205,7 +205,7 @@
       <div class="modal-footer">
         <button class="btn btn-primary" ng-click="assignLevels()">Assign Levels</button>
           <button type="button" class="btn btn-primary" ng-click="editAssignmentOptions('md', true)">Edit Options</button>
-          <button class="btn btn-primary" ng-csv="downloadAssignment()" filename="level_assignment.csv" field-separator=",">Download Assignment</button>
+          <button class="btn btn-primary" ng-csv="downloadAssignment(trialCount, bestSolnCost)" filename="level_assignment.csv" field-separator=",">Download Assignment</button>
           <button class="btn btn-warning" ng-click="quit()">Quit</button>
       </div>
   </script>
@@ -244,7 +244,7 @@
                     <label>Level Matching Weight</label>
                     <input type="number" step="{{inputStep}}" min="{{minWeight}}" max="{{maxInput}}" style="height:25px; width:50px" ng-model="weights.levelMatch">
                     <br>
-                    <label>Feature Homology Weight</label>
+                    <label>Pathway Homology Weight</label>
                     <input type="number" step="{{inputStep}}" min="{{minWeight}}" max="{{maxInput}}" style="height:25px; width:50px" ng-model="weights.homology">
                     <br>
                     <label>Feature Reuse Weight</label>

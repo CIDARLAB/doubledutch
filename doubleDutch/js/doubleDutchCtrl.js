@@ -1285,11 +1285,31 @@ app.controller("doubleDutchCtrl", function($scope, $modal, $log) {
   		}
   	};
 
-  	$scope.downloadAssignment = function() {
+  	$scope.downloadAssignment = function(trialCount, assignmentCost) {
   		var outputData = [];
   		if ($scope.validateFLDNodes()) {
   			var i, j;
   			var k = 0;
+  			outputData.push([]);
+		    outputData[k].push("# of Trials");
+		    outputData[k].push(trialCount);
+		    k++;
+	        outputData.push([]);
+	        outputData[k].push("Level Matching Cost");
+	        outputData[k].push(assignmentCost.levelMatch);
+	        k++;
+	        outputData.push([]);
+	        outputData[k].push("Pathway Homology Cost");
+	        outputData[k].push(assignmentCost.homology);
+	        k++;
+	        outputData.push([]);
+	        outputData[k].push("Feature Reuse Cost");
+	        outputData[k].push(assignmentCost.reuse);
+	        k++;
+	        outputData.push([]);
+	        outputData[k].push("Total Assignment Cost");
+	        outputData[k].push(assignmentCost.total);
+	        k++;
   			for (i = 0; i < $scope.fldNodes.length; i++) {
   				outputData.push([]);
   				outputData[k].push($scope.fldNodes[i].bioDesign.name);
@@ -1716,7 +1736,8 @@ app.controller("doubleDutchCtrl", function($scope, $modal, $log) {
 				    resolve: {
 			        	items: function() {
 			          		return {fldNodes: $scope.fldNodes, bestSoln: bestSoln, solver: solver, annealingOptions: $scope.annealingOptions, 
-				          			defaultAnnealingOptions: $scope.defaultAnnealingOptions, weights: $scope.weights};
+				          			defaultAnnealingOptions: $scope.defaultAnnealingOptions, weights: $scope.weights,
+					          		downloadAssignment: $scope.downloadAssignment};
 			        	}
 			      	}
 			    });
