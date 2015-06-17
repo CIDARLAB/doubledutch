@@ -40,12 +40,13 @@
       <div class="col-sm-4">
         <label style="font-size:20pt">Level Assignment</label>
         <br>
-        <label ng-show="autoTarget">Levels per Factor</label>
-        <input type="number" step="1" min="2" max="100" style="height:25px; width:50px" ng-show="autoTarget" ng-model="levelsPerFactor">
-        <br ng-show="autoTarget">
+        <label ng-show="clusteringOptions.autoTarget">Levels per Factor</label>
+        <input type="number" step="{{lpfStep}}" min="{{minLPF}}" max="{{maxLPF}}" style="height:25px; width:50px" ng-show="clusteringOptions.autoTarget" ng-model="levelsPerFactor">
+        <br ng-show="clusteringOptions.autoTarget">
         <button type="button" class="btn btn-primary" ng-click="assignLevels()">Assign Levels</button>
-        <!-- <button type="button" class="btn btn-primary" ng-click="assignLevels()">Assign Levels</button> -->
         <button type="button" class="btn btn-primary" ng-click="editAssignmentOptions('md', false)">Edit Options</button>
+        <br><br>
+        <button type="button" class="btn btn-primary" ng-csv="downloadAssignment()" filename="level_assignment.csv" field-separator=",">Download Assignment</button>
       </div>
       <div class="col-sm-4">
          <label style="font-size:20pt">Library Generation</label>
@@ -53,7 +54,7 @@
         <label>DOE Template</label>
         <select ng-init="selectedTemplate = selectedTemplate || doeTemplates[0]" ng-model="selectedTemplate" ng-options="template as template.name for template in doeTemplates"></select>
         <br>
-        <button type="button" class="btn btn-primary" ng-csv="generateDesigns()" filename="experimental_design.csv" field-separator=",">Generate Library</button>
+        <button type="button" class="btn btn-primary" ng-csv="generateDesigns()" filename="library_design.csv" field-separator=",">Generate Library</button>
       </div>
     </div>
 
@@ -110,7 +111,7 @@
   		<div class="tree-node-content">
         	<a class="btn btn-success btn-xs" data-nodrag ng-click="toggle(this)" ng-hide="{{node.flType === 'l'}}"><span class="glyphicon" ng-class="{'glyphicon-chevron-right': collapsed, 'glyphicon-chevron-down': !collapsed}"></span></a>
           <a class="pull-right btn btn-danger btn-xs" data-nodrag ng-click="remove(this)"><span class="glyphicon glyphicon-remove"></span></a>
-          <a class="pull-right btn btn-primary btn-xs" data-nodrag ng-click="addFeatures('md', node.fl, expressGrammar)"><span class="glyphicon glyphicon-pencil"></span></a>
+          <a class="pull-right btn btn-primary btn-xs" data-nodrag ng-click="addFeatures('md', node, expressGrammar)"><span class="glyphicon glyphicon-pencil"></span></a>
           <a class="pull-right btn btn-primary btn-xs" style="{{node.displayTargets}}" data-nodrag ng-click="viewTargets('md', node)"><span class="glyphicon glyphicon-screenshot"></span></a>
 			<label style="{{node.labelColor}}">Module</label><br>
 			<input type="text" style="height:25px" ng-model="node.bioDesign.module.name">
@@ -157,12 +158,12 @@
           <label style="font-size:20pt">Level Targets</label>
       </div>
       <div class="modal-body">
-        <button class="btn btn-primary" ng-disabled="autoTarget" ng-click="addTarget()">Add Target</button>
-        <button class="btn btn-primary" ng-disabled="autoTarget" ng-click="removeTarget()">Remove Target</button>
+        <button class="btn btn-primary" ng-disabled="clusteringOptions.autoTarget" ng-click="addTarget()">Add Target</button>
+        <button class="btn btn-primary" ng-disabled="clusteringOptions.autoTarget" ng-click="removeTarget()">Remove Target</button>
         <br><br>
         <ul class="list-unstyled">
           <li ng-repeat="levelTarget in levelTargets">
-              <input type="number" step="0.01" min="0" max="100000" style="height:25px; width:95px" ng-disabled="autoTarget" ng-model="levelTarget.value">
+              <input type="number" step="0.01" min="{{minTarget}}" max="{{maxTarget}}" style="height:25px; width:95px" ng-disabled="clusteringOptions.autoTarget" ng-model="levelTarget.value">
               <br>
           </li>
         </ul>
@@ -178,7 +179,7 @@
           <label style="font-size:20pt">Assignment Results</label>
       </div>
       <div class="modal-body">
-          <p>The results of level assignment are included below. Would you like to perform {{numAnnealings}} more trials?</p>
+          <p>The results of level assignment are included below. Would you like to perform {{annealingOptions.numAnnealings}} more trials?</p>
           Level matching cost is {{bestSolnCost.levelMatch | number:2}}.
           <br>
           Feature Homology cost is {{bestSolnCost.homology | number:2}}.
@@ -189,12 +190,12 @@
           <br>
           Total assignment cost is {{bestSolnCost.total | number:2}}.
           <ul class="list-unstyled">
-            <li ng-repeat="factor in experimentalDesign.factors">
+            <li ng-repeat="fNode in fldNodes">
                 <br>
-                {{factor.bioDesign.name}} expressed via
+                {{fNode.bioDesign.name}} expressed via
                 <ul class="list-unstyled">
-                  <li ng-repeat="level in factor.levels">
-                    {{level.bioDesign.name}} with {{factor.variable.name}} of {{level.parameter.value}}
+                  <li ng-repeat="lNode in fNode.children">
+                    {{lNode.bioDesign.name}} with {{lNode.parameter.variable.name.toLowerCase()}} of {{lNode.parameter.value | number:3}} {{lNode.parameter.units.name}}
                     <br>
                   </li>
                 </ul>
@@ -202,9 +203,10 @@
           </ul>
       </div>
       <div class="modal-footer">
-          <button type="button" class="pull-left btn btn-primary" ng-click="editAssignmentOptions('md', true)">Edit Options</button>
-          <button class="btn btn-primary" ng-click="ok()">OK</button>
-          <button class="btn btn-warning" ng-click="cancel()">Cancel</button>
+        <button class="btn btn-primary" ng-click="assignLevels()">Assign Levels</button>
+          <button type="button" class="btn btn-primary" ng-click="editAssignmentOptions('md', true)">Edit Options</button>
+          <button class="btn btn-primary" ng-csv="downloadAssignment()" filename="level_assignment.csv" field-separator=",">Download Assignment</button>
+          <button class="btn btn-warning" ng-click="quit()">Quit</button>
       </div>
   </script>
 
@@ -230,37 +232,38 @@
                   <label style="font-size:20pt">Level Assignment</label>
                   <br>
                   <label># of Trials</label>
-                  <input type="number" step="1" min="1" max="100000" style="height:25px; width:50px" ng-model="numAnnealings">
+                  <input type="number" step="{{inputStep}}" min="{{minInput}}" max="{{maxInput}}" style="height:25px; width:65px" ng-model="annealingOptions.numAnnealings">
                   <br>
                   <label>Iterations per Trial</label>
-                  <input type="number" step="1" min="1" max="10000" style="height:25px; width:50px" ng-model="iterPerAnnealing">
+                  <input type="number" step="{{inputStep}}" min="{{minInput}}" max="{{maxInput}}" style="height:25px; width:65px" ng-model="annealingOptions.iterPerAnnealing">
                   <br>
                   <label>Initial Temperature</label>
-                  <input type="number" step="1" min="1" max="10000" style="height:25px; width:50px" ng-model="initialTemp">
+                  <input type="number" step="{{inputStep}}" min="{{minInput}}" max="{{maxInput}}" style="height:25px; width:65px" ng-model="annealingOptions.initialTemp">
                   <div ng-hide="onRepeat">
                     <br>
                     <label>Level Matching Weight</label>
-                    <input ng-hide="onRepeat" type="number" step="1" min="0" max="1000" style="height:25px; width:50px" ng-model="weights.levelMatch">
+                    <input type="number" step="{{inputStep}}" min="{{minWeight}}" max="{{maxInput}}" style="height:25px; width:50px" ng-model="weights.levelMatch">
                     <br>
                     <label>Feature Homology Weight</label>
-                    <input type="number" step="1" min="0" max="1000" style="height:25px; width:50px" ng-model="weights.homology">
+                    <input type="number" step="{{inputStep}}" min="{{minWeight}}" max="{{maxInput}}" style="height:25px; width:50px" ng-model="weights.homology">
                     <br>
                     <label>Feature Reuse Weight</label>
-                    <input type="number" step="1" min="0" max="1000" style="height:25px; width:50px" ng-model="weights.reuse">
+                    <input type="number" step="{{inputStep}}" min="{{minWeight}}" max="{{maxInput}}" style="height:25px; width:50px" ng-model="weights.reuse">
                   </div>
               </div>
               <div ng-hide="onRepeat" class="col-sm-6">
                   <label style="font-size:20pt">Level Targets</label>
                   <br>
                   <label>Automatically Determine Targets</label>
-                  <input type="checkbox" ng-model="autoTarget">
+                  <input type="checkbox" ng-model="clusteringOptions.autoTarget">
                   <br>
-                  <label ng-show="autoTarget"># of Trials</label>
-                  <input ng-show="autoTarget" type="number" step="1" min="1" max="100000" style="height:25px; width:50px" ng-model="numClusterings">
+                  <label ng-show="clusteringOptions.autoTarget"># of Trials</label>
+                  <input ng-show="clusteringOptions.autoTarget" type="number" step="{{inputStep}}" min="{{minInput}}" max="{{maxInput}}" style="height:25px; width:50px" ng-model="clusteringOptions.numClusterings">
               </div>     
           </div>
       </div>
       <div class="modal-footer">
+          <button class="pull-left btn btn-primary" ng-click="restoreDefaults()">Restore Defaults</button>
           <button class="btn btn-primary" ng-click="ok()">OK</button>
           <button class="btn btn-warning" ng-click="cancel()">Cancel</button>
       </div>

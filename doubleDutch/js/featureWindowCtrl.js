@@ -8,7 +8,7 @@ app.controller('featureWindowCtrl', function ($scope, $modalInstance, items) {
     $scope.selected.push({feature: selectedFeats[i]});
   }
 
-  $scope.ok = function () {
+  $scope.ok = function() {
     var feats = [];
     var i;
     for (i = 0; i < $scope.selected.length; i++ ) {
@@ -17,7 +17,7 @@ app.controller('featureWindowCtrl', function ($scope, $modalInstance, items) {
     $modalInstance.close(feats);
   };
 
-  $scope.cancel = function () {
+  $scope.cancel = function() {
     $modalInstance.dismiss('cancel');
   };
 

@@ -10,10 +10,6 @@ app.controller("doubleDutchCtrl", function($scope, $modal, $log) {
 		this.schema = "org.clothocad.model.Variable";
 	}
 
-	transcStrength = new variable("Transcription Strength");
-	translStrength = new variable("Translation Strength");
-	expressStrength = new variable("Expression Strength");
-	termEfficiency = new variable("Termination Efficiency");
 	dummyVaria = new variable("");
 
 	function units(name) {
@@ -21,7 +17,6 @@ app.controller("doubleDutchCtrl", function($scope, $modal, $log) {
 		this.schema = "org.clothocad.model.Units";
 	}
 
-	reu = new units("REU");
 	dummyUnits = new units("");
 
 	function parameter(value, varia, units) {
@@ -34,7 +29,14 @@ app.controller("doubleDutchCtrl", function($scope, $modal, $log) {
 		}
 	}
 
-	dummaryParam = new parameter(0, dummyVaria, dummyUnits);
+	function unitlessParameter(value, varia) {
+		this.value = value;
+		this.variable = varia;
+		this.schema = "org.clothocad.model.Parameter";
+		this.copy = function() {
+			return new parameter(this.parameter.value, this.parameter.variable);
+		}
+	}
 
 	function module(feats, subMods, role, schema) {
 		this.schema = schema;
@@ -84,12 +86,12 @@ app.controller("doubleDutchCtrl", function($scope, $modal, $log) {
 		this.parameters = params;
 		this.schema = "org.clothocad.model.BioDesign";
 		this.copy = function() {
-			var paramsCopy = [];
+			var bioDesignCopy = new bioDesign(mod, []);
 			var i;
 			for (i = 0; i < this.parameters.length; i++) {
-				paramsCopy.push(this.parameters[i].copy());
+				bioDesignCopy.parameters.push(this.parameters[i].copy());
 			}
-			return new bioDesign(mod, paramsCopy);
+			return bioDesignCopy;
 		};
 	}
 
@@ -130,12 +132,12 @@ app.controller("doubleDutchCtrl", function($scope, $modal, $log) {
 		this.depth = 1;
 		this.labelColor = "color:#ffffff";
 		this.backgroundColor = "background-color:#787878"
-		this.parameter = dummyParam;
+		this.parameter = new parameter(0, new variable(""), new units(""));
 		this.levelTargets = [];
 		this.displayTargets = "display:none";
 		this.children = [];
 		this.copy = function() {
-			return new fNode(this.bioDesign.copy());
+			return new fNode(this.bioDesign);
 		};
 	}
 
@@ -172,15 +174,15 @@ app.controller("doubleDutchCtrl", function($scope, $modal, $log) {
 			}
 		};
 		this.copy = function() {
-			var copyCluster = new lCluster([], this.target);
+			var clusterCopy = new lCluster([], this.target);
 			var i;
 			for (i = 0; i < this.lNodes.length; i++) {
-				copyCluster.lNodes.push(this.lNodes[i]);
+				clusterCopy.lNodes.push(this.lNodes[i]);
 			}
 			for (i = 0; i < this.levelCosts.length; i++) {
-				copyCluster.levelCosts.push(this.levelCosts[i]);
+				clusterCopy.levelCosts.push(this.levelCosts[i]);
 			}
-			return copyCluster;
+			return clusterCopy;
 		};
 		this.calculateLevelCosts = function() {
 			this.levelCosts = [];
@@ -335,15 +337,29 @@ app.controller("doubleDutchCtrl", function($scope, $modal, $log) {
     		}
     		return homologyCost;
 		};
-		this.copy = function() {
-			var copySoln = new flSolution(this.clusterGrid);
-			var i, j;
-			for (i = 0; i < copySoln.levelSelections.length; i++) {
-				for (j = 0; j < copySoln.levelSelections[i].length; j++) {
-					copySoln.levelSelections[i][j] = this.levelSelections[i][j];
+		this.makeNodeDesign = function(fNodes) {
+			var i;
+			for (i = 0; i < fNodes.length; i++) {
+				fNodes[i].children = [];
+			}
+			var j, k;
+			for (i = 0; i < this.levelSelections.length; i++) {
+				for (j = 0; j < this.levelSelections[i].length; j++) {
+					k = this.levelSelections[i][j];
+					fNodes[i].children.push(this.clusterGrid[i][j].lNodes[k]);
 				}
 			}
-			return copySoln;
+			return fNodes;
+		};
+		this.copy = function() {
+			var solnCopy = new flSolution(this.clusterGrid);
+			var i, j;
+			for (i = 0; i < solnCopy.levelSelections.length; i++) {
+				for (j = 0; j < solnCopy.levelSelections[i].length; j++) {
+					solnCopy.levelSelections[i][j] = this.levelSelections[i][j];
+				}
+			}
+			return solnCopy;
 		};
 	}
 
@@ -380,21 +396,21 @@ app.controller("doubleDutchCtrl", function($scope, $modal, $log) {
 			mutantSoln.levelSelections[i][j] = k;
     		return mutantSoln;
     	};
-    	this.annealSolve = function(clusterGrid, numAnnealings, iterPerAnnealing, initialTemp, weights) {
+    	this.annealSolve = function(clusterGrid, annealingOptions, weights) {
 			var soln;
 			var solnCost;
 			var bestSoln;
 			var bestCost;
 			var annealCount = 0;
 			var temp;
-			var phi = Math.pow(1/initialTemp, 1/iterPerAnnealing);
+			var phi = Math.pow(1/annealingOptions.initialTemp, 1/annealingOptions.iterPerAnnealing);
 			var mutantSoln;
 			var mutantCost;
 			var i, j;
-			while (annealCount < numAnnealings) {
+			while (annealCount < annealingOptions.numAnnealings) {
 				soln = this.randomSolve(clusterGrid, weights, 1);
 				solnCost = soln.calculateCost(weights);
-				temp = initialTemp;
+				temp = annealingOptions.initialTemp;
 				while (temp >= 1) {
 					i = Math.floor(Math.random()*soln.levelSelections.length);
 					j = Math.floor(Math.random()*soln.levelSelections[i].length);
@@ -597,7 +613,35 @@ app.controller("doubleDutchCtrl", function($scope, $modal, $log) {
 		return result;
 	};
 
+	decimalPlaces = function (num) {
+		var match = (''+num).match(/(?:\.(\d+))?(?:[eE]([+-]?\d+))?$/);
+		if (!match) { return 0; }
+		return Math.max(0,
+		    // Number of digits right of decimal point.
+		    (match[1] ? match[1].length : 0)
+		    // Adjust for scientific notation.
+		    - (match[2] ? + match[2] : 0));
+	};
+
+	validateNumericInput = function(param, min, max, step, defaultParam) {
+		if (param == null || isNaN(param) || param === "") {
+			return defaultParam;
+		} else if (param < min) {
+		    return min;
+		} else if (param > max) {
+		    return max;
+		} else {
+			var numStepDecimals = decimalPlaces(step.toString());
+			if (decimalPlaces(param.toString()) > numStepDecimals) {
+				return parseFloat(param.toFixed(numStepDecimals));
+			} else {
+				return param;
+			}
+		}
+    };
+
 	plackettBurmanSeeds = {};
+	plackettBurmanSeeds[hash(4)] = [1, 1, -1];
 	plackettBurmanSeeds[hash(8)] = [1, 1, 1, -1, 1, -1, -1];
 	plackettBurmanSeeds[hash(12)] = [1, 1, -1, 1, 1, 1, -1, -1, -1, 1, -1];
 	plackettBurmanSeeds[hash(16)] = [1, 1, 1, 1, -1, 1, -1, 1, 1, -1, -1, 1, -1, -1, -1];
@@ -735,6 +779,7 @@ app.controller("doubleDutchCtrl", function($scope, $modal, $log) {
   					designGrid[k].push(designGrid[k - 1][i]);
   				}
   			}
+  			designGrid.push([]);
   			for (i = 0; i < pbSeed.length; i++) {
   				designGrid[numDesigns - 1].push(-1);
   			}
@@ -812,8 +857,11 @@ app.controller("doubleDutchCtrl", function($scope, $modal, $log) {
 		};
 	}
 
-	$scope.expressGrammar = {
+	expressGrammar = {
 		name: "Expression Grammar",
+		variables: {TRANSCRIPTION: new variable("Transcription Strength"), TRANSLATION: new variable("Translation Strength"),
+				EXPRESSION: new variable("Expression Strength"), TERMINATION: new variable("Termination Efficiency")},
+		units: {REU: new units("REU")},
 		inferModule: function(feats) {
 			var transcFeats = [];
 			var translFeats = [];
@@ -889,23 +937,44 @@ app.controller("doubleDutchCtrl", function($scope, $modal, $log) {
 			} else {
 				return null;
 			}
+		}, inferVariable: function(mod) {
+			if (mod.role === modRole.EXPRESSION) {
+				return this.variables.EXPRESSION;
+			} else if (mod.role === modRole.TRANSCRIPTION) {
+				var feats = mod.getFeatures();
+				if (feats.length == 1 && feats[0].role === featRole.TERMINATOR) {
+					return this.variables.TERMINATION;
+				} else {
+					return this.variables.TRANSCRIPTION;
+				}
+			} else if (mod.role === modRole.TRANSLATION) {
+				return this.variables.TRANSLATION;
+			} else {
+				return null;
+			}
+		}, inferUnits: function(varia) {
+			if (varia == this.variables.EXPRESSION || varia == this.variables.TRANSCRIPTION || varia == this.variables.TRANSLATION) {
+				return this.units.REU;
+			} else if (varia == this.variables.TERMINATION) {
+				return null;
+			}
 		}, schema: "org.clothocad.model.FunctionalGrammar"
 	};
 
 	var gridParser = {
-		grammar: $scope.expressGrammar,
-		parseDesignData: function(data) {
+		grammar: expressGrammar,
+		parseDesign: function(data) {
 			var bioDesigns = [];
-			var parsedMod;
+			var inferredMod;
 			var rowFeats = [];
 			var i;
 			for (i = 0; i < data.length; i++) {
 				if (data[i].length > 0) {
 					rowFeats[i] = this.parseFeature(data[i][0]);
 					if (rowFeats[i] != null) {
-						parsedMod = this.grammar.inferModule([rowFeats[i]]);
-						if (parsedMod != null) {
-							bioDesigns.push(new bioDesign(parsedMod, []));
+						inferredMod = this.grammar.inferModule([rowFeats[i]]);
+						if (inferredMod != null) {
+							bioDesigns.push(new bioDesign(inferredMod, []));
 						}
 					}
 				}
@@ -915,9 +984,9 @@ app.controller("doubleDutchCtrl", function($scope, $modal, $log) {
 			for (j = 1; data.length > 0 && j < data[0].length; j++) {
 				colFeats[j] = this.parseFeature(data[0][j]);
 				if (colFeats[j] != null) {
-					parsedMod = this.grammar.inferModule([colFeats[j]]);
-					if (parsedMod != null) {
-						bioDesigns.push(new bioDesign(parsedMod, []));
+					inferredMod = this.grammar.inferModule([colFeats[j]]);
+					if (inferredMod != null) {
+						bioDesigns.push(new bioDesign(inferredMod, []));
 					}
 				}
 			}
@@ -925,11 +994,11 @@ app.controller("doubleDutchCtrl", function($scope, $modal, $log) {
 			for (i = 1; i < data.length; i++) {
 				for (j = 1; j < data[i].length; j++) {
 					if (rowFeats[i] != null && colFeats[j] != null) {
-						parsedMod = this.grammar.inferModule([rowFeats[i], colFeats[j]]);
-						if (parsedMod != null) {
-							parsedParam = this.parseParameter(data[i][j], parsedMod.role);
+						inferredMod = this.grammar.inferModule([rowFeats[i], colFeats[j]]);
+						if (inferredMod != null) {
+							parsedParam = this.parseParameter(data[i][j], inferredMod);
 							if (parsedParam != null) {
-								bioDesigns.push(new bioDesign(parsedMod, parsedParam));
+								bioDesigns.push(new bioDesign(inferredMod, parsedParam));
 							}
 						}
 					}
@@ -954,26 +1023,26 @@ app.controller("doubleDutchCtrl", function($scope, $modal, $log) {
 					return null;
 				}
 				if (parsedRole === featRole.CDS) {
-					return new feature(data.substring(1), parsedRole, new sequence("."));
+					return new feature(data.substring(1), parsedRole, new sequence(""));
 				} else {
-					return new feature(data, parsedRole, new sequence("."));
+					return new feature(data, parsedRole, new sequence(""));
 				}
 			} else {
 				return null;
 			}
-		}, parseParameter: function(data, role) {
+		}, parseParameter: function(data, mod) {
 			if (!isNaN(data) && data !== "") {
-				var varia;
-				if (role === modRole.EXPRESSION) {
-					varia = expressStrength;
-				} else if (role === modRole.TRANSCRIPTION) {
-					varia = transcStrength;
-				} else if (role === modRole.TRANSLATION) {
-					varia = translStrength;
+				var inferredVaria = this.grammar.inferVariable(mod);
+				if (inferredVaria != null) {
+					var inferredUnits = this.grammar.inferUnits(inferredVaria);
+					if (inferredUnits != null) {
+						return [new parameter(data, inferredVaria, inferredUnits)];
+					} else {
+						return null;
+					}
 				} else {
 					return null;
-				}
-				return [new parameter(data, varia, reu)];
+				}	
 			} else {
 				return null;
 			}
@@ -981,8 +1050,8 @@ app.controller("doubleDutchCtrl", function($scope, $modal, $log) {
 	};
 
 	var tableParser = {
-		grammar: $scope.expressGrammar,
-		parseDesignData: function(data) {
+		grammar: expressGrammar,
+		parseDesign: function(data) {
 			var bioDesigns = [];
 			if (data[0].length == 7
 					&& data[0][0] === "Part" && data[0][1] === "Part Type" && data[0][2] === "Strength" 
@@ -990,18 +1059,18 @@ app.controller("doubleDutchCtrl", function($scope, $modal, $log) {
 					&& data[0][6] === "Part Sequence") {
 				var i;
 				var parsedFeat;
-				var parsedMod;
+				var inferredMod;
 				var parsedParam;
 				for (i = 1; i < data.length; i++) {
 					if (data[i].length > 1 && isNaN(data[i][0]) && data[i][0].length > 0
 							&& isNaN(data[i][1]) && data[i][1].length > 0) {
 						parsedFeat = this.parseFeature(data[i]);
 						if (parsedFeat != null) {
-							parsedMod = this.grammar.inferModule([parsedFeat]);
-							if (parsedMod != null) {
-								parsedParam = this.parseParameter(data[i], parsedMod.role);
+							inferredMod = this.grammar.inferModule([parsedFeat]);
+							if (inferredMod != null) {
+								parsedParam = this.parseParameter(data[i], inferredMod);
 								if (parsedParam != null) {
-									bioDesigns.push(new bioDesign(parsedMod, parsedParam));
+									bioDesigns.push(new bioDesign(inferredMod, parsedParam));
 								}
 							}
 						}
@@ -1033,27 +1102,27 @@ app.controller("doubleDutchCtrl", function($scope, $modal, $log) {
 				if (data.length >= 7 && isNaN(data[6]) && data[6].length > 0) {
 					seq = new sequence(data[6]);
 				} else {
-					seq = new sequence(".");
+					seq = new sequence("");
 				}
 				return new feature(data[0], parsedRole, seq);
 			} else {
 				return null;
 			}
-		}, parseParameter: function(data, role) {
-			if (!isNaN(data[2]) && data[2] !== "") {
-				return [new parameter(data[2], termEfficiency, reu)];
-			} else if (!isNaN(data[4]) && data[4] !== "") {
-				var varia;
-				if (role === modRole.EXPRESSION) {
-					varia = expressStrength;
-				} else if (role === modRole.TRANSCRIPTION) {
-					varia = transcStrength;
-				} else if (role === modRole.TRANSLATION) {
-					varia = translStrength;
+		}, parseParameter: function(data, mod) {
+			var inferredVaria = this.grammar.inferVariable(mod);
+			if (inferredVaria != null) {
+				if (!isNaN(data[2]) && data[2] !== "") {
+					return [new unitlessParameter(data[2], inferredVaria)];
+				} else if (!isNaN(data[4]) && data[4] !== "") {
+					var inferredUnits = this.grammar.inferUnits(inferredVaria);
+					if (inferredUnits != null) {
+						return [new parameter(data[4], inferredVaria, inferredUnits)];
+					} else {
+						return null;
+					}
 				} else {
 					return null;
 				}
-				return [new parameter(data[4], varia, reu)];
 			} else {
 				return null;
 			}
@@ -1071,22 +1140,29 @@ app.controller("doubleDutchCtrl", function($scope, $modal, $log) {
 
 	$scope.doeTemplates = [new doeTemplate("Full Factorial (Any Size)", []), new doeTemplate("Plackett Burman (<24x2)", [])];
 
-	$scope.numClusterings = 3;
-	$scope.autoTarget = true;
+	$scope.defaultClusteringOptions = {numClusterings: 10, autoTarget: true};
+	$scope.clusteringOptions = {numClusterings: $scope.defaultClusteringOptions.numClusterings, autoTarget: $scope.defaultClusteringOptions.autoTarget};
+
+	$scope.minTarget = 0;
+	$scope.maxTarget = 1000000;
 
 	$scope.assignmentCost = 0;
 	$scope.levelMatchCost = 0;
 	$scope.homologyCost = 0;
 	$scope.reuseCost = 0;
 
-	$scope.weights = {levelMatch: 1, homology: 1, reuse: 1};
+	$scope.defaultWeights = {levelMatch: 1, homology: 1, reuse: 1};
+	$scope.weights = {levelMatch: $scope.defaultWeights.levelMatch, homology: $scope.defaultWeights.levelMatch, reuse: $scope.defaultWeights.levelMatch};
 
-	$scope.levelsPerFactor = 2;
-	$scope.numAnnealings = 100;
-	$scope.iterPerAnnealing = 100
-	$scope.initialTemp = 1000;
-	
-	$scope.toleranceModifier = 1;
+	$scope.defaultLevelsPerFactor = 2;
+	$scope.levelsPerFactor = $scope.defaultLevelsPerFactor;
+	$scope.minLevelsPerFactor = 2;
+	$scope.maxLevelsPerFactor = 100;
+	$scope.levelsPerFactorStep = 1;
+
+	$scope.defaultAnnealingOptions = {numAnnealings: 100, iterPerAnnealing: 100, initialTemp: 1000};
+	$scope.annealingOptions = {numAnnealings: $scope.defaultAnnealingOptions.numAnnealings, iterPerAnnealing: $scope.defaultAnnealingOptions.iterPerAnnealing, 
+			initialTemp: $scope.defaultAnnealingOptions.initialTemp};
 
 	$scope.addFeatures = function(size, flNode, grammar) {
 	    var modalInstance = $modal.open({
@@ -1112,41 +1188,13 @@ app.controller("doubleDutchCtrl", function($scope, $modal, $log) {
 		    size: size,
 		    resolve: {
 	        	items: function() {
-	          		return {levelTargets: fNode.levelTargets, autoTarget: $scope.autoTarget};
+	          		return {levelTargets: fNode.levelTargets, autoTarget: $scope.clusteringOptions.autoTarget, 
+		          			minTarget: $scope.minTarget, maxTarget: $scope.maxTarget};
 	        	}
 	      	}
 	    });
 	    modalInstance.result.then(function(levelTargets) {
 	    	fNode.levelTargets = levelTargets;
-	    });
-	};
-
-	$scope.viewAssignmentResults = function(size, solver) {
-		var factors = [];
-		var i, j;
-		for (i = 0; i < $scope.fldNodes.length; i++) {
-			factors.push(new factor(dummyVaria, $scope.fldNodes[i].bioDesign));
-			for (j = 0; j < $scope.fldNodes[i].children.length; j++) {
-				factors[i].levels.push(new level($scope.fldNodes[i].children[j].parameter, $scope.fldNodes[i].children[j].bioDesign));
-			}
-		}
-		var modalInstance = $modal.open({
-	    	templateUrl: 'assignmentResultsWindow.html',
-	    	controller: 'assignmentResultsWindowCtrl',
-		    size: size,
-		    resolve: {
-	        	items: function() {
-	          		return {experimentalDesign: new experimentalDesign(factors), bestSoln: $scope.bestSoln, solver: solver, 
-		          			numAnnealings: $scope.numAnnealings, iterPerAnnealing: $scope.iterPerAnnealing, initialTemp: $scope.initialTemp, 
-		          			weights: $scope.weights};
-	        	}
-	      	}
-	    });
-	    modalInstance.result.then(function(items) {
-	 		$scope.bestSoln = items.bestSoln;
-	 		$scope.numAnnealings = items.numAnnealings;
-	 		$scope.iterPerAnnealing = items.iterPerAnnealing;
-	 		$scope.initialTemp = items.initialTemp;
 	    });
 	};
 
@@ -1157,27 +1205,24 @@ app.controller("doubleDutchCtrl", function($scope, $modal, $log) {
 		    size: size,
 		    resolve: {
 	        	items: function() {
-	          		return {onRepeat: onRepeat, 
-		          			numAnnealings: $scope.numAnnealings, iterPerAnnealing: $scope.iterPerAnnealing, initialTemp: $scope.initialTemp,   
-			          		weights: $scope.weights, autoTarget: $scope.autoTarget, numClusterings: $scope.numClusterings};
+	          		return {onRepeat: onRepeat, annealingOptions: $scope.annealingOptions, defaultAnnealingOptions: $scope.defaultAnnealingOptions,  
+			          		weights: $scope.weights, defaultWeights: $scope.defaultWeights, clusteringOptions: $scope.clusteringOptions,
+				          	defaultClusteringOptions: $scope.defaultClusteringOptions};
 	        	}
 	      	}
 	    });
 	    modalInstance.result.then(function(items) {
-	    	$scope.numAnnealings = items.numAnnealings;
-	    	$scope.iterPerAnnealing = items.iterPerAnnealing;
-	    	$scope.initialTemp = items.initialTemp;
+	    	$scope.annealingOptions = items.annealingOptions;
 	    	$scope.weights = items.weights;
-	    	$scope.autoTarget = items.autoTarget;
+	    	$scope.clusteringOptions = items.clusteringOptions;
 	    	var i;
     		for (i = 0; i < $scope.fldNodes.length; i++) {
-    			if ($scope.autoTarget) {
+    			if ($scope.clusteringOptions.autoTarget) {
     				$scope.fldNodes[i].displayTargets = "display:none";
     			} else {
     				$scope.fldNodes[i].displayTargets = "";
     			}
     		}
-	    	$scope.numClusterings = items.numClusterings;
 	    });
 	};
 
@@ -1211,7 +1256,7 @@ app.controller("doubleDutchCtrl", function($scope, $modal, $log) {
     	beforeDrop: function(event) {
     		if (event.dest.nodesScope.$id !== event.source.nodesScope.$id) {
     			var nodeCopy = event.source.nodeScope.$modelValue.copy();
-    			if (!$scope.autoTarget) {
+    			if (!$scope.clusteringOptions.autoTarget) {
 	    			event.source.nodeScope.$modelValue.displayTargets = "";
 	    		}
     			event.source.nodesScope.$modelValue.splice(event.source.index, 0, nodeCopy);
@@ -1219,23 +1264,52 @@ app.controller("doubleDutchCtrl", function($scope, $modal, $log) {
     	}
   	};
 
-  	$scope.generateDesigns = function() {
-  		var outputData = [[]];
-  		var validateExperimentalDesign = function(fNodes) {
+  	$scope.validateFLDNodes = function() {
+  		var validateLNodesPerFNodes = function(fNodes) {
 			var i;
 			for (i = 1; i < fNodes.length; i++) {
 				if (fNodes[i].children.length < 2) {
-					alertUser("md", "Error", "Factorial design does not have greater than two levels associated with each factor. "
+					alertUser("md", "Error", "Factorial design does not have two or more levels associated with each factor. "
 					+ "Upload parameterized features and select 'Assign Levels' or drag levels from the rightmost column to the center column.");
 					return false;
 				}
 			}
 			return true;
 		};
-  		if ($scope.fldNodes.length == 0) {
+		if ($scope.fldNodes.length == 0) {
   			alertUser("md", "Error", "Factorial design contains no factors. Upload one or more coding sequences and drag a factor from the leftmost column " 
 					+ "to the center column.");
-  		} else if (validateExperimentalDesign($scope.fldNodes)) {
+  			return false;
+  		} else {
+  			return validateLNodesPerFNodes($scope.fldNodes);
+  		}
+  	};
+
+  	$scope.downloadAssignment = function() {
+  		var outputData = [];
+  		if ($scope.validateFLDNodes()) {
+  			var i, j;
+  			var k = 0;
+  			for (i = 0; i < $scope.fldNodes.length; i++) {
+  				outputData.push([]);
+  				outputData[k].push($scope.fldNodes[i].bioDesign.name);
+  				$scope.fldNodes[i].children.sort(function(a, b){return a.parameter.value - b.parameter.value});
+  				for (j = 0; j < $scope.fldNodes[i].children.length; j++) {
+  					outputData.push([]);
+  					outputData[k + j + 1].push($scope.fldNodes[i].children[j].bioDesign.name);
+  					outputData[k + j + 1].push($scope.fldNodes[i].children[j].parameter.value);
+  				}
+  				k += (1 + $scope.fldNodes[i].children.length);
+  			}
+  		} else {
+  			outputData.push([]);
+  		}
+  		return outputData;
+  	};
+
+  	$scope.generateDesigns = function() {
+  		var outputData = [[]];
+  		if ($scope.validateFLDNodes()) {
   			var templater = new doeTemplater();
   			var i;
   			if ($scope.selectedTemplate.isEmpty()
@@ -1294,7 +1368,7 @@ app.controller("doubleDutchCtrl", function($scope, $modal, $log) {
 	  		} else {
 	  			for (i = 0; i < $scope.fldNodes.length; i++) {
 	  				outputData[0].push($scope.fldNodes[i].bioDesign.name);
-	  				$scope.fldNodes[i].children.sort(function(a, b){return a.parameter.value - b.parameter.value})
+	  				$scope.fldNodes[i].children.sort(function(a, b){return a.parameter.value - b.parameter.value});
 	  			}
 	  			var j, k;
 	  			for (k = 0; k < $scope.selectedTemplate.designGrid.length; k++) {
@@ -1362,12 +1436,12 @@ app.controller("doubleDutchCtrl", function($scope, $modal, $log) {
 			}
 			return true;
 		}
-		var parseFileData = function(results) {
+		var parseFile = function(results) {
 			if (results.data.length == 0) {
 				alertUser("md", "Error", $scope.featFiles[this.i].name + " contains no data. Browse and select a new feature file (.csv) to upload.");
 			} else {
 				var bioDesignParser = $scope.bioDesignParsers[$scope.uploadSelector];
-				var bioDesigns = bioDesignParser.parseDesignData(results.data);
+				var bioDesigns = bioDesignParser.parseDesign(results.data);
 				if (bioDesigns.length == 0) {
 					alertUser("md", "Error", "Failed to parse contents of " + $scope.featFiles[this.i].name + ". Check file format.");
 				} else {
@@ -1391,25 +1465,20 @@ app.controller("doubleDutchCtrl", function($scope, $modal, $log) {
 					};
 					var isParameterizedExpression = function(bioDesign) {
 						if ('module' in bioDesign && 'parameters' in bioDesign) { 
-							var varia;
-							if (bioDesign.module.role === modRole.EXPRESSION) {
-								varia = expressStrength;
-							} else if (bioDesign.module.role === modRole.TRANSCRIPTION) {
-								varia = transcStrength;
-							} else if (bioDesign.module.role === modRole.TRANSLATION) {
-								varia = translStrength;
+							var inferredVaria = expressGrammar.inferVariable(bioDesign.module);
+							if (inferredVaria == null) {
+								return -1;
 							} else {
+								var i = 0;
+								while (i < bioDesign.parameters.length) {
+									if (bioDesign.parameters[i].variable.name === inferredVaria.name) {
+										return i;
+									} else {
+										i++;
+									}
+								}
 								return -1;
 							}
-							var i = 0;
-							while (i < bioDesign.parameters.length) {
-								if (bioDesign.parameters[i].variable.name === varia.name) {
-									return i;
-								} else {
-									i++;
-								}
-							}
-							return -1;
 						} else {
 							return -1;
 						}
@@ -1445,6 +1514,10 @@ app.controller("doubleDutchCtrl", function($scope, $modal, $log) {
 						}
 					});
 					$scope.lNodes.sort(function(a, b){return a.parameter.value - b.parameter.value});
+					if ($scope.lNodes.length > 0) {
+						$scope.minTarget = Math.floor($scope.lNodes[0].parameter.value);
+						$scope.maxTarget = Math.ceil($scope.lNodes[$scope.lNodes.length - 1].parameter.value);
+					}
 					$scope.$apply();
 				}
 			}
@@ -1458,7 +1531,7 @@ app.controller("doubleDutchCtrl", function($scope, $modal, $log) {
 			var i;
 	    	for (i = 0; i < $scope.featFiles.length; i++) {
 	    		Papa.parse($scope.featFiles[i], 
-	    			{i: i, dynamicTyping: true, complete: parseFileData});
+	    			{i: i, dynamicTyping: true, complete: parseFile});
 	    	}
 		}
     };
@@ -1609,20 +1682,22 @@ app.controller("doubleDutchCtrl", function($scope, $modal, $log) {
 				return true;
 			}
 		};
+		$scope.levelsPerFactor = validateNumericInput($scope.levelsPerFactor, $scope.minLevelsPerFactor, $scope.maxLevelsPerFactor, $scope.levelsPerFactorStep, 
+			$scope.defaultLevelsPerFactor);
 		if ($scope.fldNodes.length == 0) {
 			alertUser("md", "Error", "Experimental design contains no factors. Upload one or more coding sequences and drag a factor from the leftmost column "
 					+ "to the center column.");
-		} else if (validateLevelsPerFactor($scope.fldNodes, $scope.levelsPerFactor, $scope.lNodes.length, $scope.autoTarget)) {
+		} else if (validateLevelsPerFactor($scope.fldNodes, $scope.levelsPerFactor, $scope.lNodes.length, $scope.clusteringOptions.autoTarget)) {
 			var clusterer = new lClusterer();
 			var clusterGrid;
-			if ($scope.autoTarget) {
-				clusterGrid = clusterer.lfMeansCluster($scope.levelsPerFactor, $scope.fldNodes.length, $scope.numClusterings, $scope.lNodes);
+			if ($scope.clusteringOptions.autoTarget) {
+				clusterGrid = clusterer.lfMeansCluster($scope.levelsPerFactor, $scope.fldNodes.length, $scope.clusteringOptions.numClusterings, $scope.lNodes);
 			} else {
 				clusterGrid = clusterer.targetedCluster($scope.fldNodes, $scope.lNodes);
 			}
 			if (validateClusterGrid(clusterGrid)) {
 				var i, j;
-				if ($scope.autoTarget) {
+				if ($scope.clusteringOptions.autoTarget) {
 					for (i = 0; i < clusterGrid.length; i++) {
 						$scope.fldNodes[i].levelTargets = [];
 						for (j = 0; j < clusterGrid[i].length; j++) {
@@ -1632,19 +1707,23 @@ app.controller("doubleDutchCtrl", function($scope, $modal, $log) {
 					}
 				}
 				var solver = new flSolver();
-				// $scope.bestSoln = solver.randomSolve(clusterGrid, $scope.weights, $scope.numAnnealings);
-				$scope.bestSoln = solver.annealSolve(clusterGrid, $scope.numAnnealings, $scope.iterPerAnnealing, $scope.initialTemp, $scope.weights);
-				for (i = 0; i < $scope.fldNodes.length; i++) {
-					$scope.fldNodes[i].children = [];
-				}
-				var k;
-				for (i = 0; i < $scope.bestSoln.levelSelections.length; i++) {
-					for (j = 0; j < $scope.bestSoln.levelSelections[i].length; j++) {
-						k = $scope.bestSoln.levelSelections[i][j];
-						$scope.fldNodes[i].children.push(clusterGrid[i][j].lNodes[k]);
-					}
-				}
-				$scope.viewAssignmentResults('md', solver);
+				// var bestSoln = solver.randomSolve(clusterGrid, $scope.weights, $scope.annealingOptions.numAnnealings);
+				var bestSoln = solver.annealSolve(clusterGrid, $scope.annealingOptions, $scope.weights);
+				var modalInstance = $modal.open({
+			    	templateUrl: 'assignmentResultsWindow.html',
+			    	controller: 'assignmentResultsWindowCtrl',
+				    size: 'md',
+				    resolve: {
+			        	items: function() {
+			          		return {fldNodes: $scope.fldNodes, bestSoln: bestSoln, solver: solver, annealingOptions: $scope.annealingOptions, 
+				          			defaultAnnealingOptions: $scope.defaultAnnealingOptions, weights: $scope.weights};
+			        	}
+			      	}
+			    });
+			    modalInstance.result.then(function(items) {
+			    	$scope.fldNodes = items.bestSoln.makeNodeDesign($scope.fldNodes);
+			 		$scope.annealingOptions = items.annealingOptions;
+			    });
 			}
 		} 
 	};
