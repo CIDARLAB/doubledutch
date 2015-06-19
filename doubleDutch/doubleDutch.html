@@ -41,20 +41,21 @@
         <label style="font-size:20pt">Level Assignment</label>
         <br>
         <label ng-show="clusteringOptions.autoTarget">Levels per Factor</label>
-        <input type="number" step="{{lpfStep}}" min="{{minLPF}}" max="{{maxLPF}}" style="height:25px; width:50px" ng-show="clusteringOptions.autoTarget" ng-model="levelsPerFactor">
+        <input type="number" step="{{levelsPerFactorStep}}" min="{{minLevelsPerFactor}}" max="{{maxLevelsPerFactor}}" style="height:25px; width:50px" ng-show="clusteringOptions.autoTarget" ng-disabled="isAssigning" ng-model="levelsPerFactor">
         <br ng-show="clusteringOptions.autoTarget">
         <button type="button" class="btn btn-primary" ng-click="assignLevels()">Assign Levels</button>
-        <button type="button" class="btn btn-primary" ng-click="editAssignmentOptions('md', false)">Edit Options</button>
+        <button type="button" class="btn btn-primary" ng-click="editAssignmentOptions('md')">Edit Options</button>
         <br><br>
-        <button type="button" class="btn btn-primary" ng-csv="downloadAssignment(0, {levelMatch: 'na', homology: 'na', reuse: 'na', total: 'na'})" filename="level_assignment.csv" field-separator=",">Download Assignment</button>
+        <button type="button" class="btn btn-primary" ng-csv="downloadAssignment()" filename="level_assignment.csv" field-separator=",">Download Assignment</button>
+        <button class="btn btn-warning" ng-click="quitAssigning()" ng-show="isAssigning">Done</button>
       </div>
       <div class="col-sm-4">
-         <label style="font-size:20pt">Library Generation</label>
+         <label style="font-size:20pt">Library Download</label>
         <br>
         <label>DOE Template</label>
         <select ng-init="selectedTemplate = selectedTemplate || doeTemplates[0]" ng-model="selectedTemplate" ng-options="template as template.name for template in doeTemplates"></select>
         <br>
-        <button type="button" class="btn btn-primary" ng-csv="generateDesigns()" filename="library_design.csv" field-separator=",">Generate Library</button>
+        <button type="button" class="btn btn-primary" ng-csv="generateDesigns()" filename="library_design.csv" field-separator=",">Download Library</button>
       </div>
     </div>
 
@@ -62,10 +63,22 @@
 
 		<div class="row">
   		<div class="col-sm-4">
-    		<label style="font-size:20pt">Available Factors</label>
+    		<label style="font-size:20pt" ng-hide="isAssigning">Available Factors</label>
+        <p ng-show="isAssigning">The best level assignment after {{assignmentCount}} trials is shown below. Would you like to perform {{annealingOptions.numAnnealings}} more trials?
+          <br><br>
+          Level matching cost is {{bestSolnCost.levelMatch | number:2}}.
+          <br>
+          Pathway Homology cost is {{bestSolnCost.homology | number:2}}.
+          <br>
+          Feature Reuse cost is {{bestSolnCost.reuse | number:2}}.
+          <br>
+          ______________________
+          <br>
+          Total assignment cost is {{bestSolnCost.total | number:2}}.
+        </p>
     		<div ui-tree="flTreeOptions">
       			<ol ui-tree-nodes="" ng-model="fNodes">
-        			<li ng-repeat="node in fNodes" ui-tree-node ng-include="'fl_tree_renderer.html'"></li>
+        			<li ng-repeat="node in fNodes" ui-tree-node ng-include="'fl_tree_renderer.html'" ng-hide="isAssigning"></li>
       			</ol>
     		</div>
   		</div>
@@ -78,10 +91,10 @@
     		</div>
   		</div>
   		<div class="col-sm-4">
-    		<label style="font-size:20pt">Available Levels</label>
+    		<label style="font-size:20pt" ng-hide="isAssigning">Available Levels</label>
     		<div ui-tree="flTreeOptions">
       			<ol ui-tree-nodes="" ng-model="lNodes">
-        			<li ng-repeat="node in lNodes" ui-tree-node ng-include="'fl_tree_renderer.html'"></li>
+        			<li ng-repeat="node in lNodes" ui-tree-node ng-include="'fl_tree_renderer.html'" ng-hide="isAssigning"></li>
       			</ol>
     		</div>
   		</div>
@@ -102,7 +115,6 @@
 	<script src="js/featureWindowCtrl.js"></script>
   <script src="js/alertWindowCtrl.js"></script>
   <script src="js/assignmentWindowCtrl.js"></script>
-  <script src="js/assignmentResultsWindowCtrl.js"></script>
   <script src="js/targetWindowCtrl.js"></script>
 	<script src="js/fileInput.js"></script>
 
@@ -158,12 +170,12 @@
           <label style="font-size:20pt">Level Targets</label>
       </div>
       <div class="modal-body">
-        <button class="btn btn-primary" ng-disabled="clusteringOptions.autoTarget" ng-click="addTarget()">Add Target</button>
-        <button class="btn btn-primary" ng-disabled="clusteringOptions.autoTarget" ng-click="removeTarget()">Remove Target</button>
+        <button class="btn btn-primary" ng-disabled="autoTarget" ng-click="addTarget()">Add Target</button>
+        <button class="btn btn-primary" ng-disabled="autoTarget" ng-click="removeTarget()">Remove Target</button>
         <br><br>
         <ul class="list-unstyled">
           <li ng-repeat="levelTarget in levelTargets">
-              <input type="number" step="0.01" min="{{minTarget}}" max="{{maxTarget}}" style="height:25px; width:95px" ng-disabled="clusteringOptions.autoTarget" ng-model="levelTarget.value">
+              <input type="number" step="0.01" min="{{minTarget}}" max="{{maxTarget}}" style="height:25px; width:95px" ng-disabled="autoTarget" ng-model="levelTarget.value">
               <br>
           </li>
         </ul>
@@ -171,42 +183,6 @@
       <div class="modal-footer">
           <button class="btn btn-primary" ng-click="ok()">OK</button>
           <button class="btn btn-warning" ng-click="cancel()">Cancel</button>
-      </div>
-  </script>
-
-  <script type="text/ng-template" id="assignmentResultsWindow.html">
-      <div class="modal-header">
-          <label style="font-size:20pt">Assignment Results</label>
-      </div>
-      <div class="modal-body">
-          <p>The best level assignment after {{trialCount}} trials is shown below. Would you like to perform {{annealingOptions.numAnnealings}} more trials?</p>
-          Level matching cost is {{bestSolnCost.levelMatch | number:2}}.
-          <br>
-          Pathway Homology cost is {{bestSolnCost.homology | number:2}}.
-          <br>
-          Feature Reuse cost is {{bestSolnCost.reuse | number:2}}.
-          <br>
-          ______________________
-          <br>
-          Total assignment cost is {{bestSolnCost.total | number:2}}.
-          <ul class="list-unstyled">
-            <li ng-repeat="fNode in fldNodes">
-                <br>
-                {{fNode.bioDesign.name}} expressed via
-                <ul class="list-unstyled">
-                  <li ng-repeat="lNode in fNode.children">
-                    {{lNode.bioDesign.name}} with {{lNode.parameter.variable.name.toLowerCase()}} of {{lNode.parameter.value | number:3}} {{lNode.parameter.units.name}}
-                    <br>
-                  </li>
-                </ul>
-            </li>
-          </ul>
-      </div>
-      <div class="modal-footer">
-        <button class="btn btn-primary" ng-click="assignLevels()">Assign Levels</button>
-          <button type="button" class="btn btn-primary" ng-click="editAssignmentOptions('md', true)">Edit Options</button>
-          <button class="btn btn-primary" ng-csv="downloadAssignment(trialCount, bestSolnCost)" filename="level_assignment.csv" field-separator=",">Download Assignment</button>
-          <button class="btn btn-warning" ng-click="quit()">Quit</button>
       </div>
   </script>
 
@@ -235,23 +211,23 @@
                   <input type="number" step="{{inputStep}}" min="{{minInput}}" max="{{maxInput}}" style="height:25px; width:65px" ng-model="annealingOptions.numAnnealings">
                   <br>
                   <label>Iterations per Trial</label>
-                  <input type="number" step="{{inputStep}}" min="{{minInput}}" max="{{maxInput}}" style="height:25px; width:65px" ng-model="annealingOptions.iterPerAnnealing">
+                  <input ng-disabled="isAssigning" type="number" step="{{inputStep}}" min="{{minInput}}" max="{{maxInput}}" style="height:25px; width:65px" ng-model="annealingOptions.iterPerAnnealing">
                   <br>
-                  <label>Initial Temperature</label>
-                  <input type="number" step="{{inputStep}}" min="{{minInput}}" max="{{maxInput}}" style="height:25px; width:65px" ng-model="annealingOptions.initialTemp">
-                  <div ng-hide="onRepeat">
+                  <label ng-disabled="isAssigning">Initial Temperature</label>
+                  <input ng-disabled="isAssigning" type="number" step="{{inputStep}}" min="{{minInput}}" max="{{maxInput}}" style="height:25px; width:65px" ng-model="annealingOptions.initialTemp">
+                  <div>
                     <br>
                     <label>Level Matching Weight</label>
-                    <input type="number" step="{{inputStep}}" min="{{minWeight}}" max="{{maxInput}}" style="height:25px; width:50px" ng-model="weights.levelMatch">
+                    <input ng-disabled="isAssigning" type="number" step="{{inputStep}}" min="{{minWeight}}" max="{{maxInput}}" style="height:25px; width:50px" ng-model="weights.levelMatch">
                     <br>
                     <label>Pathway Homology Weight</label>
-                    <input type="number" step="{{inputStep}}" min="{{minWeight}}" max="{{maxInput}}" style="height:25px; width:50px" ng-model="weights.homology">
+                    <input ng-disabled="isAssigning" type="number" step="{{inputStep}}" min="{{minWeight}}" max="{{maxInput}}" style="height:25px; width:50px" ng-model="weights.homology">
                     <br>
                     <label>Feature Reuse Weight</label>
-                    <input type="number" step="{{inputStep}}" min="{{minWeight}}" max="{{maxInput}}" style="height:25px; width:50px" ng-model="weights.reuse">
+                    <input ng-disabled="isAssigning" type="number" step="{{inputStep}}" min="{{minWeight}}" max="{{maxInput}}" style="height:25px; width:50px" ng-model="weights.reuse">
                   </div>
               </div>
-              <div ng-hide="onRepeat" class="col-sm-6">
+              <div ng-hide="isAssigning" class="col-sm-6">
                   <label style="font-size:20pt">Level Targets</label>
                   <br>
                   <label>Automatically Determine Targets</label>
