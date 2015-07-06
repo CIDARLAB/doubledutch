@@ -21,13 +21,15 @@ app.controller('targetWindowCtrl', function ($scope, $modalInstance, items) {
   $scope.ok = function() {
     var levelTargets = [];
     var i;
-    for (i = 0; i < $scope.levelTargets.length; i++ ) {
+    for (i = 0; i < $scope.levelTargets.length; i++) {
+      var defaultLevelTarget;
       if (i < $scope.initialLevelTargets.length) {
-        levelTargets.push(validateNumericInput($scope.levelTargets[i].value, $scope.minTarget, $scope.maxTarget, 
-            $scope.targetStep, $scope.initialLevelTargets[i]));
+        defaultLevelTarget = $scope.initialLevelTargets[i];
       } else {
-        levelTargets.push($scope.minTarget);
+        defaultLevelTarget = $scope.minTarget;
       }
+      levelTargets.push(validateNumericInput($scope.levelTargets[i].value, $scope.minTarget, $scope.maxTarget, 
+          $scope.targetStep, defaultLevelTarget));
     }
     $modalInstance.close(levelTargets);
   };

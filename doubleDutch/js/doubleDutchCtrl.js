@@ -602,6 +602,47 @@ app.controller("doubleDutchCtrl", function($scope, $modal, $log) {
 		return factorial(n)/(factorial(k)*factorial(n - k));
 	};
 
+	arrayProduct = function(arr1, arr2) {
+		var product = [];
+		var i;
+		for (i = 0; i < Math.max(arr1.length, arr2.length); i++) {
+			if (i >= arr1.length) {
+				product.push(arr2[i]);	
+			} else if (i >= arr2.length) {
+				product.push(arr1[i]);
+			} else {
+				product.push(arr1[i]*arr2[i]);
+			}
+		}
+		return product;
+	};
+
+	generatorProduct = function(generator1, generator2) {
+		var product = generator1.concat(generator2);
+		product.sort(function(a, b){return a - b});
+		var i;
+		for (i = product.length - 1; i > 0; i--) {
+			if (product[i] == product[i - 1]) {
+				product.splice(i, 1);
+			}
+		}
+		return product;
+	};
+
+	areArraysDisjoint = function(arr1, arr2) {
+		var hashTable = {};
+		var i;
+		for (i = 0; i < arr1.length; i++) {
+			hashTable[hash(arr1[i])] = true;
+		}
+		for (i = 0; i < arr2.length; i++) {
+			if (hashTable[hash(arr2[i])] == true) {
+				return false;
+			}
+		}
+		return true;
+	};
+
 	hash = function(value) {
 	    return (typeof value) + ' ' + (value instanceof Object ?
 	        (value.__hash || (value.__hash = ++arguments.callee.current)) :
@@ -658,9 +699,12 @@ app.controller("doubleDutchCtrl", function($scope, $modal, $log) {
 	plackettBurmanSeeds[hash(20)] = [1, 1, -1, -1, 1, 1, 1, 1, -1, 1, -1, 1, -1, -1, -1, -1, 1, 1, -1];
 	plackettBurmanSeeds[hash(24)] = [1, 1, 1, 1, 1, -1, 1, -1, 1, 1, -1, -1, 1, 1, -1, -1, 1, -1, 1, -1, -1, -1, -1];
 
-	function doeTemplate(name, designGrid) {
+	function doeTemplate(name, type, designGrid, resolution, generators) {
 		this.name = name;
+		this.type = type;
 		this.designGrid = designGrid;
+		this.resolution = resolution;
+		this.generators = generators;
 		this.rangeIndices = [];
 		this.levelsPerFactor = [];
 		this.isEmpty = function() {
@@ -704,7 +748,7 @@ app.controller("doubleDutchCtrl", function($scope, $modal, $log) {
 		}
 		this.isRangeValid = function() {
 			var i;
-			for (i = 0; i < this.levelsPerFactor; i++) {
+			for (i = 0; i < this.levelsPerFactor.length; i++) {
 				if (this.levelsPerFactor[i] < 2) {
 					return false;
 				}
@@ -713,7 +757,7 @@ app.controller("doubleDutchCtrl", function($scope, $modal, $log) {
 		};
 		this.validateGridVsDesign = function(fNodes) {
 			var k;
-			for (k = 0; k < this.designGrid; k++) {
+			for (k = 0; k < this.designGrid.length; k++) {
 				if (this.designGrid[k].length != fNodes.length) {
 					return false;
 				}
@@ -725,7 +769,7 @@ app.controller("doubleDutchCtrl", function($scope, $modal, $log) {
 				return false;
 			} else {
 				var i;
-				for (i = 0; i < this.levelsPerFactor; i++) {
+				for (i = 0; i < this.levelsPerFactor.length; i++) {
 					if (this.levelsPerFactor[i] != fNodes[i].children.length) {
 						return false;
 					}
@@ -736,95 +780,221 @@ app.controller("doubleDutchCtrl", function($scope, $modal, $log) {
 	}
 
 	function doeTemplater() {
+		this.doeTypes = {fullFactorial: "fullFactorial", fractionalFactorial: "fractionalFactorial", plackettBurman: "plackettBurman"};
 		this.makeFullFactorial = function(levelsPerFactor) {
-			var ranges = [];
-			var numDesigns = 1;
-			var i, j;
-			for (i = 0; i < levelsPerFactor.length; i++) {
-				ranges.push([]);
-				numDesigns *= levelsPerFactor[i];
-				for (j = -Math.floor(levelsPerFactor[i]/2); j <= Math.floor(levelsPerFactor[i]/2); j++) {
-	  				if (j != 0 || levelsPerFactor[i]%2 != 0) {
-	  					ranges[i].push(j);
+			var designGrid = [];
+			if (levelsPerFactor.length > 0) {
+				var ranges = [];
+				var numDesigns = 1;
+				var i, j;
+				for (i = 0; i < levelsPerFactor.length; i++) {
+					ranges.push([]);
+					numDesigns *= levelsPerFactor[i];
+					for (j = -Math.floor(levelsPerFactor[i]/2); j <= Math.floor(levelsPerFactor[i]/2); j++) {
+		  				if (j != 0 || levelsPerFactor[i]%2 != 0) {
+		  					ranges[i].push(j);
+		  				}
+		  			}
+		  		}
+	  			
+	  			var k;
+	  			for (k = 0; k < numDesigns; k++) {
+	  				designGrid.push([]);
+	  			}
+	  			var designsPerLevel = 1; 
+	  			j = 0;
+	  			for (i = 0; i < levelsPerFactor.length; i++) {
+	   				for (k = 0; k < numDesigns; k++) {
+						designGrid[k].push(ranges[i][j]);
+						if ((k + 1)%designsPerLevel == 0) {
+	   						j++;
+	   					}
+	   					if (j == levelsPerFactor[i]) {
+	   						j = 0;
+	   					}
+	  				}
+	  				designsPerLevel *= levelsPerFactor[i];
+	  			}
+	  		}
+	  		return new doeTemplate(this.makeFullFactorialName(levelsPerFactor), this.doeTypes.fullFactorial, designGrid);
+		};
+		this.makeFullFactorialName = function(levelsPerFactor) {
+			var templateName;
+			if (levelsPerFactor.length > 0) {
+	  			templateName = "Full Factorial (" + levelsPerFactor.length + "x";
+				var isLPFConstant = function(levelsPerFactor) {
+	  				for (i = 1; i < levelsPerFactor.length; i++) {
+		  				if (levelsPerFactor[i] != levelsPerFactor[i - 1]) {
+		  					return false;
+		  				}
+		  			}
+		  			return true;
+	  			};
+	  			if (isLPFConstant(levelsPerFactor)) {
+	  				templateName += levelsPerFactor[0] + ")";
+	  			} else {
+	  				for (i = 0; i < levelsPerFactor.length; i++) {
+	  					templateName += levelsPerFactor[i] + ",";
+	  				}
+	  				templateName = templateName.substring(0, templateName.length - 1) + ")";
+	  			}
+	  		} else {
+	  			templateName = "Full Factorial (Any Size)";
+	  		}
+  			return templateName;
+		};
+		this.makeFractionalFactorial = function(numFactors, resolution) {
+			var designGrid = [];
+			if (numFactors > 0) {
+				var calculateBaseFactors = function(numFactors, resolution, templater) {
+					var numBaseFactors = resolution - 1;
+					var calculateNumAliasedFactors = function(numBaseFactors) {
+						var numAliasedFactors = 0;
+						var i;
+						for (i = 2; i <= numBaseFactors; i++) {
+							numAliasedFactors += combinatorial(numBaseFactors, i);
+						}
+						return numAliasedFactors;
+					};
+					while (numBaseFactors + calculateNumAliasedFactors(numBaseFactors) < numFactors) {
+						numBaseFactors++;
+					}
+					var baseFactors = [];
+					var levelsPerFactor = [];
+					var i;
+					for (i = 0; i < numBaseFactors; i++) {
+						baseFactors.push([]);
+						levelsPerFactor.push(2);
+					}
+					var fullFactorial = templater.makeFullFactorial(levelsPerFactor);
+					var k;
+					for (k = 0; k < fullFactorial.designGrid.length; k++) {
+						for (i = 0; i < fullFactorial.designGrid[k].length; i++) {
+							baseFactors[i].push(fullFactorial.designGrid[k][i]);
+						}
+					}
+					return baseFactors;
+				};
+				var baseFactors = calculateBaseFactors(numFactors, resolution, this);
+				var aliasFactors = function(baseFactors, resolution) {
+					var aliasFactorsHelper = function(baseFactors, aliasSize, start) {
+						var aliasedFactors = []
+						var generators = [];
+						aliasSize--;
+						var i;
+						if (aliasSize > 0) {
+							var aliasingResults;
+							var r;
+							for (i = start + 1; i < baseFactors.length; i++) {
+								aliasingResults = aliasFactorsHelper(baseFactors, aliasSize, i);
+								for (r = 0; r < aliasingResults.aliasedFactors.length; r++) {
+									aliasedFactors.push(arrayProduct(baseFactors[i - 1], aliasingResults.aliasedFactors[r]));
+									generators.push([i - 1].concat(aliasingResults.generators[r]));
+								} 
+							}
+						} else {
+							aliasedFactors = aliasedFactors.concat(baseFactors.slice(start));
+							for (i = start; i < baseFactors.length; i++) {
+								generators.push([i]);
+							}
+						}
+						return {aliasedFactors: aliasedFactors, generators: generators};
+					};
+					var aliasedFactors = []
+					var generators = [];
+					var aliasSize;
+					var aliasingResults;
+					var i = baseFactors.length - 1;
+					var g;
+					for (aliasSize = resolution - 1; aliasSize <= baseFactors.length; aliasSize++) {
+						aliasingResults = aliasFactorsHelper(baseFactors, aliasSize, 0);
+						aliasedFactors = aliasedFactors.concat(aliasingResults.aliasedFactors);
+						for (g = 0; g < aliasingResults.generators.length; g++) {
+							i++;
+							generators.push(aliasingResults.generators[g].concat([i]));
+						}
+					}
+					return {aliasedFactors: aliasedFactors, generators: generators};
+				};
+				var aliasingResults = aliasFactors(baseFactors, resolution);
+				var designsByFactor = baseFactors.concat(aliasingResults.aliasedFactors);
+				if (designsByFactor.length > numFactors) {
+					designsByFactor = designsByFactor.slice(0, numFactors);
+					aliasingResults.generators = aliasingResults.generators.slice(0, numFactors);
+				}
+				var i, k;
+				for (k = 0; k < designsByFactor[0].length; k++) {
+					designGrid.push([]);
+				}
+				for (i = 0; i < designsByFactor.length; i++) {
+					for (k = 0; k < designsByFactor[i].length; k++) {
+						designGrid[k].push(designsByFactor[i][k]);
+					}
+				}
+				return new doeTemplate(this.makeFractionalFactorialName(numFactors, 2, resolution), this.doeTypes.fractionalFactorial, 
+						designGrid, resolution, aliasingResults.generators);
+			} else {
+				return new doeTemplate(this.makeFractionalFactorialName(numFactors, 2, resolution), this.doeTypes.fractionalFactorial, 
+						designGrid, resolution);
+			}
+			
+		};
+		this.makeFractionalFactorialName = function(numFactors, levelsPerFactor, resolution) {
+			var templateName;
+			if (numFactors > 0) {
+				templateName = "Fractional Factorial (" + numFactors + "x" + levelsPerFactor + ")";
+			} else {
+				templateName = "Fractional Factorial (Nx2)";
+			} 
+			if (resolution == 3) {
+				templateName += " III";
+			} else if (resolution == 4) {
+				templateName += " IV";
+			} else if (resolution == 5) {
+				templateName += " V";
+			}
+			return templateName;
+		};
+		this.makePlackettBurman = function(numFactors) {
+			var designGrid = [];
+			if (numFactors > 0) {
+				var numDesigns = numFactors + 1;
+				while (numDesigns % 4 != 0) {
+					numDesigns++;
+				}
+	  			designGrid.push([]);
+	  			var pbSeed = plackettBurmanSeeds[hash(numDesigns)];
+	  			var i;
+	  			for (i = 0; i < pbSeed.length; i++) {
+	  				designGrid[0].push(pbSeed[i]);
+	  			}
+	  			var k;
+	  			for (k = 1; k < numDesigns - 1; k++) {
+	  				designGrid.push([]);
+	  				designGrid[k].push(designGrid[k - 1][pbSeed.length - 1]);
+	  				for (i = 0; i < pbSeed.length - 1; i++) {
+	  					designGrid[k].push(designGrid[k - 1][i]);
+	  				}
+	  			}
+	  			designGrid.push([]);
+	  			for (i = 0; i < pbSeed.length; i++) {
+	  				designGrid[numDesigns - 1].push(-1);
+	  			}
+	  			if (numFactors < pbSeed.length) {
+	  				var factorDifference = pbSeed.length - numFactors;
+	  				for (k = 0; k < numDesigns; k++) {
+	  					designGrid[k].splice(numFactors, factorDifference);
 	  				}
 	  			}
 	  		}
-  			var designGrid = [];
-  			var k;
-  			for (k = 0; k < numDesigns; k++) {
-  				designGrid.push([]);
-  			}
-  			var designsPerLevel = 1; 
-  			j = 0;
-  			for (i = 0; i < levelsPerFactor.length; i++) {
-   				for (k = 0; k < numDesigns; k++) {
-					designGrid[k].push(ranges[i][j]);
-					if ((k + 1)%designsPerLevel == 0) {
-   						j++;
-   					}
-   					if (j == levelsPerFactor[i]) {
-   						j = 0;
-   					}
-  				}
-  				designsPerLevel *= levelsPerFactor[i];
-  			}
-  			return new doeTemplate(this.makeFullFactorialName(levelsPerFactor), designGrid);
+  			return new doeTemplate(this.makePlackettBurmanName(numFactors), this.doeTypes.plackettBurman, designGrid);
 		};
-		this.makePlackettBurman = function(levelsPerFactor) {
-			var numDesigns = levelsPerFactor.length + 1;
-			while (numDesigns % 4 != 0) {
-				numDesigns++;
-			}
-  			var designGrid = [[]];
-  			var pbSeed = plackettBurmanSeeds[hash(numDesigns)];
-  			var i;
-  			for (i = 0; i < pbSeed.length; i++) {
-  				designGrid[0].push(pbSeed[i]);
-  			}
-  			var k;
-  			for (k = 1; k < numDesigns - 1; k++) {
-  				designGrid.push([]);
-  				designGrid[k].push(designGrid[k - 1][pbSeed.length - 1]);
-  				for (i = 0; i < pbSeed.length - 1; i++) {
-  					designGrid[k].push(designGrid[k - 1][i]);
-  				}
-  			}
-  			designGrid.push([]);
-  			for (i = 0; i < pbSeed.length; i++) {
-  				designGrid[numDesigns - 1].push(-1);
-  			}
-  			if (levelsPerFactor.length < pbSeed.length) {
-  				var factorDifference = pbSeed.length - levelsPerFactor.length;
-  				for (k = 0; k < numDesigns; k++) {
-  					designGrid[k].splice(levelsPerFactor.length, factorDifference);
-  				}
-  			}
-  			return new doeTemplate(this.makePlackettBurmanName(levelsPerFactor.length), designGrid);
-		};
-		this.fullFactorial = "Full Factorial (Any Size)"
-		this.makeFullFactorialName = function(levelsPerFactor) {
-  			var templateName = "Full Factorial (" + levelsPerFactor.length + "x";
-			var isLPFConstant = function(levelsPerFactor) {
-  				for (i = 1; i < levelsPerFactor.length; i++) {
-	  				if (levelsPerFactor[i] != levelsPerFactor[i - 1]) {
-	  					return false;
-	  				}
-	  			}
-	  			return true;
-  			};
-  			if (isLPFConstant(levelsPerFactor)) {
-  				templateName += levelsPerFactor[0] + ")";
-  			} else {
-  				for (i = 0; i < levelsPerFactor.length; i++) {
-  					templateName += levelsPerFactor[i] + ",";
-  				}
-  				templateName = templateName.substring(0, templateName.length - 1) + ")";
-  			}
-  			return templateName;
-		};
-		this.plackettBurman = "Plackett Burman (<24x2)";
 		this.makePlackettBurmanName = function(numFactors) {
-			return "Plackett Burman (" + numFactors + "x2)";
+			if (numFactors > 0) {
+				return "Plackett Burman (" + numFactors + "x2)";
+			} else {
+				return "Plackett Burman (<24x2)"
+			}
 		};
 		this.parseTemplate = function(name, data) {
 			var designGrid = [];
@@ -1148,7 +1318,12 @@ app.controller("doubleDutchCtrl", function($scope, $modal, $log) {
 	$scope.feats = [];
 	$scope.numFeatsUploaded = 0;
 
-	$scope.doeTemplates = [new doeTemplate("Full Factorial (Any Size)", []), new doeTemplate("Plackett Burman (<24x2)", [])];
+	$scope.doeTemplater = new doeTemplater();
+	$scope.doeTemplates = [$scope.doeTemplater.makeFullFactorial([]), 
+			$scope.doeTemplater.makeFractionalFactorial(0, 3),
+			$scope.doeTemplater.makeFractionalFactorial(0, 4), 
+			$scope.doeTemplater.makeFractionalFactorial(0, 5),
+			$scope.doeTemplater.makePlackettBurman(0)];
 
 	$scope.defaultClusteringOptions = {numClusterings: 10, autoTarget: true};
 	$scope.clusteringOptions = {numClusterings: $scope.defaultClusteringOptions.numClusterings, autoTarget: $scope.defaultClusteringOptions.autoTarget};
@@ -1364,19 +1539,22 @@ app.controller("doubleDutchCtrl", function($scope, $modal, $log) {
   	$scope.generateDesigns = function() {
   		var outputData = [[]];
   		if ($scope.validateFLDNodes()) {
-  			var templater = new doeTemplater();
   			var i;
   			if ($scope.selectedTemplate.isEmpty()
-	  				&& ($scope.selectedTemplate.name === templater.fullFactorial || $scope.selectedTemplate.name === templater.plackettBurman)) {
+	  				&& ($scope.selectedTemplate.type === $scope.doeTemplater.doeTypes.fullFactorial 
+	  				|| $scope.selectedTemplate.type === $scope.doeTemplater.doeTypes.fractionalFactorial
+	  				|| $scope.selectedTemplate.type === $scope.doeTemplater.doeTypes.plackettBurman)) {
   				var levelsPerFactor = [];
 	  			for (i = 0; i < $scope.fldNodes.length; i++) {
 	  				levelsPerFactor.push($scope.fldNodes[i].children.length);
 	  			}
   				var targetTemplateName;
-	  			if ($scope.selectedTemplate.name === templater.fullFactorial) { 
-				  	targetTemplateName = templater.makeFullFactorialName(levelsPerFactor);
+	  			if ($scope.selectedTemplate.type === $scope.doeTemplater.doeTypes.fullFactorial) { 
+				  	targetTemplateName = $scope.doeTemplater.makeFullFactorialName(levelsPerFactor);
+		  		} else if ($scope.selectedTemplate.type === $scope.doeTemplater.doeTypes.fractionalFactorial) {
+		  			targetTemplateName = $scope.doeTemplater.makeFractionalFactorialName(levelsPerFactor.length, 2);
 		  		} else {
-		  			targetTemplateName = templater.makePlackettBurmanName(levelsPerFactor);
+		  			targetTemplateName = $scope.doeTemplater.makePlackettBurmanName(levelsPerFactor.length);
 		  		}
   				var n;
 	  			for (n = 0; n < $scope.doeTemplates.length; n++) {
@@ -1388,11 +1566,15 @@ app.controller("doubleDutchCtrl", function($scope, $modal, $log) {
 	  			}
 		  	}
 	  		if ($scope.selectedTemplate.isEmpty()
-		  			&& ($scope.selectedTemplate.name === templater.fullFactorial || $scope.selectedTemplate.name === templater.plackettBurman)) {
-		  		if ($scope.selectedTemplate.name === templater.fullFactorial) { 
-				  	$scope.doeTemplates.push(templater.makeFullFactorial(levelsPerFactor));
+		  			&& ($scope.selectedTemplate.type === $scope.doeTemplater.doeTypes.fullFactorial
+		  			|| $scope.selectedTemplate.type === $scope.doeTemplater.doeTypes.fractionalFactorial 
+		  			|| $scope.selectedTemplate.type === $scope.doeTemplater.doeTypes.plackettBurman)) {
+		  		if ($scope.selectedTemplate.type === $scope.doeTemplater.doeTypes.fullFactorial) { 
+				  	$scope.doeTemplates.push($scope.doeTemplater.makeFullFactorial(levelsPerFactor));
+		  		} else if ($scope.selectedTemplate.type === $scope.doeTemplater.doeTypes.fractionalFactorial) {
+		  			$scope.doeTemplates.push($scope.doeTemplater.makeFractionalFactorial(levelsPerFactor.length, $scope.selectedTemplate.resolution));
 		  		} else {
-		  			$scope.doeTemplates.push(templater.makePlackettBurman(levelsPerFactor));
+		  			$scope.doeTemplates.push($scope.doeTemplater.makePlackettBurman(levelsPerFactor.length));
 		  		}
 		  		$scope.selectedTemplate = $scope.doeTemplates[$scope.doeTemplates.length - 1];
 		  		$scope.doeTemplates.sort(function(a, b) {
@@ -1448,8 +1630,7 @@ app.controller("doubleDutchCtrl", function($scope, $modal, $log) {
 					if (results.data.length == 0) {
 						alertUser("md", "Error", "DOE template file contains no data. Browse and select a new DOE template file (.csv) to upload.");
 					} else {
-						var templater = new doeTemplater();
-						var template = templater.parseTemplate($scope.templateFiles[0].name.substring(0, $scope.templateFiles[0].name.length - 4), 
+						var template = $scope.doeTemplater.parseTemplate($scope.templateFiles[0].name.substring(0, $scope.templateFiles[0].name.length - 4), 
 								results.data);
 						if (template.isEmpty()) {
 							alertUser("md", "Error", "Failed to parse DOE template file. Check file format.");
