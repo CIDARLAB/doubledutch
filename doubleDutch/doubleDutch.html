@@ -17,14 +17,15 @@
       <div class="col-sm-4">
         <label style="font-size:20pt">Feature Upload (.csv)</label>
         <br>
-        <label for="gridRadio">Grid</label>
-        <input type="radio" id="gridRadio" name="uploadSelect" value="0" ng-model="uploadSelector"/>
+        <label for="gridRadio" ng-disabled="isAssigning">Grid</label>
+        <input type="radio" id="gridRadio" name="uploadSelect" value="0" ng-model="uploadSelector" ng-disabled="isAssigning"/>
         <label for="tableRadio">Table</label>
-        <input type="radio" id="tableRadio" name="uploadSelect" value="1" ng-model="uploadSelector"/>
-        <input type="file" file-input="featFiles" multiple>
+        <input type="radio" id="tableRadio" name="uploadSelect" value="1" ng-model="uploadSelector" ng-disabled="isAssigning"/>
+        <input type="file" file-input="featFiles" multiple ng-disabled="isAssigning">
         <br>
-        <button type="button" class="btn btn-primary" ng-click="uploadBioDesigns()">Upload Features</button>
-        {{numFeatsUploaded | number:0}} features uploaded.
+        <button type="button" class="btn btn-primary" ng-click="uploadFeatures()" ng-disabled="isAssigning">Upload Features</button>
+        <br><br>
+        <p style="{{displayNumUploads}}">{{numFeatsUploaded | number:0}} features uploaded into {{numModsUploaded | number:0}} modules.</p>
       </div>
       <div class="col-sm-4">
         <label style="font-size:20pt">DOE Template Upload (.csv)</label>
@@ -53,7 +54,7 @@
          <label style="font-size:20pt">Library Download</label>
         <br>
         <label>DOE Template</label>
-        <select ng-init="selectedTemplate = selectedTemplate || doeTemplates[0]" ng-model="selectedTemplate" ng-options="template as template.name for template in doeTemplates"></select>
+        <select ng-init="selectedTemplate = selectedTemplate || doeTemplates[4]" ng-model="selectedTemplate" ng-options="template as template.name for template in doeTemplates"></select>
         <br>
         <button type="button" class="btn btn-primary" ng-csv="generateDesigns()" filename="design_library.csv" field-separator=",">Download Library</button>
         <button type="button" class="btn btn-primary" ng-csv="doeTemplater.serializeTemplate(selectedTemplate)" filename="doe_template.csv" field-separator=",">Download Template</button>

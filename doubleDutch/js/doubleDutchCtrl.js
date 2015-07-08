@@ -1492,15 +1492,18 @@ app.controller("doubleDutchCtrl", function($scope, $modal, $log) {
 	$scope.uploadSelector = "0";
 	$scope.bioDesignParsers = [gridParser, tableParser];
 	$scope.feats = [];
-	$scope.numFeatsUploaded = 0;
+	$scope.featNameDict = {};
+	$scope.numFeatsUploaded;
+	$scope.numModsUploaded;
+	$scope.displayNumUploads = "display:none";
 
 	$scope.doeTemplater = new doeTemplater();
-	$scope.doeTemplates = [$scope.doeTemplater.makeFullFactorial([]), 
+	$scope.doeTemplates = [$scope.doeTemplater.makeBoxBehnken(0), 
 			$scope.doeTemplater.makeFractionalFactorial(0, 3),
 			$scope.doeTemplater.makeFractionalFactorial(0, 4), 
 			$scope.doeTemplater.makeFractionalFactorial(0, 5),
-			$scope.doeTemplater.makePlackettBurman(0),
-			$scope.doeTemplater.makeBoxBehnken(0)];
+			$scope.doeTemplater.makeFullFactorial([]),
+			$scope.doeTemplater.makePlackettBurman(0)];
 
 	$scope.defaultClusteringOptions = {numClusterings: 10, autoTarget: true};
 	$scope.clusteringOptions = {numClusterings: $scope.defaultClusteringOptions.numClusterings, autoTarget: $scope.defaultClusteringOptions.autoTarget};
@@ -1854,7 +1857,7 @@ app.controller("doubleDutchCtrl", function($scope, $modal, $log) {
 		}
   	};
 
-	$scope.uploadBioDesigns = function() {
+	$scope.uploadFeatures = function() {
 		var allCSVFiles = function(files) {
 			var i;
 			for (i = 0; i < files.length; i++) {
@@ -1916,15 +1919,18 @@ app.controller("doubleDutchCtrl", function($scope, $modal, $log) {
 					for (i = 0; i < bioDesigns.length; i++) {
 						if (isCodedExpression(bioDesigns[i])) {
 							$scope.fNodes.push(new fNode(bioDesigns[i]));
+							$scope.numModsUploaded++;
 						} else {
 							j = isParameterizedExpression(bioDesigns[i]);
 							if (j >= 0) {
 								$scope.lNodes.push(new lNode(bioDesigns[i], j));
+								$scope.numModsUploaded++;
 							} 
 						}
 						feats = bioDesigns[i].module.getFeatures();
 						for (j = 0; j < feats.length; j++) {
-							if ($scope.feats.indexOf(feats[j]) < 0) {
+							if ($scope.featNameDict[hash(feats[j])] == null) {
+								$scope.featNameDict[hash(feats[j])] = true;
 								$scope.feats.push(feats[j]);
 								$scope.numFeatsUploaded++;
 							}
@@ -1956,11 +1962,13 @@ app.controller("doubleDutchCtrl", function($scope, $modal, $log) {
 			alertUser("md", "Error", "One or more of selected files lack the .csv file extension. Browse and select feature files (.csv) to upload.");
 		} else {
 			$scope.numFeatsUploaded = 0;
+			$scope.numModsUploaded = 0;
 			var i;
 	    	for (i = 0; i < $scope.featFiles.length; i++) {
 	    		Papa.parse($scope.featFiles[i], 
 	    			{i: i, dynamicTyping: true, complete: parseFile});
 	    	}
+	    	$scope.displayNumUploads = "";
 		}
     };
 
@@ -2132,6 +2140,7 @@ app.controller("doubleDutchCtrl", function($scope, $modal, $log) {
 							$scope.fldNodes[i].levelTargets.push(parseFloat(clusterGrid[i][j].target.toFixed(2)));
 						}
 						$scope.fldNodes[i].displayTargets = "";
+						$scope.fldNodes[i].displayToggle = "";
 					}
 				}
 				var solver = new flSolver();
