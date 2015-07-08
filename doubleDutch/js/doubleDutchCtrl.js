@@ -135,6 +135,7 @@ app.controller("doubleDutchCtrl", function($scope, $modal, $log) {
 		this.parameter = new parameter(0, new variable(""), new units(""));
 		this.levelTargets = [];
 		this.displayTargets = "display:none";
+		this.displayToggle = "display:none";
 		this.children = [];
 		this.copy = function() {
 			return new fNode(this.bioDesign);
@@ -150,6 +151,7 @@ app.controller("doubleDutchCtrl", function($scope, $modal, $log) {
 		this.parameter = bioDesign.parameters[pIndex];
 		this.pIndex = pIndex;
 		this.displayTargets = "display:none";
+		this.displayToggle = "display:none";
 		this.children = [];
 		this.copy = function() {
 			return new lNode(this.bioDesign, this.pIndex);
@@ -699,6 +701,104 @@ app.controller("doubleDutchCtrl", function($scope, $modal, $log) {
 	plackettBurmanSeeds[hash(20)] = [1, 1, -1, -1, 1, 1, 1, 1, -1, 1, -1, 1, -1, -1, -1, -1, 1, 1, -1];
 	plackettBurmanSeeds[hash(24)] = [1, 1, 1, 1, 1, -1, 1, -1, 1, 1, -1, -1, 1, 1, -1, -1, 1, -1, 1, -1, -1, -1, -1];
 
+	boxBehnkenSeeds = {};
+	boxBehnkenSeeds[hash(3)] = [[1, 1, 0],
+								[1, 0, 1],
+								[0, 1, 1],
+								[3]];
+	boxBehnkenSeeds[hash(4)] = [[1, 1, 0, 0],
+								[0, 0, 1, 1],
+								[1],
+								[1, 0, 0, 1],
+								[0, 1, 1, 0],
+								[1],
+								[1, 0, 1, 0],
+								[0, 1, 0, 1],
+								[1]];
+	boxBehnkenSeeds[hash(5)] = [[1, 1, 0, 0, 0],
+								[0, 0, 1, 1, 0],
+								[0, 1, 0, 0, 1],
+								[1, 0, 1, 0, 0],
+								[0, 0, 0, 1, 1],
+								[3],
+								[0, 1, 1, 0, 0],
+								[1, 0, 0, 1, 0],
+								[0, 0, 1, 0, 1],
+								[1, 0, 0, 0, 1],
+								[0, 1, 0, 1, 0],
+								[3]];
+	boxBehnkenSeeds[hash(6)] = [[1, 1, 0, 1, 0, 0],
+								[0, 1, 1, 0, 1, 0],
+								[0, 0, 1, 1, 0, 1],
+								[1, 0, 0, 1, 1, 0],
+								[0, 1, 0, 0, 1, 1],
+								[1, 0, 1, 0, 0, 1],
+								[6]];
+	boxBehnkenSeeds[hash(7)] = [[0, 0, 0, 1, 1, 1, 0],
+								[1, 0, 0, 0, 0, 1, 1],
+								[0, 1, 0, 0, 1, 0, 1],
+								[1, 1, 0, 1, 0, 0, 0],
+								[0, 0, 1, 1, 0, 0, 1],
+								[1, 0, 1, 0, 1, 0, 0],
+								[0, 1, 1, 0, 0, 1, 0],
+								[6]];
+	boxBehnkenSeeds[hash(9)] = [[1, 0, 0, 1, 0, 0, 1, 0, 0],
+								[0, 1, 0, 0, 1, 0, 0, 1, 0],
+								[0, 0, 1, 0, 0, 1, 0, 0, 1],
+								[2],
+								[1, 1, 1, 0, 0, 0, 0, 0, 0],
+								[0, 0, 0, 1, 1, 1, 0, 0, 0],
+								[0, 0, 0, 0, 0, 0, 1, 1, 1],
+								[2],
+								[1, 0, 0, 0, 1, 0, 0, 0, 1],
+								[0, 0, 1, 1, 0, 0, 0, 1, 0],
+								[0, 1, 0, 0, 0, 1, 1, 0, 0],
+								[2],
+								[1, 0, 0, 0, 0, 1, 0, 1, 0],
+								[0, 1, 0, 1, 0, 0, 0, 0, 1],
+								[0, 0, 1, 0, 1, 0, 1, 0, 0],
+								[2],
+								[1, 0, 0, 1, 0, 0, 1, 0, 0],
+								[0, 1, 0, 0, 1, 0, 0, 1, 0],
+								[0, 0, 1, 0, 0, 1, 0, 0, 1],
+								[2]];
+	boxBehnkenSeeds[hash(10)] = [[0, 1, 0, 0, 0, 1, 1, 0, 0, 1],
+								[1, 1, 0, 0, 1, 0, 0, 0, 0, 1],
+								[0, 1, 1, 0, 0, 0, 1, 1, 0, 0],
+								[0, 1, 0, 1, 0, 1, 0, 0, 1, 0],
+								[1, 0, 0, 0, 0, 0, 0, 1, 1, 1],
+								[0, 0, 1, 1, 1, 0, 0, 0, 0, 1],
+								[1, 0, 0, 1, 0, 0, 1, 1, 0, 0],
+								[0, 0, 1, 0, 1, 0, 1, 0, 1, 0],
+								[1, 0, 1, 0, 0, 1, 0, 0, 1, 0],
+								[0, 0, 0, 1, 1, 1, 0, 1, 0, 0],
+								[10]];
+	boxBehnkenSeeds[hash(11)] = [[0, 0, 1, 0, 0, 0, 1, 1, 1, 0, 1],
+								[1, 0, 0, 1, 0, 0, 0, 1, 1, 1, 0],
+								[0, 1, 0, 0, 1, 0, 0, 0, 1, 1, 1],
+								[1, 0, 1, 0, 0, 1, 0, 0, 0, 1, 1],
+								[1, 1, 0, 1, 0, 0, 1, 0, 0, 0, 1],
+								[1, 1, 1, 0, 1, 0, 0, 1, 0, 0, 0],
+								[0, 1, 1, 1, 0, 1, 0, 0, 1, 0, 0],
+								[0, 0, 1, 1, 1, 0, 1, 0, 0, 1, 0],
+								[0, 0, 0, 1, 1, 1, 0, 1, 0, 0, 1],
+								[1, 0, 0, 0, 1, 1, 1, 0, 1, 0, 0],
+								[0, 1, 0, 0, 0, 1, 1, 1, 0, 1, 0],
+								[12]];			
+	boxBehnkenSeeds[hash(12)] = [[1, 1, 0, 0, 1, 0, 1, 0, 0, 0, 0, 0],
+								[0, 1, 1, 0, 0, 1, 0, 1, 0, 0, 0, 0],
+								[0, 0, 1, 1, 0, 0, 1, 0, 1, 0, 0, 0],
+								[0, 0, 0, 1, 1, 0, 0, 1, 0, 1, 0, 0],
+								[0, 0, 0, 0, 1, 1, 0, 0, 1, 0, 1, 0],
+								[0, 0, 0, 0, 0, 1, 1, 0, 0, 1, 0, 1],
+								[1, 0, 0, 0, 0, 0, 1, 1, 0, 0, 1, 0],
+								[0, 1, 0, 0, 0, 0, 0, 1, 1, 0, 0, 1],
+								[1, 0, 1, 0, 0, 0, 0, 0, 1, 1, 0, 0],
+								[0, 1, 0, 1, 0, 0, 0, 0, 0, 1, 1, 0],
+								[0, 0, 1, 0, 1, 0, 0, 0, 0, 0, 1, 1],
+								[1, 0, 0, 1, 0, 1, 0, 0, 0, 0, 0, 1],
+								[12]];										
+
 	function doeTemplate(name, type, designGrid, resolution, generators) {
 		this.name = name;
 		this.type = type;
@@ -780,7 +880,8 @@ app.controller("doubleDutchCtrl", function($scope, $modal, $log) {
 	}
 
 	function doeTemplater() {
-		this.doeTypes = {fullFactorial: "fullFactorial", fractionalFactorial: "fractionalFactorial", plackettBurman: "plackettBurman"};
+		this.doeTypes = {fullFactorial: "fullFactorial", fractionalFactorial: "fractionalFactorial", plackettBurman: "plackettBurman",
+				boxBehnken: "boxBehnken"};
 		this.makeFullFactorial = function(levelsPerFactor) {
 			var designGrid = [];
 			if (levelsPerFactor.length > 0) {
@@ -957,7 +1058,7 @@ app.controller("doubleDutchCtrl", function($scope, $modal, $log) {
 		};
 		this.makePlackettBurman = function(numFactors) {
 			var designGrid = [];
-			if (numFactors > 0) {
+			if (numFactors > 0 && numFactors < 24) {
 				var numDesigns = numFactors + 1;
 				while (numDesigns % 4 != 0) {
 					numDesigns++;
@@ -993,7 +1094,56 @@ app.controller("doubleDutchCtrl", function($scope, $modal, $log) {
 			if (numFactors > 0) {
 				return "Plackett Burman (" + numFactors + "x2)";
 			} else {
-				return "Plackett Burman (<24x2)"
+				return "Plackett Burman (N<24x2)"
+			}
+		};
+		this.makeBoxBehnken = function(numFactors) {
+			var designGrid = [];
+			if (numFactors > 2 && numFactors < 13 && numFactors != 8) {
+				var bbSeed = boxBehnkenSeeds[hash(numFactors)];
+				var levelsPerFactor = [];
+				var i;
+				for (i = 0; i < bbSeed[0].length; i++) {
+					if (bbSeed[0][i] == 1) {
+						levelsPerFactor.push(2);
+					}
+				}
+				var fullFactorial = this.makeFullFactorial(levelsPerFactor);
+				var k = 0;
+				var b, m, n;
+				for (b = 0; b < bbSeed.length; b++) {
+					if (bbSeed[b].length == 1) {
+						for (m = 0; m < bbSeed[b][0]; m++) {
+							designGrid.push([]);
+							for (i = 0; i < numFactors; i++) {
+								designGrid[k].push(0);
+							}
+							k++;
+						}
+					} else {
+						for (m = 0; m < fullFactorial.designGrid.length; m++) {
+							n = 0;
+							designGrid.push([]);
+							for (i = 0; i < bbSeed[b].length; i++) {
+								if (bbSeed[b][i] == 1) {
+									designGrid[k].push(fullFactorial.designGrid[m][n]);
+									n++;
+								} else {
+									designGrid[k].push(bbSeed[b][i]);
+								}
+							}
+							k++;
+						}
+					}
+				}
+			}
+			return new doeTemplate(this.makeBoxBehnkenName(numFactors), this.doeTypes.boxBehnken, designGrid);		
+		};
+		this.makeBoxBehnkenName = function(numFactors) {
+			if (numFactors > 0) {
+				return "Box Behnken (" + numFactors + "x3)";
+			} else {
+				return "Box Behnken (2<N<13x3, N/=8)"
 			}
 		};
 		this.parseTemplate = function(name, data) {
@@ -1034,6 +1184,32 @@ app.controller("doubleDutchCtrl", function($scope, $modal, $log) {
 				}
 			}
 			return new doeTemplate(name, designGrid);
+		};
+		this.serializeTemplate = function(template) {
+			var outputData = [[]];
+			outputData[0].push(template.name);
+			var i;
+			for (i = 0; i < template.levelsPerFactor.length; i++) {
+				outputData[0].push("Factor " + (i + 1));
+			}
+			var k;
+			for (k = 0; k < template.designGrid.length; k++) {
+				outputData.push([k + 1].concat(template.designGrid[k]));
+			}
+			if (template.generators != null) {
+				outputData[0].push("Generators");
+				var g;
+				for (g = 0; g < template.generators.length; g++) {
+					if (g + 1 == outputData.length) {
+						outputData.push([]);
+						for (i = 0; i < template.levelsPerFactor.length + 1; i++) {
+							outputData[g + 1].push("");
+						}
+					}
+					outputData[g + 1].push(template.generators[g].toString());
+				}
+			}
+			return outputData;
 		};
 	}
 
@@ -1323,7 +1499,8 @@ app.controller("doubleDutchCtrl", function($scope, $modal, $log) {
 			$scope.doeTemplater.makeFractionalFactorial(0, 3),
 			$scope.doeTemplater.makeFractionalFactorial(0, 4), 
 			$scope.doeTemplater.makeFractionalFactorial(0, 5),
-			$scope.doeTemplater.makePlackettBurman(0)];
+			$scope.doeTemplater.makePlackettBurman(0),
+			$scope.doeTemplater.makeBoxBehnken(0)];
 
 	$scope.defaultClusteringOptions = {numClusterings: 10, autoTarget: true};
 	$scope.clusteringOptions = {numClusterings: $scope.defaultClusteringOptions.numClusterings, autoTarget: $scope.defaultClusteringOptions.autoTarget};
@@ -1448,10 +1625,20 @@ app.controller("doubleDutchCtrl", function($scope, $modal, $log) {
     			if (!$scope.clusteringOptions.autoTarget) {
 	    			event.source.nodeScope.$modelValue.displayTargets = "";
 	    		}
+	    		if (event.dest.nodesScope.$nodeScope != null) {
+	    			event.dest.nodesScope.$nodeScope.$modelValue.displayToggle = "";
+	    		}
     			event.source.nodesScope.$modelValue.splice(event.source.index, 0, nodeCopy);
     		}
     	}
   	};
+
+  	$scope.removeFLNode = function(flNode) {
+  		if (flNode.$nodeScope.$parentNodeScope != null && flNode.$nodeScope.$parentNodesScope.$modelValue.length - 1 == 0) {
+  			flNode.$nodeScope.$parentNodeScope.$modelValue.displayToggle = "display:none";
+  		}
+  		flNode.remove();
+  	}
 
   	$scope.validateFLDNodes = function() {
   		var validateLNodesPerFNodes = function(fNodes) {
@@ -1543,7 +1730,8 @@ app.controller("doubleDutchCtrl", function($scope, $modal, $log) {
   			if ($scope.selectedTemplate.isEmpty()
 	  				&& ($scope.selectedTemplate.type === $scope.doeTemplater.doeTypes.fullFactorial 
 	  				|| $scope.selectedTemplate.type === $scope.doeTemplater.doeTypes.fractionalFactorial
-	  				|| $scope.selectedTemplate.type === $scope.doeTemplater.doeTypes.plackettBurman)) {
+	  				|| $scope.selectedTemplate.type === $scope.doeTemplater.doeTypes.plackettBurman
+	  				|| $scope.selectedTemplate.type === $scope.doeTemplater.doeTypes.boxBehnken)) {
   				var levelsPerFactor = [];
 	  			for (i = 0; i < $scope.fldNodes.length; i++) {
 	  				levelsPerFactor.push($scope.fldNodes[i].children.length);
@@ -1553,8 +1741,10 @@ app.controller("doubleDutchCtrl", function($scope, $modal, $log) {
 				  	targetTemplateName = $scope.doeTemplater.makeFullFactorialName(levelsPerFactor);
 		  		} else if ($scope.selectedTemplate.type === $scope.doeTemplater.doeTypes.fractionalFactorial) {
 		  			targetTemplateName = $scope.doeTemplater.makeFractionalFactorialName(levelsPerFactor.length, 2);
-		  		} else {
+		  		} else if ($scope.selectedTemplate.type === $scope.doeTemplater.doeTypes.plackettBurman) {
 		  			targetTemplateName = $scope.doeTemplater.makePlackettBurmanName(levelsPerFactor.length);
+		  		} else {
+		  			targetTemplateName = $scope.doeTemplater.makeBoxBehnkenName(levelsPerFactor.length);
 		  		}
   				var n;
 	  			for (n = 0; n < $scope.doeTemplates.length; n++) {
@@ -1568,13 +1758,16 @@ app.controller("doubleDutchCtrl", function($scope, $modal, $log) {
 	  		if ($scope.selectedTemplate.isEmpty()
 		  			&& ($scope.selectedTemplate.type === $scope.doeTemplater.doeTypes.fullFactorial
 		  			|| $scope.selectedTemplate.type === $scope.doeTemplater.doeTypes.fractionalFactorial 
-		  			|| $scope.selectedTemplate.type === $scope.doeTemplater.doeTypes.plackettBurman)) {
+		  			|| $scope.selectedTemplate.type === $scope.doeTemplater.doeTypes.plackettBurman
+		  			|| $scope.selectedTemplate.type === $scope.doeTemplater.doeTypes.boxBehnken)) {
 		  		if ($scope.selectedTemplate.type === $scope.doeTemplater.doeTypes.fullFactorial) { 
 				  	$scope.doeTemplates.push($scope.doeTemplater.makeFullFactorial(levelsPerFactor));
 		  		} else if ($scope.selectedTemplate.type === $scope.doeTemplater.doeTypes.fractionalFactorial) {
 		  			$scope.doeTemplates.push($scope.doeTemplater.makeFractionalFactorial(levelsPerFactor.length, $scope.selectedTemplate.resolution));
-		  		} else {
+		  		} else if ($scope.selectedTemplate.type === $scope.doeTemplater.doeTypes.plackettBurman) {
 		  			$scope.doeTemplates.push($scope.doeTemplater.makePlackettBurman(levelsPerFactor.length));
+		  		} else {
+		  			$scope.doeTemplates.push($scope.doeTemplater.makeBoxBehnken(levelsPerFactor.length));
 		  		}
 		  		$scope.selectedTemplate = $scope.doeTemplates[$scope.doeTemplates.length - 1];
 		  		$scope.doeTemplates.sort(function(a, b) {

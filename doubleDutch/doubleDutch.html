@@ -55,7 +55,8 @@
         <label>DOE Template</label>
         <select ng-init="selectedTemplate = selectedTemplate || doeTemplates[0]" ng-model="selectedTemplate" ng-options="template as template.name for template in doeTemplates"></select>
         <br>
-        <button type="button" class="btn btn-primary" ng-csv="generateDesigns()" filename="library_design.csv" field-separator=",">Download Library</button>
+        <button type="button" class="btn btn-primary" ng-csv="generateDesigns()" filename="design_library.csv" field-separator=",">Download Library</button>
+        <button type="button" class="btn btn-primary" ng-csv="doeTemplater.serializeTemplate(selectedTemplate)" filename="doe_template.csv" field-separator=",">Download Template</button>
       </div>
     </div>
 
@@ -109,7 +110,7 @@
 	<script src="//cdnjs.cloudflare.com/ajax/libs/q.js/0.9.6/q.min.js"></script>
 	<script src="js/papaparse.min.js"></script>
 	<script src="js/ng-csv.min.js"></script>
-	<script src="js/clotho3API.js"></script>
+	<!--<script src="js/clotho3API.js"></script>-->
 	<script src="js/doubleDutchApp.js"></script>
 	<script src="js/doubleDutchCtrl.js"></script>
 	<script src="js/featureWindowCtrl.js"></script>
@@ -121,8 +122,8 @@
 	<script type="text/ng-template" id="fl_tree_renderer.html">
   	<div ui-tree-handle class="tree-node" style="{{node.backgroundColor}}">
   		<div class="tree-node-content">
-        	<a class="btn btn-success btn-xs" data-nodrag ng-click="toggle(this)" ng-hide="{{node.flType === 'l'}}"><span class="glyphicon" ng-class="{'glyphicon-chevron-right': collapsed, 'glyphicon-chevron-down': !collapsed}"></span></a>
-          <a class="pull-right btn btn-danger btn-xs" data-nodrag ng-click="remove(this)" ng-hide="isAssigning"><span class="glyphicon glyphicon-remove"></span></a>
+        	<a class="btn btn-success btn-xs" data-nodrag ng-click="toggle()" style="{{node.displayToggle}}"><span class="glyphicon" ng-class="{'glyphicon-chevron-right': collapsed, 'glyphicon-chevron-down': !collapsed}"></span></a>
+          <a class="pull-right btn btn-danger btn-xs" data-nodrag ng-click="removeFLNode(this)" ng-hide="isAssigning"><span class="glyphicon glyphicon-remove"></span></a>
           <a class="pull-right btn btn-primary btn-xs" data-nodrag ng-click="addFeatures('md', node, expressGrammar)" ng-hide="isAssigning"><span class="glyphicon glyphicon-pencil"></span></a>
           <a class="pull-right btn btn-primary btn-xs" style="{{node.displayTargets}}" data-nodrag ng-click="viewTargets('md', node)"><span class="glyphicon glyphicon-screenshot"></span></a>
 			<label style="{{node.labelColor}}">Module</label><br>
