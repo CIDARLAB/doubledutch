@@ -125,7 +125,7 @@
   		<div class="tree-node-content">
         	<a class="btn btn-success btn-xs" data-nodrag ng-click="toggle()" style="{{node.displayToggle}}"><span class="glyphicon" ng-class="{'glyphicon-chevron-right': collapsed, 'glyphicon-chevron-down': !collapsed}"></span></a>
           <a class="pull-right btn btn-danger btn-xs" data-nodrag ng-click="removeFLNode(this)" ng-hide="isAssigning"><span class="glyphicon glyphicon-remove"></span></a>
-          <a class="pull-right btn btn-primary btn-xs" data-nodrag ng-click="addFeatures('md', node, expressGrammar)" ng-hide="isAssigning"><span class="glyphicon glyphicon-pencil"></span></a>
+          <a class="pull-right btn btn-primary btn-xs" data-nodrag ng-click="addFeatures('md', node)" ng-hide="isAssigning"><span class="glyphicon glyphicon-pencil"></span></a>
           <a class="pull-right btn btn-primary btn-xs" style="{{node.displayTargets}}" data-nodrag ng-click="viewTargets('md', node)"><span class="glyphicon glyphicon-screenshot"></span></a>
 			<label style="{{node.labelColor}}">Module</label><br>
 			<input type="text" style="height:25px" ng-model="node.bioDesign.module.name">

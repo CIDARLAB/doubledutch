@@ -799,10 +799,10 @@ app.controller("doubleDutchCtrl", function($scope, $modal, $log) {
 								[1, 0, 0, 1, 0, 1, 0, 0, 0, 0, 0, 1],
 								[12]];										
 
-	function doeTemplate(name, type, designGrid, resolution, generators) {
+	function doeTemplate(name, designGrid, type, resolution, generators) {
 		this.name = name;
-		this.type = type;
 		this.designGrid = designGrid;
+		this.type = type;
 		this.resolution = resolution;
 		this.generators = generators;
 		this.rangeIndices = [];
@@ -917,7 +917,7 @@ app.controller("doubleDutchCtrl", function($scope, $modal, $log) {
 	  				designsPerLevel *= levelsPerFactor[i];
 	  			}
 	  		}
-	  		return new doeTemplate(this.makeFullFactorialName(levelsPerFactor), this.doeTypes.fullFactorial, designGrid);
+	  		return new doeTemplate(this.makeFullFactorialName(levelsPerFactor), designGrid, this.doeTypes.fullFactorial);
 		};
 		this.makeFullFactorialName = function(levelsPerFactor) {
 			var templateName;
@@ -949,15 +949,15 @@ app.controller("doubleDutchCtrl", function($scope, $modal, $log) {
 			if (numFactors > 0) {
 				var calculateBaseFactors = function(numFactors, resolution, templater) {
 					var numBaseFactors = resolution - 1;
-					var calculateNumAliasedFactors = function(numBaseFactors) {
+					var calculateNumAliasedFactors = function(numBaseFactors, resolution) {
 						var numAliasedFactors = 0;
 						var i;
-						for (i = 2; i <= numBaseFactors; i++) {
+						for (i = resolution - 1; i <= numBaseFactors; i++) {
 							numAliasedFactors += combinatorial(numBaseFactors, i);
 						}
 						return numAliasedFactors;
 					};
-					while (numBaseFactors + calculateNumAliasedFactors(numBaseFactors) < numFactors) {
+					while (numBaseFactors + calculateNumAliasedFactors(numBaseFactors, resolution) < numFactors) {
 						numBaseFactors++;
 					}
 					var baseFactors = [];
@@ -1032,11 +1032,11 @@ app.controller("doubleDutchCtrl", function($scope, $modal, $log) {
 						designGrid[k].push(designsByFactor[i][k]);
 					}
 				}
-				return new doeTemplate(this.makeFractionalFactorialName(numFactors, 2, resolution), this.doeTypes.fractionalFactorial, 
-						designGrid, resolution, aliasingResults.generators);
+				return new doeTemplate(this.makeFractionalFactorialName(numFactors, 2, resolution), designGrid, this.doeTypes.fractionalFactorial, 
+						resolution, aliasingResults.generators);
 			} else {
-				return new doeTemplate(this.makeFractionalFactorialName(numFactors, 2, resolution), this.doeTypes.fractionalFactorial, 
-						designGrid, resolution);
+				return new doeTemplate(this.makeFractionalFactorialName(numFactors, 2, resolution), designGrid, this.doeTypes.fractionalFactorial, 
+						resolution);
 			}
 			
 		};
@@ -1088,7 +1088,7 @@ app.controller("doubleDutchCtrl", function($scope, $modal, $log) {
 	  				}
 	  			}
 	  		}
-  			return new doeTemplate(this.makePlackettBurmanName(numFactors), this.doeTypes.plackettBurman, designGrid);
+  			return new doeTemplate(this.makePlackettBurmanName(numFactors), designGrid, this.doeTypes.plackettBurman);
 		};
 		this.makePlackettBurmanName = function(numFactors) {
 			if (numFactors > 0) {
@@ -1137,7 +1137,7 @@ app.controller("doubleDutchCtrl", function($scope, $modal, $log) {
 					}
 				}
 			}
-			return new doeTemplate(this.makeBoxBehnkenName(numFactors), this.doeTypes.boxBehnken, designGrid);		
+			return new doeTemplate(this.makeBoxBehnkenName(numFactors), designGrid, this.doeTypes.boxBehnken);		
 		};
 		this.makeBoxBehnkenName = function(numFactors) {
 			if (numFactors > 0) {
@@ -1532,7 +1532,7 @@ app.controller("doubleDutchCtrl", function($scope, $modal, $log) {
 	$scope.isAssigning = false;
 	$scope.assignmentCount = 0;
 
-	$scope.addFeatures = function(size, flNode, grammar) {
+	$scope.addFeatures = function(size, flNode) {
 	    var modalInstance = $modal.open({
 	    	templateUrl: 'featureWindow.html',
 	    	controller: 'featureWindowCtrl',
@@ -1544,7 +1544,7 @@ app.controller("doubleDutchCtrl", function($scope, $modal, $log) {
 	      	}
 	    });
 	    modalInstance.result.then(function(feats) {
-	    	flNode.bioDesign.module = grammar.inferModule(feats);
+	    	flNode.bioDesign.module = expressGrammar.inferModule(feats);
 	    	flNode.bioDesign.constructNameFromFeatures();
 	    });
 	};
@@ -1646,9 +1646,9 @@ app.controller("doubleDutchCtrl", function($scope, $modal, $log) {
   	$scope.validateFLDNodes = function() {
   		var validateLNodesPerFNodes = function(fNodes) {
 			var i;
-			for (i = 1; i < fNodes.length; i++) {
-				if (fNodes[i].children.length < 2) {
-					alertUser("md", "Error", "Factorial design does not have two or more levels associated with each factor. "
+			for (i = 0; i < fNodes.length; i++) {
+				if (fNodes[i].children.length < 1) {
+					alertUser("md", "Error", "Factorial design does not at least one level associated with each factor. "
 					+ "Upload parameterized features and select 'Assign Levels' or drag levels from the rightmost column to the center column.");
 					return false;
 				}
