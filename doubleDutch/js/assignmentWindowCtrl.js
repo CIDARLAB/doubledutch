@@ -2,6 +2,9 @@ app.controller('assignmentWindowCtrl', function ($scope, $modalInstance, items) 
 
   $scope.isAssigning = items.isAssigning;
 
+  $scope.isAnnealing = items.isAnnealing;
+  $scope.defaultIsAnnealing = items.defaultIsAnnealing;
+
   $scope.initialAnnealingOptions = items.annealingOptions;
   $scope.annealingOptions = {numAnnealings: items.annealingOptions.numAnnealings, iterPerAnnealing: items.annealingOptions.iterPerAnnealing, 
       initialTemp: items.annealingOptions.initialTemp};
@@ -24,6 +27,7 @@ app.controller('assignmentWindowCtrl', function ($scope, $modalInstance, items) 
   $scope.restoreDefaults = function() {
     $scope.annealingOptions.numAnnealings = $scope.defaultAnnealingOptions.numAnnealings;
     if (!$scope.isAssigning) {
+      $scope.isAnnealing = $scope.defaultIsAnnealing;
       $scope.annealingOptions.iterPerAnnealing = $scope.defaultAnnealingOptions.iterPerAnnealing;
       $scope.annealingOptions.initialTemp = $scope.defaultAnnealingOptions.initialTemp;
       $scope.weights = {levelMatch: $scope.defaultWeights.levelMatch, homology: $scope.defaultWeights.homology, reuse: $scope.defaultWeights.reuse};
@@ -49,7 +53,8 @@ app.controller('assignmentWindowCtrl', function ($scope, $modalInstance, items) 
     $scope.clusteringOptions.numClusterings = validateNumericInput($scope.clusteringOptions.numClusterings, $scope.minInput, $scope.maxInput, $scope.inputStep, 
         $scope.initialNumClusterings);
     
-    $modalInstance.close({annealingOptions: $scope.annealingOptions, weights: $scope.weights, clusteringOptions: $scope.clusteringOptions});
+    $modalInstance.close({isAnnealing: $scope.isAnnealing, annealingOptions: $scope.annealingOptions, weights: $scope.weights, 
+        clusteringOptions: $scope.clusteringOptions});
   };
 
   $scope.cancel = function() {

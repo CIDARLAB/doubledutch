@@ -44,7 +44,7 @@
         <label ng-show="clusteringOptions.autoTarget">Levels per Factor</label>
         <input type="number" step="{{levelsPerFactorStep}}" min="{{minLevelsPerFactor}}" max="{{maxLevelsPerFactor}}" style="height:25px; width:50px" ng-show="clusteringOptions.autoTarget" ng-disabled="isAssigning" ng-model="levelsPerFactor">
         <br ng-show="clusteringOptions.autoTarget">
-        <button type="button" class="btn btn-primary" ng-click="assignLevels()">Assign Levels</button>
+        <button ng-disabled="displayBoundingResults" type="button" class="btn btn-primary" ng-click="assignLevels()">Assign Levels</button>
         <button type="button" class="btn btn-primary" ng-click="editAssignmentOptions('md')">Edit Options</button>
         <br><br>
         <button type="button" class="btn btn-primary" ng-csv="downloadAssignment()" filename="level_assignment.csv" field-separator=",">Download Assignment</button>
@@ -66,8 +66,12 @@
 		<div class="row">
   		<div class="col-sm-4">
     		<label style="font-size:20pt" ng-hide="isAssigning">Available Factors</label>
-        <p ng-show="isAssigning">The best level assignment after {{assignmentCount}} trials is shown below. Would you like to perform {{annealingOptions.numAnnealings}} more trials?
-          <br><br>
+        <p ng-show="displayAnnealingResults">The best level assignment after {{assignmentCount}} trials is shown below. Would you like to perform {{annealingOptions.numAnnealings}} more trials?
+        </p>
+        <p ng-show="displayBoundingResults">The best level assignment is shown below.
+        </p>
+        <p ng-show="isAssigning">
+          
           Level matching cost is {{bestSolnCost.levelMatch | number:2}}.
           <br>
           Pathway Homology cost is {{bestSolnCost.homology | number:2}}.
@@ -172,9 +176,11 @@
           <label style="font-size:20pt">Level Targets</label>
       </div>
       <div class="modal-body">
-        <button class="btn btn-primary" ng-disabled="autoTarget" ng-click="addTarget()">Add Target</button>
-        <button class="btn btn-primary" ng-disabled="autoTarget" ng-click="removeTarget()">Remove Target</button>
-        <br><br>
+        <div ng-hide="autoTarget">
+          <button class="btn btn-primary" ng-click="addTarget()">Add Target</button>
+          <button class="btn btn-primary" ng-click="removeTarget()">Remove Target</button>
+          <br><br>
+        </div>
         <ul class="list-unstyled">
           <li ng-repeat="levelTarget in levelTargets">
               <input type="number" step="0.01" min="{{minTarget}}" max="{{maxTarget}}" style="height:25px; width:95px" ng-disabled="autoTarget" ng-model="levelTarget.value">
@@ -209,16 +215,22 @@
               <div class="col-sm-6">
                   <label style="font-size:20pt">Level Assignment</label>
                   <br>
-                  <label># of Trials</label>
-                  <input type="number" step="{{inputStep}}" min="{{minInput}}" max="{{maxInput}}" style="height:25px; width:65px" ng-model="annealingOptions.numAnnealings">
-                  <br>
-                  <label>Iterations per Trial</label>
-                  <input ng-disabled="isAssigning" type="number" step="{{inputStep}}" min="{{minInput}}" max="{{maxInput}}" style="height:25px; width:65px" ng-model="annealingOptions.iterPerAnnealing">
-                  <br>
-                  <label ng-disabled="isAssigning">Initial Temperature</label>
-                  <input ng-disabled="isAssigning" type="number" step="{{inputStep}}" min="{{minInput}}" max="{{maxInput}}" style="height:25px; width:65px" ng-model="annealingOptions.initialTemp">
-                  <div>
+                  <label for="annealRadio" ng-disabled="isAssigning">Sim. Annealing</label>
+                  <input type="radio" id="annealRadio" name="assignmentSelect" ng-value="true" ng-model="isAnnealing" ng-disabled="isAssigning"/>
+                  <label for="boundRadio">Branch & Bound</label>
+                  <input type="radio" id="boundRadio" name="assignmentSelect" ng-value="false" ng-model="isAnnealing" ng-disabled="isAssigning"/>
+                  <div ng-show="isAnnealing">
+                    <label># of Trials</label>
+                    <input type="number" step="{{inputStep}}" min="{{minInput}}" max="{{maxInput}}" style="height:25px; width:65px" ng-model="annealingOptions.numAnnealings">
                     <br>
+                    <label>Iterations per Trial</label>
+                    <input ng-disabled="isAssigning" type="number" step="{{inputStep}}" min="{{minInput}}" max="{{maxInput}}" style="height:25px; width:65px" ng-model="annealingOptions.iterPerAnnealing">
+                    <br>
+                    <label ng-disabled="isAssigning">Initial Temperature</label>
+                    <input ng-disabled="isAssigning" type="number" step="{{inputStep}}" min="{{minInput}}" max="{{maxInput}}" style="height:25px; width:65px" ng-model="annealingOptions.initialTemp">
+                    <br><br>
+                  </div>
+                  <div>
                     <label>Level Matching Weight</label>
                     <input ng-disabled="isAssigning" type="number" step="{{inputStep}}" min="{{minWeight}}" max="{{maxInput}}" style="height:25px; width:50px" ng-model="weights.levelMatch">
                     <br>
