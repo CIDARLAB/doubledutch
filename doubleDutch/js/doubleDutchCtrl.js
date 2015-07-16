@@ -2167,112 +2167,124 @@ app.controller("doubleDutchCtrl", function($scope, $modal, $log) {
   //   };
 
 	$scope.assignLevels = function() {
-		var validateLevelsPerFactor = function(fNodes, levelsPerFactor, maxLevelsPerFactor, autoTarget) {
-			if (autoTarget && levelsPerFactor > maxLevelsPerFactor) {
-				alertUser("md", "Error", "The number of available levels does not satisfy the number of levels per factor that you've selected for the "
-					+ "experimental design. Select a lower number of levels per factor or upload additional parameterized features.");
-				return false;
-			} else {
-				var invalidNodes = [];
-				var i;
-				for (i = 0; i < fNodes.length; i++) {
-					if (fNodes[i].levelTargets.length > maxLevelsPerFactor) {
-						invalidNodes.push(fNodes[i]);
+		var isStarting = !$scope.isAssigning;
+		var clusterGrid;
+		if ($scope.isAssigning) {
+			clusterGrid = $scope.bestSoln.clusterGrid;
+		} else {
+			var validateLevelsPerFactor = function(fNodes, levelsPerFactor, maxLevelsPerFactor, autoTarget) {
+				if (autoTarget && levelsPerFactor > maxLevelsPerFactor) {
+					alertUser("md", "Error", "The number of available levels does not satisfy the number of levels per factor that you've selected for the "
+						+ "experimental design. Select a lower number of levels per factor or upload additional parameterized features.");
+					return false;
+				} else {
+					var invalidNodes = [];
+					var i;
+					for (i = 0; i < fNodes.length; i++) {
+						if (fNodes[i].levelTargets.length > maxLevelsPerFactor) {
+							invalidNodes.push(fNodes[i]);
+						}
+					}
+					if (invalidNodes.length > 0) {
+						var errorMessage = "";
+						for (i = 0; i < invalidNodes.length; i++) {
+							errorMessage += ", " + invalidNodes[i].bioDesign.name;
+						}
+						errorMessage = errorMessage.substring(2);
+						errorMessage += "<br><br>The number of available levels does not satisfy the number of targets that you've chosen for the "
+								+ "above factors in the experimental design. Choose a lower number of targets for these factors or upload additional "
+								+ "parameterized features.";
+						alertUser("md", "Error", errorMessage);
+						return false;
+					} else {
+						return true;
 					}
 				}
-				if (invalidNodes.length > 0) {
-					var errorMessage = "";
-					for (i = 0; i < invalidNodes.length; i++) {
-						errorMessage += ", " + invalidNodes[i].bioDesign.name;
+			};
+			var validateClusterGrid = function(clusterGrid) {
+				var invalidClusters = [];
+				var i, j;
+				for (i = 0; i < clusterGrid.length; i++) {
+					for (j = 0; j < clusterGrid[i].length; j++) {
+						if (clusterGrid[i][j].isEmpty()) {
+							invalidClusters.push(clusterGrid[i][j]);
+						}
 					}
-					errorMessage = errorMessage.substring(2);
-					errorMessage += "<br><br>The number of available levels does not satisfy the number of targets that you've chosen for the "
-							+ "above factors in the experimental design. Choose a lower number of targets for these factors or upload additional "
-							+ "parameterized features.";
-					alertUser("md", "Error", errorMessage);
+				}
+				if (invalidClusters.length > 0) {
+					var clusterErrorMessage = "";
+					for (j = 0; j < invalidClusters.length; j++) {
+						clusterErrorMessage += ", " + invalidClusters[j].target.toFixed(2);
+					}
+					clusterErrorMessage = clusterErrorMessage.substring(2);
+					clusterErrorMessage += "<br><br>There are no available levels that cluster around the above targets. Change these targets or upload additional "
+							+ "features with parameters that are close to them in magnitude.";
+					alertUser("md", "Error", clusterErrorMessage);
 					return false;
 				} else {
 					return true;
 				}
-			}
-		};
-		var validateClusterGrid = function(clusterGrid) {
-			var invalidClusters = [];
-			var i, j;
-			for (i = 0; i < clusterGrid.length; i++) {
-				for (j = 0; j < clusterGrid[i].length; j++) {
-					if (clusterGrid[i][j].isEmpty()) {
-						invalidClusters.push(clusterGrid[i][j]);
-					}
-				}
-			}
-			if (invalidClusters.length > 0) {
-				var clusterErrorMessage = "";
-				for (j = 0; j < invalidClusters.length; j++) {
-					clusterErrorMessage += ", " + invalidClusters[j].target.toFixed(2);
-				}
-				clusterErrorMessage = clusterErrorMessage.substring(2);
-				clusterErrorMessage += "<br><br>There are no available levels that cluster around the above targets. Change these targets or upload additional "
-						+ "features with parameters that are close to them in magnitude.";
-				alertUser("md", "Error", clusterErrorMessage);
-				return false;
-			} else {
-				return true;
-			}
-		};
-		$scope.levelsPerFactor = validateNumericInput($scope.levelsPerFactor, $scope.minLevelsPerFactor, $scope.maxLevelsPerFactor, $scope.levelsPerFactorStep, 
-			$scope.defaultLevelsPerFactor);
-		if ($scope.fldNodes.length == 0) {
-			alertUser("md", "Error", "Experimental design contains no factors. Upload one or more coding sequences and drag a factor from the leftmost column "
-					+ "to the center column.");
-		} else if (validateLevelsPerFactor($scope.fldNodes, $scope.levelsPerFactor, $scope.lNodes.length, $scope.clusteringOptions.autoTarget)) {
-			var clusterer = new lClusterer();
-			var clusterGrid;
-			if ($scope.clusteringOptions.autoTarget) {
-				clusterGrid = clusterer.lfMeansCluster($scope.levelsPerFactor, $scope.fldNodes.length, $scope.clusteringOptions.numClusterings, 
-					$scope.lNodes, true);
-			} else {
-				clusterGrid = clusterer.targetedCluster($scope.fldNodes, $scope.lNodes);
-			}
-			if (validateClusterGrid(clusterGrid)) {
-				var i, j;
+			};
+			$scope.levelsPerFactor = validateNumericInput($scope.levelsPerFactor, $scope.minLevelsPerFactor, $scope.maxLevelsPerFactor, $scope.levelsPerFactorStep, 
+				$scope.defaultLevelsPerFactor);
+			if ($scope.fldNodes.length == 0) {
+				alertUser("md", "Error", "Experimental design contains no factors. Upload one or more coding sequences and drag a factor from the leftmost column "
+						+ "to the center column.");
+			} else if (validateLevelsPerFactor($scope.fldNodes, $scope.levelsPerFactor, $scope.lNodes.length, $scope.clusteringOptions.autoTarget)) {
+				var clusterer = new lClusterer();
 				if ($scope.clusteringOptions.autoTarget) {
-					for (i = 0; i < clusterGrid.length; i++) {
-						$scope.fldNodes[i].levelTargets = [];
-						for (j = 0; j < clusterGrid[i].length; j++) {
-							$scope.fldNodes[i].levelTargets.push(parseFloat(clusterGrid[i][j].target.toFixed(2)));
+					clusterGrid = clusterer.lfMeansCluster($scope.levelsPerFactor, $scope.fldNodes.length, $scope.clusteringOptions.numClusterings, 
+						$scope.lNodes, true);
+				} else {
+					clusterGrid = clusterer.targetedCluster($scope.fldNodes, $scope.lNodes);
+				}
+				if (validateClusterGrid(clusterGrid)) {
+					var i, j;
+					if ($scope.clusteringOptions.autoTarget) {
+						for (i = 0; i < clusterGrid.length; i++) {
+							$scope.fldNodes[i].levelTargets = [];
+							for (j = 0; j < clusterGrid[i].length; j++) {
+								$scope.fldNodes[i].levelTargets.push(parseFloat(clusterGrid[i][j].target.toFixed(2)));
+							}
+							$scope.fldNodes[i].displayTargets = "";
+							$scope.fldNodes[i].displayToggle = "";
 						}
-						$scope.fldNodes[i].displayTargets = "";
-						$scope.fldNodes[i].displayToggle = "";
+					}
+					$scope.isAssigning = true;
+					if ($scope.isAnnealing) {
+						$scope.displayAnnealingResults = true;
+					} else {
+						$scope.displayBoundingResults = true;
 					}
 				}
-				var solver = new flSolver();
-				// var bestSoln = solver.randomSolve(clusterGrid, $scope.weights, $scope.annealingOptions.numAnnealings);
-				var soln;
-				if ($scope.isAnnealing) {
-					soln = solver.annealSolve(clusterGrid, $scope.annealingOptions, $scope.weights);
-					$scope.displayAnnealingResults = true;
-				} else {
-					soln = solver.boundSolve(clusterGrid, $scope.weights);
-					$scope.displayBoundingResults = true;
-				}
-				var solnCost = soln.calculateCost($scope.weights);
-				if (!$scope.isAssigning || solnCost.weightedTotal <= $scope.bestSolnCost.weightedTotal) {
-					$scope.bestSoln = soln;
-					$scope.bestSolnCost = solnCost;
-					$scope.fldNodes = $scope.bestSoln.makeNodeDesign($scope.fldNodes);
-				}
-				$scope.isAssigning = true;
+			}
+		}
+		if ($scope.isAssigning) {
+			var solver = new flSolver();
+			var soln;
+			if ($scope.isAnnealing) {
+				soln = solver.annealSolve(clusterGrid, $scope.annealingOptions, $scope.weights);
 				$scope.assignmentCount += $scope.annealingOptions.numAnnealings;
+			} else {
+				soln = solver.boundSolve(clusterGrid, $scope.weights);
+			}
+			var solnCost = soln.calculateCost($scope.weights);
+			if (isStarting || solnCost.weightedTotal <= $scope.bestSolnCost.weightedTotal) {
+				$scope.bestSoln = soln;
+				$scope.bestSolnCost = solnCost;
+				$scope.fldNodes = $scope.bestSoln.makeNodeDesign($scope.fldNodes);
 			}
 		} 
 	};
 
 	$scope.quitAssigning = function() {
 		$scope.isAssigning = false;
-		$scope.displayAnnealingResults = false;
-		$scope.displayBoundingResults = false;
-		$scope.assignmentCount = 0;
+		if ($scope.isAnnealing) {
+			$scope.displayAnnealingResults = false;
+			$scope.assignmentCount = 0;
+		} else {
+			$scope.displayBoundingResults = false;
+		}
 		var i;
 		for (i = 0; i < $scope.fldNodes.length; i++) {
 			if ($scope.clusteringOptions.autoTarget) {

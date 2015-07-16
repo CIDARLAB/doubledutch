@@ -44,9 +44,11 @@
         <label ng-show="clusteringOptions.autoTarget">Levels per Factor</label>
         <input type="number" step="{{levelsPerFactorStep}}" min="{{minLevelsPerFactor}}" max="{{maxLevelsPerFactor}}" style="height:25px; width:50px" ng-show="clusteringOptions.autoTarget" ng-disabled="isAssigning" ng-model="levelsPerFactor">
         <br ng-show="clusteringOptions.autoTarget">
-        <button ng-disabled="displayBoundingResults" type="button" class="btn btn-primary" ng-click="assignLevels()">Assign Levels</button>
-        <button type="button" class="btn btn-primary" ng-click="editAssignmentOptions('md')">Edit Options</button>
-        <br><br>
+        <div ng-hide="displayBoundingResults">
+          <button type="button" class="btn btn-primary" ng-click="assignLevels()">Assign Levels</button>
+          <button type="button" class="btn btn-primary" ng-click="editAssignmentOptions('md')">Edit Options</button>
+          <br><br>
+        </div>
         <button type="button" class="btn btn-primary" ng-csv="downloadAssignment()" filename="level_assignment.csv" field-separator=",">Download Assignment</button>
         <button class="btn btn-warning" ng-click="quitAssigning()" ng-show="isAssigning">Done</button>
       </div>
