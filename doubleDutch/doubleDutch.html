@@ -44,11 +44,9 @@
         <label ng-show="clusteringOptions.autoTarget">Levels per Factor</label>
         <input type="number" step="{{levelsPerFactorStep}}" min="{{minLevelsPerFactor}}" max="{{maxLevelsPerFactor}}" style="height:25px; width:50px" ng-show="clusteringOptions.autoTarget" ng-disabled="isAssigning" ng-model="levelsPerFactor">
         <br ng-show="clusteringOptions.autoTarget">
-        <div ng-hide="displayBoundingResults">
-          <button type="button" class="btn btn-primary" ng-click="assignLevels()">Assign Levels</button>
-          <button type="button" class="btn btn-primary" ng-click="editAssignmentOptions('md')">Edit Options</button>
-          <br><br>
-        </div>
+        <button type="button" ng-disabled="bestSoln.isOptimal" class="btn btn-primary" ng-click="assignLevels()">Assign Levels</button>
+        <button type="button" ng-disabled="bestSoln.isOptimal" class="btn btn-primary" ng-click="editAssignmentOptions('md')">Edit Options</button>
+        <br><br>
         <button type="button" class="btn btn-primary" ng-csv="downloadAssignment()" filename="level_assignment.csv" field-separator=",">Download Assignment</button>
         <button class="btn btn-warning" ng-click="quitAssigning()" ng-show="isAssigning">Done</button>
       </div>
@@ -68,22 +66,28 @@
 		<div class="row">
   		<div class="col-sm-4">
     		<label style="font-size:20pt" ng-hide="isAssigning">Available Factors</label>
-        <p ng-show="displayAnnealingResults">The best level assignment after {{assignmentCount}} trials is shown below. Would you like to perform {{annealingOptions.numAnnealings}} more trials?
-        </p>
-        <p ng-show="displayBoundingResults">The best level assignment is shown below.
-        </p>
-        <p ng-show="isAssigning">
-          
-          Level matching cost is {{bestSolnCost.levelMatch | number:2}}.
-          <br>
-          Pathway Homology cost is {{bestSolnCost.homology | number:2}}.
-          <br>
-          Feature Reuse cost is {{bestSolnCost.reuse | number:2}}.
-          <br>
-          ______________________
-          <br>
-          Total assignment cost is {{bestSolnCost.total | number:2}}.
-        </p>
+        <div ng-show="isAssigning">
+          <div ng-hide="isAssignmentExhaustive">
+            <p>The best level assignment after {{assignmentCount}} trials is shown below.</p>
+            <p>Would you like to continue assignment for another {{annealingOptions.numAnnealings}} trials?</p>
+          </div>
+          <div ng-show="isAssignmentExhaustive">
+            <p ng-show="bestSoln.isOptimal">The best level assignment was found after {{assignmentTime | number:2}} min.</p>
+            <p ng-hide="bestSoln.isOptimal">The best level assignment after {{assignmentTime | number:2}} min is shown below.</p>
+            <p ng-hide="bestSoln.isOptimal">Would you like to continue assignment for another {{timeout}} min?</p>
+          </div>
+          <p>
+            Level matching cost is {{bestSolnCost.levelMatch | number:2}}.
+            <br>
+            Pathway Homology cost is {{bestSolnCost.homology | number:2}}.
+            <br>
+            Feature Reuse cost is {{bestSolnCost.reuse | number:2}}.
+            <br>
+            ______________________
+            <br>
+            Total assignment cost is {{bestSolnCost.total | number:2}}.
+          </p>
+        </div>
     		<div ui-tree="flTreeOptions">
       			<ol ui-tree-nodes="" ng-model="fNodes">
         			<li ng-repeat="node in fNodes" ui-tree-node ng-include="'fl_tree_renderer.html'" ng-hide="isAssigning"></li>
@@ -217,13 +221,18 @@
               <div class="col-sm-6">
                   <label style="font-size:20pt">Level Assignment</label>
                   <br>
-                  <label for="annealRadio" ng-disabled="isAssigning">Sim. Annealing</label>
-                  <input type="radio" id="annealRadio" name="assignmentSelect" ng-value="true" ng-model="isAnnealing" ng-disabled="isAssigning"/>
-                  <label for="boundRadio">Branch & Bound</label>
-                  <input type="radio" id="boundRadio" name="assignmentSelect" ng-value="false" ng-model="isAnnealing" ng-disabled="isAssigning"/>
-                  <div ng-show="isAnnealing">
-                    <label># of Trials</label>
-                    <input type="number" step="{{inputStep}}" min="{{minInput}}" max="{{maxInput}}" style="height:25px; width:65px" ng-model="annealingOptions.numAnnealings">
+                  <label>Exhaustive Assignment</label>
+                  <input ng-disabled="isAssigning" type="checkbox" ng-model="isAssignmentExhaustive">
+                  <div ng-show="isAssignmentExhaustive">
+                    <label>Timeout</label>
+                    <input type="number" step="{{inputStep}}" min="{{minInputZero}}" max="{{maxInput}}" style="height:25px; width:65px" ng-model="timeout">
+                    <label>min</label>
+                  </div>
+                  <div>
+                    <br>
+                    <label ng-hide="isAssignmentExhaustive"># of Trials</label>
+                    <label ng-show="isAssignmentExhaustive"># of Pretrials</label>
+                    <input ng-disabled="isExhaustivelyAssigning" type="number" step="{{inputStep}}" min="{{minInput}}" max="{{maxInput}}" style="height:25px; width:65px" ng-model="annealingOptions.numAnnealings">
                     <br>
                     <label>Iterations per Trial</label>
                     <input ng-disabled="isAssigning" type="number" step="{{inputStep}}" min="{{minInput}}" max="{{maxInput}}" style="height:25px; width:65px" ng-model="annealingOptions.iterPerAnnealing">
@@ -234,19 +243,19 @@
                   </div>
                   <div>
                     <label>Level Matching Weight</label>
-                    <input ng-disabled="isAssigning" type="number" step="{{inputStep}}" min="{{minWeight}}" max="{{maxInput}}" style="height:25px; width:50px" ng-model="weights.levelMatch">
+                    <input ng-disabled="isAssigning" type="number" step="{{inputStep}}" min="{{minInputZero}}" max="{{maxInput}}" style="height:25px; width:50px" ng-model="weights.levelMatch">
                     <br>
                     <label>Pathway Homology Weight</label>
-                    <input ng-disabled="isAssigning" type="number" step="{{inputStep}}" min="{{minWeight}}" max="{{maxInput}}" style="height:25px; width:50px" ng-model="weights.homology">
+                    <input ng-disabled="isAssigning" type="number" step="{{inputStep}}" min="{{minInputZero}}" max="{{maxInput}}" style="height:25px; width:50px" ng-model="weights.homology">
                     <br>
                     <label>Feature Reuse Weight</label>
-                    <input ng-disabled="isAssigning" type="number" step="{{inputStep}}" min="{{minWeight}}" max="{{maxInput}}" style="height:25px; width:50px" ng-model="weights.reuse">
+                    <input ng-disabled="isAssigning" type="number" step="{{inputStep}}" min="{{minInputZero}}" max="{{maxInput}}" style="height:25px; width:50px" ng-model="weights.reuse">
                   </div>
               </div>
               <div ng-hide="isAssigning" class="col-sm-6">
                   <label style="font-size:20pt">Level Targets</label>
                   <br>
-                  <label>Automatically Determine Targets</label>
+                  <label>Auto-Targeting</label>
                   <input type="checkbox" ng-model="clusteringOptions.autoTarget">
                   <br>
                   <label ng-show="clusteringOptions.autoTarget"># of Trials</label>

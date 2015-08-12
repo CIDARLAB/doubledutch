@@ -418,14 +418,17 @@ app.controller("doubleDutchCtrl", function($scope, $modal, $log) {
 	}
 
 	function flSolver() {
-		this.randomSolve = function(clusterGrid, weights, numTrials) {
+		this.randomSolve = function(clusterGrid, weights, numTrials, timer) {
+			if (arguments.length < 4) {
+    			timer = new Timer();
+    		}
   			var soln;
   			var solnCost;
 			var bestSoln = new flSolution(clusterGrid);
 			var bestSolnCost = bestSoln.calculateCost(weights);
   			var trialCount = 0;
   			var i, j;
-  			while (trialCount < numTrials) {
+  			while (trialCount < numTrials && !timer.hasTimedOut()) {
   				soln = new flSolution(clusterGrid);
 	  			for (i = 0; i < soln.levelSelections.length; i++) {
 	  				for (j = 0; j < soln.levelSelections[i].length; j++) {
@@ -452,10 +455,13 @@ app.controller("doubleDutchCtrl", function($scope, $modal, $log) {
     		}
     		return mutantSoln;
     	};
-    	this.annealSolve = function(clusterGrid, annealingOptions, weights) {
+    	this.annealSolve = function(clusterGrid, annealingOptions, weights, timer) {
+    		if (arguments.length < 4) {
+    			timer = new Timer();
+    		}
 			var soln;
 			var solnCost;
-			var bestSoln = this.randomSolve(clusterGrid, weights, 1);
+			var bestSoln = this.randomSolve(clusterGrid, weights, 1, timer);
 			var bestSolnCost = bestSoln.calculateCost(weights);
 			var annealCount = 0;
 			var temp;
@@ -463,8 +469,8 @@ app.controller("doubleDutchCtrl", function($scope, $modal, $log) {
 			var mutantSoln;
 			var mutantCost;
 			var i, j;
-			while (annealCount < annealingOptions.numAnnealings) {
-				soln = this.randomSolve(clusterGrid, weights, 1);
+			while (annealCount < annealingOptions.numAnnealings && !timer.hasTimedOut()) {
+				soln = this.randomSolve(clusterGrid, weights, 1, timer);
 				solnCost = soln.calculateCost(weights);
 				temp = annealingOptions.initialTemp;
 				while (temp >= 1) {
@@ -487,16 +493,25 @@ app.controller("doubleDutchCtrl", function($scope, $modal, $log) {
 			}
 			return bestSoln;
     	};
-    	this.boundSolve = function(clusterGrid, weights) {
+    	this.boundSolve = function(clusterGrid, annealingOptions, weights, timer, levelSelections) {
     		var soln = new flSolution(clusterGrid);
+    		if (arguments.length > 4) {
+    			soln.levelSelections = levelSelections;
+    		}
     		var solnCost;
-    		var bestSoln = new flSolution(clusterGrid);
+    		var bestSoln;
+    		if (arguments.length > 4) {
+    			bestSoln = soln;
+    			bestSoln.levelSelections = levelSelections;
+    		} else {
+    			bestSoln = this.annealSolve(clusterGrid, annealingOptions, weights, timer);
+    		}
     		var bestSolnCost = bestSoln.calculateCost(weights);
     		var backtrack = false;
     		var i = 0;
     		var j = 0;
-    		while (!backtrack) {
-    			while (!backtrack && j < soln.levelSelections[i].length) {
+    		while (!backtrack && !timer.hasTimedOut()) {
+    			while (!backtrack && j < soln.levelSelections[i].length && !timer.hasTimedOut()) {
     				backtrack = (soln.levelSelections[i][j] == soln.clusterGrid[i][j].lNodes.length);
     				if (!backtrack) {
 						solnCost = soln.calculateCost(weights, i, j);
@@ -528,9 +543,41 @@ app.controller("doubleDutchCtrl", function($scope, $modal, $log) {
 					backtrack = false;
 				}
     		}
+    		if (i == 0 && j == 0) {
+    			bestSoln.isOptimal = true;
+    		}
     		return bestSoln;
     	};
 	}
+
+	Timer = function(timeout) {
+		if (arguments.length < 1) {
+			timeout = 0;
+		}
+		this.timeout = timeout;
+		this.start();
+	};
+
+	Timer.prototype.start = function() {
+		this.startTime = new Date().getTime()/60000;
+	};
+
+	Timer.prototype.getElapsedTime = function() {
+		if (this.startTime) {
+			return new Date().getTime()/60000 - this.startTime;
+		} else {
+			return 0;
+		}
+	};
+
+	Timer.prototype.hasTimedOut = function() {
+		if (this.startTime) {
+			return this.timeout > 0 && this.getElapsedTime() >= this.timeout; 
+		} else {
+			return false;
+		}
+		
+	};
 
 	function lClusterer() {
 		this.lfMeansCluster = function(numClusters, numFactors, numClusterings, lNodes, sortLevelsByCost) {
@@ -683,7 +730,6 @@ app.controller("doubleDutchCtrl", function($scope, $modal, $log) {
 			}
 			return clusterGrid;
 		};
-		this.sortCluster
 	}
 
 	factorialStore = [];
@@ -1599,9 +1645,6 @@ app.controller("doubleDutchCtrl", function($scope, $modal, $log) {
 			$scope.doeTemplater.makeFullFactorial([]),
 			$scope.doeTemplater.makePlackettBurman(0)];
 
-	$scope.defaultClusteringOptions = {numClusterings: 10, autoTarget: true};
-	$scope.clusteringOptions = {numClusterings: $scope.defaultClusteringOptions.numClusterings, autoTarget: $scope.defaultClusteringOptions.autoTarget};
-
 	$scope.minTarget = 0;
 	$scope.maxTarget = 1000000;
 
@@ -1610,26 +1653,31 @@ app.controller("doubleDutchCtrl", function($scope, $modal, $log) {
 	$scope.homologyCost = 0;
 	$scope.reuseCost = 0;
 
-	$scope.defaultWeights = {levelMatch: 1, homology: 1, reuse: 1};
-	$scope.weights = {levelMatch: $scope.defaultWeights.levelMatch, homology: $scope.defaultWeights.levelMatch, reuse: $scope.defaultWeights.levelMatch};
-
 	$scope.defaultLevelsPerFactor = 2;
 	$scope.levelsPerFactor = $scope.defaultLevelsPerFactor;
 	$scope.minLevelsPerFactor = 2;
 	$scope.maxLevelsPerFactor = 100;
 	$scope.levelsPerFactorStep = 1;
 
-	$scope.defaultIsAnnealing = true;
-	$scope.isAnnealing = $scope.defaultIsAnnealing;
-	$scope.displayAnnealingResults = false;
-	$scope.displayBoundingResults = false;
+	$scope.defaultIsAssignmentExhaustive = false;
+	$scope.isAssignmentExhaustive = $scope.defaultIsAssignmentExhaustive;
+
+	$scope.defaultTimeout = 0;
+	$scope.timeout = $scope.defaultTimeout;
 
 	$scope.defaultAnnealingOptions = {numAnnealings: 100, iterPerAnnealing: 100, initialTemp: 1000};
 	$scope.annealingOptions = {numAnnealings: $scope.defaultAnnealingOptions.numAnnealings, iterPerAnnealing: $scope.defaultAnnealingOptions.iterPerAnnealing, 
 			initialTemp: $scope.defaultAnnealingOptions.initialTemp};
 
+	$scope.defaultWeights = {levelMatch: 1, homology: 1, reuse: 1};
+	$scope.weights = {levelMatch: $scope.defaultWeights.levelMatch, homology: $scope.defaultWeights.levelMatch, reuse: $scope.defaultWeights.levelMatch};
+
+	$scope.defaultClusteringOptions = {numClusterings: 10, autoTarget: true};
+	$scope.clusteringOptions = {numClusterings: $scope.defaultClusteringOptions.numClusterings, autoTarget: $scope.defaultClusteringOptions.autoTarget};
+
 	$scope.isAssigning = false;
 	$scope.assignmentCount = 0;
+	$scope.assignmentTime = 0;
 
 	$scope.addFeatures = function(size, flNode) {
 	    var modalInstance = $modal.open({
@@ -1673,7 +1721,8 @@ app.controller("doubleDutchCtrl", function($scope, $modal, $log) {
 		    resolve: {
 	        	items: function() {
 	          		return {isAssigning: $scope.isAssigning, 
-		          			isAnnealing: $scope.isAnnealing, defaultIsAnnealing: $scope.defaultIsAnnealing,
+		          			isAssignmentExhaustive: $scope.isAssignmentExhaustive, defaultIsAssignmentExhaustive: $scope.defaultIsAssignmentExhaustive,
+		          			timeout: $scope.timeout, defaultTimeout: $scope.defaultTimeout,
 		          			annealingOptions: $scope.annealingOptions, defaultAnnealingOptions: $scope.defaultAnnealingOptions,  
 			          		weights: $scope.weights, defaultWeights: $scope.defaultWeights, 
 			          		clusteringOptions: $scope.clusteringOptions, defaultClusteringOptions: $scope.defaultClusteringOptions};
@@ -1681,8 +1730,9 @@ app.controller("doubleDutchCtrl", function($scope, $modal, $log) {
 	      	}
 	    });
 	    modalInstance.result.then(function(items) {
+	    	$scope.isAssignmentExhaustive = items.isAssignmentExhaustive;
+	    	$scope.timeout = items.timeout;
 	    	$scope.annealingOptions = items.annealingOptions;
-	    	$scope.isAnnealing = items.isAnnealing;
 	    	$scope.weights = items.weights;
 	    	$scope.clusteringOptions = items.clusteringOptions;
 	    	var i;
@@ -1767,63 +1817,45 @@ app.controller("doubleDutchCtrl", function($scope, $modal, $log) {
   	};
 
   	$scope.downloadAssignment = function() {
-  		var outputData = [];
+  		var outputData = [[]];
   		if ($scope.validateFLDNodes()) {
   			var i, j;
-  			var k = 0;
-  			if ($scope.isAssigning) {
-	  			outputData.push([]);
-			    outputData[k].push("# of Trials");
-				outputData[k].push($scope.assignmentCount);
-			    k++;
-			    outputData.push([]);
-		        outputData[k].push("Level Assignment Weights");
-		        k++;
-		        outputData.push([]);
-		        outputData[k].push("Level Matching");
-		        outputData[k].push($scope.weights.levelMatch);
-		        k++;
-		        outputData.push([]);
-		        outputData[k].push("Pathway Homology");
-		        outputData[k].push($scope.weights.homology);
-		        k++;
-		        outputData.push([]);
-		        outputData[k].push("Feature Reuse");
-		        outputData[k].push($scope.weights.reuse);
-		        k++;
-		        outputData.push([]);
-		        outputData[k].push("Level Assignment Costs");
-		        k++;
-		        outputData.push([]);
-		        outputData[k].push("Level Matching");
-		        outputData[k].push($scope.bestSolnCost.levelMatch);
-		        k++;
-		        outputData.push([]);
-		        outputData[k].push("Pathway Homology");
-		        outputData[k].push($scope.bestSolnCost.homology);
-		        k++;
-		        outputData.push([]);
-		        outputData[k].push("Feature Reuse");
-		        outputData[k].push($scope.bestSolnCost.reuse);
-		        k++;
-		        outputData.push([]);
-		        outputData[k].push("Total");
-		        outputData[k].push($scope.bestSolnCost.total);
-		        k++;
-		    }
   			for (i = 0; i < $scope.fldNodes.length; i++) {
-  				outputData.push([]);
-  				outputData[k].push($scope.fldNodes[i].bioDesign.name);
+  				outputData[0][i + i] = $scope.fldNodes[i].bioDesign.name;
+  				outputData[0][i + i + 1] = $scope.fldNodes[i].bioDesign.name + " Levels";
   				$scope.fldNodes[i].children.sort(function(a, b){return a.parameter.value - b.parameter.value});
   				for (j = 0; j < $scope.fldNodes[i].children.length; j++) {
-  					outputData.push([]);
-  					outputData[k + j + 1].push($scope.fldNodes[i].children[j].bioDesign.name);
-  					outputData[k + j + 1].push($scope.fldNodes[i].children[j].parameter.value);
+  					if (!outputData[j + 1]) {
+  						outputData[j + 1] = [];
+  					}
+  					outputData[j + 1][i + i] = $scope.fldNodes[i].children[j].bioDesign.name;
+  					outputData[j + 1][i + i + 1] = $scope.fldNodes[i].children[j].parameter.value;
   				}
-  				k += (1 + $scope.fldNodes[i].children.length);
   			}
-  		} else {
-  			outputData.push([]);
+  			if ($scope.isAssigning) {
+  				if ($scope.isAssignmentExhaustive) {
+  					outputData[0].push("# of Pretrials");
+  				} else {
+  					outputData[0].push("# of Trials");
+  				}
+			    outputData[0].push("Assignment Time (min)");
+		        outputData[0].push("Level Matching Weight");
+		        outputData[0].push("Pathway Homology Weight");
+		        outputData[0].push("Feature Reuse Weight");
+		        outputData[0].push("Level Matching Cost");
+		        outputData[0].push("Pathway Homology Cost");
+		        outputData[0].push("Feature Reuse Cost");
+		        outputData[0].push("Total Assignment Cost");
+		        outputData[1].push($scope.assignmentCount);
+		        outputData[1].push($scope.assignmentTime);
+		        outputData[1].push($scope.weights.levelMatch);
+		        outputData[1].push($scope.weights.homology);
+		        outputData[1].push($scope.weights.reuse);
+		        outputData[1].push($scope.bestSolnCost.levelMatch);
+		        outputData[1].push($scope.bestSolnCost.homology);
+		        outputData[1].push($scope.bestSolnCost.reuse);
+		        outputData[1].push($scope.bestSolnCost.total);
+		    }
   		}
   		return outputData;
   	};
@@ -2167,7 +2199,7 @@ app.controller("doubleDutchCtrl", function($scope, $modal, $log) {
   //   };
 
 	$scope.assignLevels = function() {
-		var isStarting = !$scope.isAssigning;
+		var isStarting = false;
 		var clusterGrid;
 		if ($scope.isAssigning) {
 			clusterGrid = $scope.bestSoln.clusterGrid;
@@ -2234,7 +2266,7 @@ app.controller("doubleDutchCtrl", function($scope, $modal, $log) {
 				var clusterer = new lClusterer();
 				if ($scope.clusteringOptions.autoTarget) {
 					clusterGrid = clusterer.lfMeansCluster($scope.levelsPerFactor, $scope.fldNodes.length, $scope.clusteringOptions.numClusterings, 
-						$scope.lNodes, true);
+						$scope.lNodes);
 				} else {
 					clusterGrid = clusterer.targetedCluster($scope.fldNodes, $scope.lNodes);
 				}
@@ -2251,22 +2283,24 @@ app.controller("doubleDutchCtrl", function($scope, $modal, $log) {
 						}
 					}
 					$scope.isAssigning = true;
-					if ($scope.isAnnealing) {
-						$scope.displayAnnealingResults = true;
-					} else {
-						$scope.displayBoundingResults = true;
-					}
+					isStarting = true;
 				}
 			}
 		}
 		if ($scope.isAssigning) {
 			var solver = new flSolver();
 			var soln;
-			if ($scope.isAnnealing) {
+			if ($scope.isAssignmentExhaustive) {
+				var timer = new Timer($scope.timeout);
+				if (isStarting) {
+					soln = solver.boundSolve(clusterGrid, $scope.annealingOptions, $scope.weights, timer);
+				} else {
+					soln = solver.boundSolve(clusterGrid, $scope.annealingOptions, $scope.weights, timer, $scope.bestSoln.levelSelections);
+				}
+				$scope.assignmentTime += timer.getElapsedTime();
+			} else {
 				soln = solver.annealSolve(clusterGrid, $scope.annealingOptions, $scope.weights);
 				$scope.assignmentCount += $scope.annealingOptions.numAnnealings;
-			} else {
-				soln = solver.boundSolve(clusterGrid, $scope.weights);
 			}
 			var solnCost = soln.calculateCost($scope.weights);
 			if (isStarting || solnCost.weightedTotal <= $scope.bestSolnCost.weightedTotal) {
@@ -2279,11 +2313,11 @@ app.controller("doubleDutchCtrl", function($scope, $modal, $log) {
 
 	$scope.quitAssigning = function() {
 		$scope.isAssigning = false;
-		if ($scope.isAnnealing) {
-			$scope.displayAnnealingResults = false;
-			$scope.assignmentCount = 0;
+		if ($scope.isAssignmentExhaustive) {
+			$scope.assignmentTime = 0;
+			$scope.bestSoln.isOptimal = false;
 		} else {
-			$scope.displayBoundingResults = false;
+			$scope.assignmentCount = 0;
 		}
 		var i;
 		for (i = 0; i < $scope.fldNodes.length; i++) {
