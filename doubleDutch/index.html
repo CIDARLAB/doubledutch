@@ -15,7 +15,7 @@
 			
     <div class="row">
       <div class="col-sm-4">
-        <label style="font-size:20pt">Feature Upload (.csv)</label>
+        <label style="font-size:20pt">Component Upload (.csv)</label>
         <br>
         <label for="gridRadio" ng-disabled="isAssigning">Grid</label>
         <input type="radio" id="gridRadio" name="uploadSelect" value="0" ng-model="uploadSelector" ng-disabled="isAssigning"/>
@@ -23,9 +23,9 @@
         <input type="radio" id="tableRadio" name="uploadSelect" value="1" ng-model="uploadSelector" ng-disabled="isAssigning"/>
         <input type="file" file-input="featFiles" multiple ng-disabled="isAssigning">
         <br>
-        <button type="button" class="btn btn-primary" ng-click="uploadFeatures()" ng-disabled="isAssigning">Upload Features</button>
+        <button type="button" class="btn btn-primary" ng-click="uploadFeatures()" ng-disabled="isAssigning">Upload Components</button>
         <br><br>
-        <p style="{{displayNumUploads}}">{{numFeatsUploaded | number:0}} features uploaded into {{numModsUploaded | number:0}} modules.</p>
+        <p style="{{displayNumUploads}}">{{numFeatsUploaded | number:0}} components uploaded into {{numModsUploaded | number:0}} modules.</p>
       </div>
       <div class="col-sm-4">
         <label style="font-size:20pt">DOE Template Upload (.csv)</label>
@@ -81,7 +81,7 @@
             <br>
             Pathway Homology cost is {{bestSolnCost.homology | number:2}}.
             <br>
-            Feature Reuse cost is {{bestSolnCost.reuse | number:2}}.
+            Component Reuse cost is {{bestSolnCost.reuse | number:2}}.
             <br>
             ______________________
             <br>
@@ -133,13 +133,14 @@
 	<script type="text/ng-template" id="fl_tree_renderer.html">
   	<div ui-tree-handle class="tree-node" style="{{node.backgroundColor}}">
   		<div class="tree-node-content">
-        	<a class="btn btn-success btn-xs" data-nodrag ng-click="toggle()" style="{{node.displayToggle}}"><span class="glyphicon" ng-class="{'glyphicon-chevron-right': collapsed, 'glyphicon-chevron-down': !collapsed}"></span></a>
+        	<a class="btn btn-success btn-xs" ng-show="node.isToggleShown" data-nodrag ng-click="toggle()"><span class="glyphicon" ng-class="{'glyphicon-chevron-right': collapsed, 'glyphicon-chevron-down': !collapsed}"></span></a>
           <a class="pull-right btn btn-danger btn-xs" data-nodrag ng-click="removeFLNode(this)" ng-hide="isAssigning"><span class="glyphicon glyphicon-remove"></span></a>
           <a class="pull-right btn btn-primary btn-xs" data-nodrag ng-click="addFeatures('md', node)" ng-hide="isAssigning"><span class="glyphicon glyphicon-pencil"></span></a>
-          <a class="pull-right btn btn-primary btn-xs" style="{{node.displayTargets}}" data-nodrag ng-click="viewTargets('md', node)"><span class="glyphicon glyphicon-screenshot"></span></a>
+          <a class="pull-right btn btn-primary btn-xs" ng-show="node.isTargetShown" data-nodrag ng-click="viewTargets('md', node)"><span class="glyphicon glyphicon-screenshot"></span></a>
+          <a class="{{node.constraintColor}}" ng-show="node.isConstraintShown" ng-disabled="isAssigning" data-nodrag ng-click="toggleConstraint(node)"><span class="{{node.constraintIcon}}"></span></a>
 			<label style="{{node.labelColor}}">Module</label><br>
 			<input type="text" style="height:25px" ng-model="node.bioDesign.module.name">
-      <form ng-hide="{{node.flType === 'f'}}">
+      <form ng-hide="node.isFNode">
 				<label style="{{node.labelColor}}">{{node.parameter.variable.name}}</label><br>
 				<input type="text" style="height:25px" ng-model="node.parameter.value">
 			</form>   
@@ -153,17 +154,17 @@
 
 	<script type="text/ng-template" id="featureWindow.html">
       <div class="modal-header">
-          <label style="font-size:20pt">Add/Remove Features</label>
+          <label style="font-size:20pt">Add/Remove Components</label>
       </div>
       <div class="modal-body">
-          <label>Current Features</label>
+          <label>Current Components</label>
           <br>
            <ul>
               <li ng-repeat="item in selected">
                   <a ng-click="moveFeature(item)">{{item.feature.name}}</a>
               </li>
           </ul>
-          <label>Available Features</label>
+          <label>Available Components</label>
           <br>
           <ul>
               <li ng-repeat="feat in features">
@@ -183,13 +184,13 @@
       </div>
       <div class="modal-body">
         <div ng-hide="autoTarget">
-          <button class="btn btn-primary" ng-click="addTarget()">Add Target</button>
-          <button class="btn btn-primary" ng-click="removeTarget()">Remove Target</button>
+          <button class="btn btn-primary" ng-disabled="isAssigning" ng-click="addTarget()">Add Target</button>
+          <button class="btn btn-primary" ng-disabled="isAssigning" ng-click="removeTarget()">Remove Target</button>
           <br><br>
         </div>
         <ul class="list-unstyled">
           <li ng-repeat="levelTarget in levelTargets">
-              <input type="number" step="0.01" min="{{minTarget}}" max="{{maxTarget}}" style="height:25px; width:95px" ng-disabled="autoTarget" ng-model="levelTarget.value">
+              <input type="number" step="0.01" min="{{minTarget}}" max="{{maxTarget}}" style="height:25px; width:95px" ng-disabled="isAssigning" ng-model="levelTarget.value">
               <br>
           </li>
         </ul>
@@ -248,7 +249,7 @@
                     <label>Pathway Homology Weight</label>
                     <input ng-disabled="isAssigning" type="number" step="{{inputStep}}" min="{{minInputZero}}" max="{{maxInput}}" style="height:25px; width:50px" ng-model="weights.homology">
                     <br>
-                    <label>Feature Reuse Weight</label>
+                    <label>Component Reuse Weight</label>
                     <input ng-disabled="isAssigning" type="number" step="{{inputStep}}" min="{{minInputZero}}" max="{{maxInput}}" style="height:25px; width:50px" ng-model="weights.reuse">
                   </div>
               </div>

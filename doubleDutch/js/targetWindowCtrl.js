@@ -1,5 +1,6 @@
 app.controller('targetWindowCtrl', function ($scope, $modalInstance, items) {
   $scope.autoTarget = items.autoTarget;
+  $scope.isAssigning = items.isAssigning;
   $scope.minTarget = items.minTarget;
   $scope.maxTarget = items.maxTarget;
   $scope.targetStep = 0.01;

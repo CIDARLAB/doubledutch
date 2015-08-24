@@ -24,7 +24,7 @@ app.controller('assignmentWindowCtrl', function ($scope, $modalInstance, items) 
   $scope.defaultClusteringOptions = items.defaultClusteringOptions;
 
   $scope.minInput = 1;
-  $scope.maxInput = 1000000;
+  $scope.maxInput = 1000000000;
   $scope.inputStep = 1;
 
   $scope.minInputZero = 0;
