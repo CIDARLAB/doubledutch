@@ -171,6 +171,72 @@ app.controller("doubleDutchCtrl", function($scope, $modal, $log) {
 		};
 	}
 
+	FLValidator = function(fNodes, lNodes) {
+		this.fNodes = fNodes;
+		this.lNodes = lNodes;
+	};
+
+	FLValidator.prototype.areFNodesValid = function() {
+		return this.fNodes.length > 0;
+	};
+
+	FLValidator.prototype.areFLNodesValid = function() {
+		var i;
+		for (i = 0; i < this.fNodes.length; i++) {
+			if (this.fNodes[i].children.length == 0) {
+				return false;
+			}
+		}
+		return true;
+	};
+
+	FLValidator.prototype.reconcileFLNodes = function() {
+		var designRecord = {};
+		var j;
+		for (j = 0; j < this.lNodes.length; j++) {
+			designRecord[hash(this.lNodes[j].bioDesign)] = true;
+		}
+		var i;
+		for (i = 0; i < this.fNodes.length; i++) {
+			for (j = 0; j < this.fNodes[i].children.length; j++) {
+				if (!this.fNodes[i].children[j].isConstraint 
+						&& !designRecord[hash(this.fNodes[i].children[j].bioDesign)]) {
+					this.lNodes.push(this.fNodes[i].children[j].copy());
+				}
+			}
+		}
+	};
+
+	FLValidator.prototype.areLNodesValid = function(numLevelsPerFactor) {
+		this.reconcileFLNodes();
+		var levelRecord = {};
+		var levelCount = 0;
+		var j;
+		for (j = 0; j < this.lNodes.length; j++) {
+			if (!levelRecord[hash(this.lNodes[j].parameter.value)]) {
+				levelCount++;
+				if (levelCount >= numLevelsPerFactor) {
+					return true;
+				}
+				levelRecord[hash(this.lNodes[j].parameter.value)] = true;
+			}
+		}
+		var constraintCount;
+		var i;
+		for (i = 0; i < this.fNodes.length; i++) {
+			constraintCount = 0;
+			for (j = 0; j < this.fNodes[i].children.length; j++) {
+				if (this.fNodes[i].children[j].isConstraint && !levelRecord[hash(this.fNodes[i].children[j].parameter.value)]) {
+					constraintCount++;
+				}
+			}
+			if (constraintCount + levelCount < numLevelsPerFactor) {
+				return false;
+			}
+		}
+		return true;
+	};
+
 	function lCluster(lNodes, target) {
 		this.lNodes = lNodes;
 		this.target = target;
@@ -242,9 +308,7 @@ app.controller("doubleDutchCtrl", function($scope, $modal, $log) {
 				sortLevelsByCost = false;
 			}
 			var clusterCost = 0;
-			if (this.lNodes.length > 0 && this.levelCosts.length == 0) {
-				this.calculateLevelCosts(sortLevelsByCost);
-			}
+			this.calculateLevelCosts(sortLevelsByCost);
 			for (i = 0; i < this.levelCosts.length; i++) {
 				clusterCost += this.levelCosts[i];
 			}
@@ -252,6 +316,17 @@ app.controller("doubleDutchCtrl", function($scope, $modal, $log) {
 		};
 		this.isConstrained = function() {
 			return this.lNodes.length > 0 && this.lNodes[0].isConstraint;
+		};
+		this.isBioDesignConstraint = function(bioDesign) {
+			if (this.lNodes.length > 0) {
+				var j = 0;
+				while (j < this.lNodes.length && this.lNodes[j].isConstraint && this.lNodes[j].bioDesign !== bioDesign) {
+					j++;
+				}
+				return j < this.lNodes.length && this.lNodes[j].isConstraint && this.lNodes[j].bioDesign === bioDesign;
+			} else {
+				return false;
+			}
 		};
 		this.applyConstraint = function() {
 			if (this.isConstrained()) {
@@ -324,7 +399,8 @@ app.controller("doubleDutchCtrl", function($scope, $modal, $log) {
 			}
 			if (reuseCost > 0) {
 				var normalizationFactor = reuseCost;
-				var featDict;
+				var factorFeatRecord;
+				var levelFeatRecord;
 				var feats;
 				var j, k, f;
 				for (i = 0; i < this.levelSelections.length; i++) {
@@ -332,18 +408,21 @@ app.controller("doubleDutchCtrl", function($scope, $modal, $log) {
 						if (i > iBound) {
 							reuseCost -= (this.levelSelections[i].length - 1);
 						} else {
-							featDict = {};
+							factorFeatRecord = {};
 							for (j = 0; j < this.levelSelections[i].length; j++) {
 								if (i == iBound && j > jBound) {
 									reuseCost--;
 								} else {
 									k = this.levelSelections[i][j];
 									feats = this.clusterGrid[i][j].lNodes[k].bioDesign.module.getFeatures();
+									levelFeatRecord = {};
 									for (f = 0; f < feats.length; f++) {
-										if (featDict[hash(feats[f])] == null) {
-											featDict[hash(feats[f])] = true;
-										} else {
+										if (factorFeatRecord[hash(feats[f])] && !levelFeatRecord[hash(feats[f])]) {
 											reuseCost--;
+											f = feats.length;
+										} else {
+											factorFeatRecord[hash(feats[f])] = true;
+											levelFeatRecord[hash(feats[f])] = true;
 										}
 									}
 								}
@@ -600,11 +679,21 @@ app.controller("doubleDutchCtrl", function($scope, $modal, $log) {
 	};
 
 	function lClusterer() {
-		this.lfMeansCluster = function(fNodes, lNodes, numClusters, numClusterings, sortLevelsByCost) {
+		this.lfMeansCluster = function(fNodes, lNodes, numsClusters, numClusterings, sortLevelsByCost) {
 			if (arguments.length < 5) {
 				sortLevelsByCost = false;
 			}
-			var composeConstraints = function(fNodes) {
+			var processNumsClusters = function(numsClusters, numFactors) {
+				if (numsClusters.constructor !== Array) {
+					numsClusters = [numsClusters];
+					var i;
+					for (i = 1; i < numFactors; i++) {
+						numsClusters[i] = numsClusters[0];
+					}
+				}
+				return numsClusters;
+			};
+			var composeConstraints = function(fNodes, numsClusters) {
 				var constraintMap = {};
 				var constraintKeys;
 				var constraintNodes;
@@ -623,10 +712,11 @@ app.controller("doubleDutchCtrl", function($scope, $modal, $log) {
 					} else {
 						constraintKeys[0] = "unconstrained";
 					}
+					constraintKeys.push(numsClusters[i]);
 					if (constraintMap[constraintKeys.toString()]) {
 						constraintMap[constraintKeys.toString()].indices.push(i);
 					} else {
-						constraintMap[constraintKeys.toString()] = {indices: [i], nodes: constraintNodes};
+						constraintMap[constraintKeys.toString()] = {indices: [i], nodes: constraintNodes, numClusters: numsClusters[i]};
 					}
 				}
 				var constraints = [];
@@ -637,12 +727,12 @@ app.controller("doubleDutchCtrl", function($scope, $modal, $log) {
 				}
 				return constraints;
 			};
-			var makeClusterGrid = function(lNodes, numFactors, numClusters, kMeansCluster, constraints) {
+			var makeClusterGrid = function(lNodes, numFactors, kMeansCluster, constraints) {
 				var clusterGrid = [];
 				var clusters;
 				var m, n;
 	    		for (m = 0; m < constraints.length; m++) {
-	    			clusters = kMeansCluster(lNodes, numClusters, constraints[m].nodes);
+	    			clusters = kMeansCluster(lNodes, constraints[m].numClusters, constraints[m].nodes);
 	    			for (n = 0; n < constraints[m].indices.length; n++) {
 	    				clusterGrid[constraints[m].indices[n]] = clusters;
 	    			}
@@ -663,14 +753,15 @@ app.controller("doubleDutchCtrl", function($scope, $modal, $log) {
 				}
 				return totalClusteringCost;
 			};
-			var constraints = composeConstraints(fNodes);
+			numsClusters = processNumsClusters(numsClusters, fNodes.length);
+			var constraints = composeConstraints(fNodes, numsClusters);
 			var clusterGrid;
 			var clusteringCost;
 			var bestClusterGrid;
 			var bestClusteringCost = -1;
 	    	var clusteringCount = 0;
 	    	while (clusteringCount <= numClusterings) {
-	    		clusterGrid = makeClusterGrid(lNodes, fNodes.length, numClusters, this.kMeansCluster, constraints);
+	    		clusterGrid = makeClusterGrid(lNodes, fNodes.length, this.kMeansCluster, constraints);
 	    		clusteringCost = calculateClusteringCost(clusterGrid, constraints, sortLevelsByCost);
 		    	if (bestClusteringCost < 0 || clusteringCost < bestClusteringCost) {
 		    		bestClusteringCost = clusteringCost;
@@ -729,8 +820,7 @@ app.controller("doubleDutchCtrl", function($scope, $modal, $log) {
 		    				bestLevelCost = levelCost;
 		    			}
 		    		}
-		    		if (!clusters[bestJ].isConstrained() 
-			    			|| clusters[bestJ].lNodes[0].bioDesign !== lNodes[j].bioDesign) {
+		    		if (!clusters[bestJ].isBioDesignConstraint(lNodes[k].bioDesign)) {
 				    	clusters[bestJ].lNodes.push(lNodes[k]);
 				    }
 		    	}
@@ -793,58 +883,119 @@ app.controller("doubleDutchCtrl", function($scope, $modal, $log) {
 		    	var i, j;
 		    	for (i = 0; i < fNodes.length; i++) {
 		    		clusterGrid[i] = [];
-		    		if (fNodes[i].levelTargets.length == 0) {
-		    			clusterGrid[i].push(new lCluster([], 0));
-		    			clusterGrid[i].push(new lCluster([], 0));
-		    		} else {
-			    		for (j = 0; j < fNodes[i].levelTargets.length; j++) {
+		    		for (j = 0; j < fNodes[i].levelTargets.length; j++) {
+		    			if (fNodes[i].levelTargets.length == 0) {
+			    			clusterGrid[i][0] = new lCluster([], 0);
+			    			clusterGrid[i][1] = new lCluster([], 0);
+			    		} else {
 			    			clusterGrid[i][j] = new lCluster([], fNodes[i].levelTargets[j]);
 			    		}
-			    		var constraintCost;
-						var bestConstraintCost;
-						var bestJ;
-			    		for (n = 0; n < fNodes[i].children.length; n++) {
-							bestConstraintCost = -1;
-							if (fNodes[i].children[n].isConstraint) {
-								for (j = 0; j < clusterGrid[i].length; j++) {
-									constraintCost = fNodes[i].children[n].cost(clusterGrid[i][j].target);
-									if (bestConstraintCost < 0 || constraintCost < bestConstraintCost) {
-										bestConstraintCost = constraintCost;
-										bestJ = j;
-									}
+		    		}
+		    	}
+		    	return clusterGrid;
+			};
+			var makeConstraintGrid = function(fNodes) {
+				var constraintGrid = [];
+				var i, j;
+		    	for (i = 0; i < fNodes.length; i++) {
+		    		constraintGrid[i] = [];
+	    			for (j = 0; j < fNodes[i].children.length; j++) {
+	    				if (fNodes[i].children[j].isConstraint) {
+	    					constraintGrid[i].push(fNodes[i].children[j]);
+	    				}
+	    			}
+	    		}
+	    		return constraintGrid;
+			};
+			var constrainClusterGrid = function(clusterGrid, constraintGrid) {
+				var clusters;
+				var constraintNodes;
+				var bestJ;
+				var targetConstraintToCluster = function(constraintNode, clusters) {
+					var targetCost;
+					var bestTargetCost = -1;
+					var bestJ = -1;
+					var j;
+					for (j = 0; j < clusters.length; j++) {
+    					targetCost = constraintNode.cost(clusters[j].target);
+			    		if (bestTargetCost < 0 || targetCost < bestTargetCost) {
+			    			bestTargetCost = targetCost;
+			    			bestJ = j;
+			    		}
+					}
+					return bestJ;
+				};
+				var unconstrainedClusters = [];
+				var unusedConstraints = [];
+		    	var i, j, c;
+		    	for (i = 0; i < clusterGrid.length; i++) {
+		    		clusters = clusterGrid[i];
+		    		constraintNodes = constraintGrid[i];
+		    		clusterGrid[i] = [];
+		    		constraintGrid[i] = [];
+			    	while (clusters.length > 0 && constraintNodes.length > 0) {
+		    			for (c = 0; c < constraintNodes.length; c++) {
+		    				bestJ = targetConstraintToCluster(constraintNodes[c], clusters);
+							if (clusters[bestJ].isConstrained()) {
+								if (constraintNodes[c].cost(clusters[bestJ].target) 
+										< clusters[bestJ].lNodes[0].cost(clusters[bestJ].target)) {
+									unusedConstraints.push(clusters[bestJ].lNodes[0]);
+									clusters[bestJ].lNodes[0] = constraintNodes[c];
+								} else {
+									unusedConstraints.push(constraintNodes[c]);
 								}
-								if (!clusterGrid[i][bestJ].isConstrained()) {
-									clusterGrid[i][bestJ].lNodes[0] = fNodes[i].children[n];
-								}
+							} else {
+								clusters[bestJ].lNodes[0] = constraintNodes[c];
 							}
-						}
+		    			}
+		    			for (j = 0; j < clusters.length; j++) {
+			    			if (clusters[j].isConstrained()) {
+			    				clusterGrid[i].push(clusters[j]);
+			    			} else {
+			    				unconstrainedClusters.push(clusters[j]);
+			    			}
+				    	}
+				    	clusters = unconstrainedClusters;
+			    		constraintNodes = unusedConstraints;
+				    	unusedConstraints = [];
+						unconstrainedClusters = [];
+			    	}
+		    		for (j = 0; j < clusters.length; j++) {
+		    			clusterGrid[i].push(clusters[j]);
+		    		}		
+		    		for (j = 0; j < constraintNodes.length; j++) {
+		    			bestJ = targetConstraintToCluster(constraintNodes[j], clusterGrid[i]);
+		    			clusterGrid[i][bestJ].lNodes.push(constraintNodes[j]);
 			    	}
 		    	}
 		    	return clusterGrid;
 			};
 			var clusterGrid = initializeClusterGrid(fNodes);
-			lNodes.sort(function(a, b){return a.parameter.value - b.parameter.value});
-			var midPoints;
+			var constraintGrid = makeConstraintGrid(fNodes);
+			clusterGrid = constrainClusterGrid(clusterGrid, constraintGrid);
+			var levelCost;
+			var bestLevelCost;
+			var bestJ;
 			var i, j, k;
-			for (i = 0; i < clusterGrid.length; i++) {
-				clusterGrid[i].sort(function(a, b){return a.target - b.target});
-				midPoints = [];
-				for (j = 0; j < clusterGrid[i].length - 1; j++) {
-					midPoints[j] = (clusterGrid[i][j].target + clusterGrid[i][j + 1].target)/2;
-				}
-				j = 0;
-				for (k = 0; k < lNodes.length; k++) {
-					while (lNodes[k].parameter.value >= midPoints[j] && j < midPoints.length) {
-						j++;
+			for (k = 0; k < lNodes.length; k++) {
+				for (i = 0; i < clusterGrid.length; i++) {
+					bestLevelCost = - 1;
+					for (j = 0; j < clusterGrid[i].length; j++) {
+						levelCost = lNodes[k].cost(clusterGrid[i][j].target);
+						if (bestLevelCost < 0 || levelCost < bestLevelCost) {
+							bestLevelCost = levelCost;
+							bestJ = j;
+						}
 					}
-					if (!clusterGrid[i][j].isConstrained()) {
-						clusterGrid[i][j].lNodes.push(lNodes[k]);
+					if (!clusterGrid[i][bestJ].isBioDesignConstraint(lNodes[k].bioDesign)) {
+						clusterGrid[i][bestJ].lNodes.push(lNodes[k]);
 					}
 				}
 			}
 			for (i = 0; i < clusterGrid.length; i++) {
 				for (j = 0; j < clusterGrid[i].length; j++) {
 					clusterGrid[i][j].calculateLevelCosts(sortLevelsByCost);
+					clusterGrid[i][j].applyConstraint();
 				}
 			}
 			return clusterGrid;
@@ -1937,74 +2088,156 @@ app.controller("doubleDutchCtrl", function($scope, $modal, $log) {
   		flNode.remove();
   	}
 
-  	$scope.validateFLDNodes = function() {
-  		var validateLNodesPerFNodes = function(fNodes) {
-			var i;
-			for (i = 0; i < fNodes.length; i++) {
-				if (fNodes[i].children.length < 1) {
-					alertUser("md", "Error", "Factorial design does not at least one level associated with each factor. "
-					+ "Upload parameterized features and select 'Assign Levels' or drag levels from the rightmost column to the center column.");
-					return false;
-				}
-			}
-			return true;
-		};
-		if ($scope.fldNodes.length == 0) {
-  			alertUser("md", "Error", "Factorial design contains no factors. Upload one or more coding sequences and drag a factor from the leftmost column " 
-					+ "to the center column.");
-  			return false;
-  		} else {
-  			return validateLNodesPerFNodes($scope.fldNodes);
-  		}
-  	};
-
   	$scope.downloadAssignment = function() {
-  		var outputData = [[]];
-  		if ($scope.validateFLDNodes()) {
-  			var i, j;
-  			for (i = 0; i < $scope.fldNodes.length; i++) {
-  				outputData[0][i + i] = $scope.fldNodes[i].bioDesign.name;
-  				outputData[0][i + i + 1] = $scope.fldNodes[i].bioDesign.name + " Levels";
-  				$scope.fldNodes[i].children.sort(function(a, b){return a.parameter.value - b.parameter.value});
-  				for (j = 0; j < $scope.fldNodes[i].children.length; j++) {
+  		var makeOutputData = function(fNodes, assignmentCount, assignmentTime, weights, solnCost, isAssignmentExhaustive) {
+			var outputData = [[]];
+			var i, j;
+			for (i = 0; i < fNodes.length; i++) {
+  				outputData[0][i + i] = fNodes[i].bioDesign.name;
+  				outputData[0][i + i + 1] = fNodes[i].bioDesign.name + " Levels";
+  				fNodes[i].children.sort(function(a, b){return a.parameter.value - b.parameter.value});
+  				for (j = 0; j < fNodes[i].children.length; j++) {
   					if (!outputData[j + 1]) {
   						outputData[j + 1] = [];
   					}
-  					outputData[j + 1][i + i] = $scope.fldNodes[i].children[j].bioDesign.name;
-  					outputData[j + 1][i + i + 1] = $scope.fldNodes[i].children[j].parameter.value;
+  					outputData[j + 1][i + i] = fNodes[i].children[j].bioDesign.name;
+  					outputData[j + 1][i + i + 1] = fNodes[i].children[j].parameter.value;
   				}
   			}
-  			if ($scope.isAssigning) {
-  				if ($scope.isAssignmentExhaustive) {
-  					outputData[0].push("# of Pretrials");
-  				} else {
-  					outputData[0].push("# of Trials");
+  			if (isAssignmentExhaustive) {
+				outputData[0].push("# of Pretrials");
+			} else {
+				outputData[0].push("# of Trials");
+			}
+		    outputData[0].push("Assignment Time (min)");
+	        outputData[0].push("Level Matching Weight");
+	        outputData[0].push("Pathway Homology Weight");
+	        outputData[0].push("Feature Reuse Weight");
+	        outputData[0].push("Level Matching Cost");
+	        outputData[0].push("Pathway Homology Cost");
+	        outputData[0].push("Feature Reuse Cost");
+	        outputData[0].push("Total Assignment Cost");
+	        outputData[0].push("Weighted Total Assignment Cost");
+	        outputData[1].push(assignmentCount);
+	        outputData[1].push(assignmentTime);
+	        outputData[1].push(weights.levelMatch);
+	        outputData[1].push(weights.homology);
+	        outputData[1].push(weights.reuse);
+	        outputData[1].push(solnCost.levelMatch);
+	        outputData[1].push(solnCost.homology);
+	        outputData[1].push(solnCost.reuse);
+	        outputData[1].push(solnCost.total);
+	        outputData[1].push(solnCost.weightedTotal);
+	        return outputData;
+		};
+  		var flValidator = new FLValidator($scope.fldNodes, $scope.lNodes);
+  		if (!flValidator.areFNodesValid()) {
+  			alertUser("md", "Error", "Factorial design contains no factors. Upload one or more coding sequences and drag a factor from the leftmost column " 
+					+ "to the center column.");
+  			return [[]];
+  		} else if (!flValidator.areFLNodesValid()) {
+  			alertUser("md", "Error", "Factorial design does not have at least one level associated with each factor. "
+				+ "Upload parameterized features and select 'Assign Levels' or drag levels from the rightmost column to the center column.");
+  			return [[]];
+  		} else if ($scope.isAssigning) {
+  			if ($scope.isAssignmentExhaustive) {
+  				return makeOutputData($scope.fldNodes, $scope.annealingOptions.numAnnealings, $scope.assignmentTime, 
+		  				$scope.weights, $scope.bestSolnCost, $scope.isAssignmentExhaustive);
+  			} else {
+	  			return makeOutputData($scope.fldNodes, $scope.assignmentCount, $scope.assignmentTime, 
+	  					$scope.weights, $scope.bestSolnCost, $scope.isAssignmentExhaustive);
+	  		}
+		} else {
+			flValidator.reconcileFLNodes();
+			var clusterer = new lClusterer();
+			var clusterGrid; 
+			if ($scope.clusteringOptions.autoTarget) {
+				var numsClusters = [];
+  				for (i = 0; i < $scope.fldNodes.length; i++) {
+  					numsClusters[i] = $scope.fldNodes[i].children.length;
   				}
-			    outputData[0].push("Assignment Time (min)");
-		        outputData[0].push("Level Matching Weight");
-		        outputData[0].push("Pathway Homology Weight");
-		        outputData[0].push("Feature Reuse Weight");
-		        outputData[0].push("Level Matching Cost");
-		        outputData[0].push("Pathway Homology Cost");
-		        outputData[0].push("Feature Reuse Cost");
-		        outputData[0].push("Total Assignment Cost");
-		        outputData[1].push($scope.assignmentCount);
-		        outputData[1].push($scope.assignmentTime);
-		        outputData[1].push($scope.weights.levelMatch);
-		        outputData[1].push($scope.weights.homology);
-		        outputData[1].push($scope.weights.reuse);
-		        outputData[1].push($scope.bestSolnCost.levelMatch);
-		        outputData[1].push($scope.bestSolnCost.homology);
-		        outputData[1].push($scope.bestSolnCost.reuse);
-		        outputData[1].push($scope.bestSolnCost.total);
-		    }
-  		}
-  		return outputData;
+  				clusterGrid = clusterer.lfMeansCluster($scope.fldNodes, $scope.lNodes, numsClusters, 
+						$scope.clusteringOptions.numClusterings);
+  				for (i = 0; i < clusterGrid.length; i++) {
+					$scope.fldNodes[i].levelTargets = [];
+					for (j = 0; j < clusterGrid[i].length; j++) {
+						$scope.fldNodes[i].levelTargets[j] = parseFloat(clusterGrid[i][j].target.toFixed(2));
+					}
+				}
+  			}
+  			var constraintRecord = {};
+			var i, j;
+			for (i = 0; i < $scope.fldNodes.length; i++) { 
+				for (j = 0; j < $scope.fldNodes[i].children.length; j++) {
+					if ($scope.fldNodes[i].children[j].isConstraint) {
+						constraintRecord[hash($scope.fldNodes[i].children[j])] = true;
+					} else {
+						$scope.fldNodes[i].children[j].isConstraint = true;
+					}
+				}
+			} 
+  			clusterGrid = clusterer.targetedCluster($scope.fldNodes, $scope.lNodes);
+  			for (i = 0; i < $scope.fldNodes.length; i++) { 
+				for (j = 0; j < $scope.fldNodes[i].children.length; j++) {
+					if (!constraintRecord[hash($scope.fldNodes[i].children[j])]) {
+						$scope.fldNodes[i].children[j].isConstraint = false;
+					}
+				}
+			}
+			var validateClusterGrid = function(clusterGrid) {
+				var invalidClusters = [];
+				var i, j;
+				for (i = 0; i < clusterGrid.length; i++) {
+					for (j = 0; j < clusterGrid[i].length; j++) {
+						if (clusterGrid[i][j].isEmpty()) {
+							invalidClusters.push(clusterGrid[i][j]);
+						}
+					}
+				}
+				if (invalidClusters.length > 0) {
+					var clusterErrorMessage = "";
+					for (j = 0; j < invalidClusters.length; j++) {
+						clusterErrorMessage += ", " + invalidClusters[j].target.toFixed(2);
+					}
+					clusterErrorMessage = clusterErrorMessage.substring(2);
+					clusterErrorMessage += "<br><br>There are no available levels that cluster around the above targets. Change these targets or upload additional "
+							+ "features with parameters that are close to them in magnitude.";
+					alertUser("md", "Error", clusterErrorMessage);
+					return false;
+				} else {
+					return true;
+				}
+			};
+  			if (validateClusterGrid(clusterGrid)) {
+  				var soln = new flSolution(clusterGrid);
+  				for (i = 0; i < $scope.fldNodes.length; i++) {
+					$scope.fldNodes[i].children = [];
+				}
+  				var k;
+  				for (i = 0; i < soln.levelSelections.length; i++) {
+					for (j = 0; j < soln.levelSelections[i].length; j++) {
+						k = soln.levelSelections[i][j];
+						$scope.fldNodes[i].children[j] = soln.clusterGrid[i][j].lNodes[k];
+					}
+				}
+  				return makeOutputData($scope.fldNodes, 0, 0, $scope.weights, soln.calculateCost($scope.weights), 
+	  					$scope.isAssignmentExhaustive);
+  			} else {
+  				return [[]];
+  			}
+		}
   	};
 
   	$scope.generateDesigns = function() {
   		var outputData = [[]];
-  		if ($scope.validateFLDNodes()) {
+  		flValidator = new FLValidator($scope.fldNodes, $scope.lNodes);
+  		if (!flValidator.areFNodesValid()) {
+  			alertUser("md", "Error", "Factorial design contains no factors. Upload one or more coding sequences and drag a factor from the leftmost column " 
+					+ "to the center column.");
+  		} else if (!flValidator.areFLNodesValid()) {
+  			alertUser("md", "Error", "Factorial design does not have at least one level associated with each factor. "
+				+ "Upload parameterized features and select 'Assign Levels' or drag levels from the rightmost column to the center column.");
+  		} else {
   			var i;
   			if ($scope.selectedTemplate.isEmpty()
 	  				&& ($scope.selectedTemplate.type === $scope.doeTemplater.doeTypes.fullFactorial 
@@ -2515,36 +2748,6 @@ app.controller("doubleDutchCtrl", function($scope, $modal, $log) {
 		if ($scope.isAssigning) {
 			clusterGrid = $scope.bestSoln.clusterGrid;
 		} else {
-			var validateLevelsPerFactor = function(lNodes, fNodes, levelsPerFactor) {
-				var levelRecord = {};
-				var levelCount = 0;
-				var j;
-				for (j = 0; j < lNodes.length; j++) {
-					if (!levelRecord[hash(lNodes[j].parameter.value)]) {
-						levelCount++;
-						if (levelCount >= levelsPerFactor) {
-							return true;
-						}
-						levelRecord[hash(lNodes[j].parameter.value)] = true;
-					}
-				}
-				var constraintCount;
-				var i;
-				for (i = 0; i < fNodes.length; i++) {
-					constraintCount = 0;
-					for (j = 0; j < fNodes[i].children.length; j++) {
-						if (fNodes[i].children[j].isConstraint && !levelRecord[hash(fNodes[i].children[j].parameter.value)]) {
-							constraintCount++;
-						}
-					}
-					if (constraintCount + levelCount < levelsPerFactor) {
-						alertUser("md", "Error", "The number of available unique levels is not greater than or equal to the number of levels per factor that "
-							+ "you've selected for your design. Select a lower number of levels per factor or upload additional uniquely parameterized features.");
-						return false;
-					}
-				}
-				return true;
-			};
 			var validateClusterGrid = function(clusterGrid) {
 				var invalidClusters = [];
 				var i, j;
@@ -2571,11 +2774,15 @@ app.controller("doubleDutchCtrl", function($scope, $modal, $log) {
 			};
 			$scope.levelsPerFactor = validateNumericInput($scope.levelsPerFactor, $scope.minLevelsPerFactor, $scope.maxLevelsPerFactor, $scope.levelsPerFactorStep, 
 					$scope.defaultLevelsPerFactor);
+			flValidator = new FLValidator($scope.fldNodes, $scope.lNodes);
 			var i, j;
-			if ($scope.fldNodes.length == 0) {
+			if (!flValidator.areFNodesValid()) {
 				alertUser("md", "Error", "Experimental design contains no factors. Upload one or more coding sequences and drag a factor from the leftmost column "
 						+ "to the center column.");
-			} else if (!$scope.clusteringOptions.autoTarget || validateLevelsPerFactor($scope.lNodes, $scope.levelsPerFactor)) {
+			} else if ($scope.clusteringOptions.autoTarget && !flValidator.areLNodesValid($scope.levelsPerFactor)) {
+				alertUser("md", "Error", "The number of available unique levels is not greater than or equal to the number of levels per factor that "
+						+ "you've selected for your design. Select a lower number of levels per factor or upload additional uniquely parameterized features.");
+			} else {
 				var clusterer = new lClusterer();
 				if ($scope.clusteringOptions.autoTarget) {
 					clusterGrid = clusterer.lfMeansCluster($scope.fldNodes, $scope.lNodes, $scope.levelsPerFactor, 
@@ -2602,16 +2809,18 @@ app.controller("doubleDutchCtrl", function($scope, $modal, $log) {
 		if ($scope.isAssigning) {
 			var solver = new flSolver();
 			var soln;
+			var timer = new Timer($scope.timeout);
 			if ($scope.isAssignmentExhaustive) {
-				var timer = new Timer($scope.timeout);
 				if (isStarting) {
 					soln = solver.boundSolve(clusterGrid, $scope.annealingOptions, $scope.weights, timer);
 				} else {
 					soln = solver.boundSolve(clusterGrid, $scope.annealingOptions, $scope.weights, timer, $scope.bestSoln.levelSelections);
 				}
-				$scope.assignmentTime += timer.getElapsedTime();
 			} else {
 				soln = solver.annealSolve(clusterGrid, $scope.annealingOptions, $scope.weights);
+			}
+			$scope.assignmentTime += timer.getElapsedTime();
+			if (!$scope.isAssignmentExhaustive) {
 				$scope.assignmentCount += $scope.annealingOptions.numAnnealings;
 			}
 			var solnCost = soln.calculateCost($scope.weights);
@@ -2629,8 +2838,8 @@ app.controller("doubleDutchCtrl", function($scope, $modal, $log) {
 							$scope.fldNodes[i].children[j] = $scope.bestSoln.clusterGrid[i][j].lNodes[k];
 						} else {
 							$scope.fldNodes[i].children[j] = $scope.bestSoln.clusterGrid[i][j].lNodes[k].copy();
+							$scope.fldNodes[i].children[j].isConstraintShown = true;
 						}
-						$scope.fldNodes[i].children[j].isConstraintShown = true;
 					}
 				}
 			}
@@ -2640,11 +2849,11 @@ app.controller("doubleDutchCtrl", function($scope, $modal, $log) {
 	$scope.quitAssigning = function() {
 		$scope.isAssigning = false;
 		if ($scope.isAssignmentExhaustive) {
-			$scope.assignmentTime = 0;
 			$scope.bestSoln.isOptimal = false;
 		} else {
 			$scope.assignmentCount = 0;
 		}
+		$scope.assignmentTime = 0;
 		var i;
 		for (i = 0; i < $scope.fldNodes.length; i++) {
 			if ($scope.clusteringOptions.autoTarget) {
