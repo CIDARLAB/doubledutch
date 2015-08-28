@@ -44,7 +44,7 @@ app.controller('targetWindowCtrl', function ($scope, $modalInstance, items) {
   }
 
   $scope.removeTarget = function() {
-    if ($scope.levelTargets.length > 2) {
+    if ($scope.levelTargets.length > 1) {
       $scope.levelTargets.pop();
     }
   }
