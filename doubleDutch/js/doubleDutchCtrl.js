@@ -867,8 +867,8 @@ app.controller("doubleDutchCtrl", function($scope, $modal, $log) {
 		    		clusterGrid[i] = [];
 		    		for (j = 0; j < fNodes[i].levelTargets.length; j++) {
 		    			if (fNodes[i].levelTargets.length == 0) {
-			    			clusterGrid[i][0] = new lCluster([], 0);
-			    			clusterGrid[i][1] = new lCluster([], 0);
+			    			clusterGrid[i][0] = new lCluster([], $scope.minTarget);
+			    			clusterGrid[i][1] = new lCluster([], $scope.maxTarget);
 			    		} else {
 			    			clusterGrid[i][j] = new lCluster([], fNodes[i].levelTargets[j]);
 			    		}
@@ -2023,8 +2023,8 @@ app.controller("doubleDutchCtrl", function($scope, $modal, $log) {
 		    size: size,
 		    resolve: {
 	        	items: function() {
-	          		return {levelTargets: fNode.levelTargets, autoTarget: $scope.clusteringOptions.autoTarget, isAssigning: $scope.isAssigning,
-		          			minTarget: $scope.minTarget, maxTarget: $scope.maxTarget};
+	          		return {fNodes: $scope.fldNodes, levelTargets: fNode.levelTargets, autoTarget: $scope.clusteringOptions.autoTarget, 
+		          			isAssigning: $scope.isAssigning, minTarget: $scope.minTarget, maxTarget: $scope.maxTarget};
 	        	}
 	      	}
 	    });
@@ -2061,7 +2061,6 @@ app.controller("doubleDutchCtrl", function($scope, $modal, $log) {
 					$scope.fldNodes[i].isTargetShown = true;
 				} else if (!$scope.isAssigning) {
 					$scope.fldNodes[i].isTargetShown = false;
-					$scope.fldNodes[i].levelTargets = [];
 				}
 			}
 	    });
@@ -2125,17 +2124,22 @@ app.controller("doubleDutchCtrl", function($scope, $modal, $log) {
   	$scope.downloadAssignment = function() {
   		var makeOutputData = function(fNodes, assignmentCount, assignmentTime, weights, solnCost, isAssignmentExhaustive) {
 			var outputData = [[]];
-			var i, j;
+			var i, j, t;
 			for (i = 0; i < fNodes.length; i++) {
-  				outputData[0][i + i] = fNodes[i].bioDesign.name;
-  				outputData[0][i + i + 1] = fNodes[i].bioDesign.name + " Levels";
+  				outputData[0].push(fNodes[i].bioDesign.name);
+  				outputData[0].push(fNodes[i].bioDesign.name + " Levels");
+  				outputData[0].push(fNodes[i].bioDesign.name + " Level Targets");
   				fNodes[i].children.sort(function(a, b){return a.parameter.value - b.parameter.value});
+  				fNodes[i].levelTargets.sort(function(a, b){return a - b});
   				for (j = 0; j < fNodes[i].children.length; j++) {
   					if (!outputData[j + 1]) {
   						outputData[j + 1] = [];
   					}
-  					outputData[j + 1][i + i] = fNodes[i].children[j].bioDesign.name;
-  					outputData[j + 1][i + i + 1] = fNodes[i].children[j].parameter.value;
+  					outputData[j + 1].push(fNodes[i].children[j].bioDesign.name);
+  					outputData[j + 1].push(fNodes[i].children[j].parameter.value);
+  				}
+  				for (t = 0; t < fNodes[i].levelTargets.length; t++) {
+  					outputData[t + 1].push(fNodes[i].levelTargets[t]);
   				}
   			}
   			if (isAssignmentExhaustive) {
@@ -2893,7 +2897,6 @@ app.controller("doubleDutchCtrl", function($scope, $modal, $log) {
 		for (i = 0; i < $scope.fldNodes.length; i++) {
 			if ($scope.clusteringOptions.autoTarget) {
 				$scope.fldNodes[i].isTargetShown = false;
-				$scope.fldNodes[i].levelTargets = [];
 			} else {
 				$scope.fldNodes[i].isTargetShown = true;
 			}

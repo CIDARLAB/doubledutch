@@ -1,4 +1,5 @@
 app.controller('targetWindowCtrl', function ($scope, $modalInstance, items) {
+  $scope.fNodes = items.fNodes;
   $scope.autoTarget = items.autoTarget;
   $scope.isAssigning = items.isAssigning;
   $scope.minTarget = items.minTarget;
@@ -8,8 +9,8 @@ app.controller('targetWindowCtrl', function ($scope, $modalInstance, items) {
   $scope.initialLevelTargets;
   $scope.levelTargets;
   if (items.levelTargets.length == 0) {
-    $scope.initialLevelTargets = [$scope.minTarget, $scope.minTarget];
-    $scope.levelTargets = [{value: $scope.minTarget}, {value: $scope.minTarget}];
+    $scope.initialLevelTargets = [$scope.minTarget, $scope.maxTarget];
+    $scope.levelTargets = [{value: $scope.minTarget}, {value: $scope.maxTarget}];
   } else {
     $scope.initialLevelTargets = items.levelTargets;
     $scope.levelTargets = [];
@@ -19,18 +20,35 @@ app.controller('targetWindowCtrl', function ($scope, $modalInstance, items) {
     }
   }
 
+  $scope.copyToAllTargets = function() {
+    var defaultLevelTarget;
+    var i, j;
+    for (i = 0; i < $scope.fNodes.length; i++) {
+      $scope.fNodes[i].levelTargets = [];
+      for (j = 0; j < $scope.levelTargets.length; j++) {
+        if (j < $scope.initialLevelTargets.length) {
+          defaultLevelTarget = $scope.initialLevelTargets[j];
+        } else {
+          defaultLevelTarget = $scope.minTarget;
+        }
+        $scope.fNodes[i].levelTargets[j] = validateNumericInput($scope.levelTargets[j].value, $scope.minTarget, 
+          $scope.maxTarget, $scope.targetStep, defaultLevelTarget);
+      }
+    }
+  };
+
   $scope.ok = function() {
     var levelTargets = [];
+    var defaultLevelTarget;
     var i;
     for (i = 0; i < $scope.levelTargets.length; i++) {
-      var defaultLevelTarget;
       if (i < $scope.initialLevelTargets.length) {
         defaultLevelTarget = $scope.initialLevelTargets[i];
       } else {
         defaultLevelTarget = $scope.minTarget;
       }
-      levelTargets.push(validateNumericInput($scope.levelTargets[i].value, $scope.minTarget, $scope.maxTarget, 
-          $scope.targetStep, defaultLevelTarget));
+      levelTargets[i] = validateNumericInput($scope.levelTargets[i].value, $scope.minTarget, $scope.maxTarget, 
+          $scope.targetStep, defaultLevelTarget);
     }
     $modalInstance.close(levelTargets);
   };
