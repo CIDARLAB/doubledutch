@@ -1930,7 +1930,7 @@ app.controller("doubleDutchCtrl", function($scope, $modal, $log) {
 	$scope.featNameDict = {};
 	$scope.numFeatsUploaded;
 	$scope.numModsUploaded;
-	$scope.displayNumUploads = "display:none";
+	$scope.isNumUploadsShown = false;
 
 	$scope.doeTemplater = new doeTemplater();
 	$scope.doeTemplates = [$scope.doeTemplater.makeBoxBehnken(0), 
@@ -2515,7 +2515,7 @@ app.controller("doubleDutchCtrl", function($scope, $modal, $log) {
 	    		Papa.parse($scope.featFiles[i], 
 	    			{i: i, dynamicTyping: true, complete: parseFile});
 	    	}
-	    	$scope.displayNumUploads = "";
+	    	$scope.isNumUploadsShown = true;
 		}
     };
 

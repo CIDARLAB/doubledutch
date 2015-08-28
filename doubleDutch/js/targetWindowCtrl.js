@@ -5,6 +5,7 @@ app.controller('targetWindowCtrl', function ($scope, $modalInstance, items) {
   $scope.minTarget = items.minTarget;
   $scope.maxTarget = items.maxTarget;
   $scope.targetStep = 0.01;
+  $scope.hasCopied = false;
 
   $scope.initialLevelTargets;
   $scope.levelTargets;
@@ -35,6 +36,7 @@ app.controller('targetWindowCtrl', function ($scope, $modalInstance, items) {
           $scope.maxTarget, $scope.targetStep, defaultLevelTarget);
       }
     }
+    $scope.hasCopied = true;
   };
 
   $scope.ok = function() {

@@ -25,7 +25,7 @@
         <br>
         <button type="button" class="btn btn-primary" ng-click="uploadFeatures()" ng-disabled="isAssigning">Upload Components</button>
         <br><br>
-        <p style="{{displayNumUploads}}">{{numFeatsUploaded | number:0}} components uploaded into {{numModsUploaded | number:0}} modules.</p>
+        <p ng-show="isNumUploadsShown">{{numFeatsUploaded | number:0}} components uploaded into {{numModsUploaded | number:0}} modules.</p>
       </div>
       <div class="col-sm-4">
         <label style="font-size:20pt">DOE Template Upload (.csv)</label>
@@ -195,6 +195,8 @@
               <br>
           </li>
         </ul>
+        <br>
+        <p ng-show="hasCopied">Level targets succesfully copied to all other factors.</p>
       </div>
       <div class="modal-footer">
           <button ng-hide="autoTarget" ng-disabled="isAssigning" class="pull-left btn btn-primary" ng-click="copyToAllTargets()">Copy to All</button>
