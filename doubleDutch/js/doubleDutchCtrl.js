@@ -139,6 +139,7 @@ app.controller("doubleDutchCtrl", function($scope, $modal, $log) {
 		this.isTargetShown = false;
 		this.isToggleShown = false;
 		this.isConstraintShown = false;
+		this.isMoveTopShown = true;
 		this.children = [];
 		this.copy = function() {
 			return new fNode(this.bioDesign);
@@ -157,6 +158,7 @@ app.controller("doubleDutchCtrl", function($scope, $modal, $log) {
 		this.isToggleShown = false;
 		this.isConstraintShown = false;
 		this.isConstraint = false;
+		this.isMoveTopShown = true;
 		this.constraintIcon = "glyphicon glyphicon-star-empty";
 		this.constraintColor = "pull-right btn btn-default btn-xs";
 		this.children = [];
@@ -1989,7 +1991,20 @@ app.controller("doubleDutchCtrl", function($scope, $modal, $log) {
 			lNode.constraintIcon = "glyphicon glyphicon-star";
 			lNode.constraintColor = "pull-right btn btn-success btn-xs";
 		}
-	}
+	};
+
+	$scope.moveToTop = function(flNode) {
+		var nodeIndex;
+		if (flNode.isFNode) {
+			nodeIndex = $scope.fNodes.indexOf(flNode);
+			$scope.fNodes.splice(nodeIndex, 1);
+			$scope.fNodes.unshift(flNode);
+		} else {
+			nodeIndex = $scope.lNodes.indexOf(flNode);
+			$scope.lNodes.splice(nodeIndex, 1);
+			$scope.lNodes.unshift(flNode);
+		}
+	}; 
 
 	$scope.viewTargets = function(size, fNode) {
 		var modalInstance = $modal.open({
@@ -2081,7 +2096,8 @@ app.controller("doubleDutchCtrl", function($scope, $modal, $log) {
 		    	} else {
 		    		event.source.nodeScope.$modelValue.isConstraintShown = true;
 		    	}
-	    		if (event.dest.nodesScope.$nodeScope != null) {
+		    	event.source.nodeScope.$modelValue.isMoveTopShown = false;
+	    		if (event.dest.nodesScope.$nodeScope) {
 	    			event.dest.nodesScope.$nodeScope.$modelValue.isToggleShown = true;
 	    		}
     			event.source.nodesScope.$modelValue.splice(event.source.index, 0, nodeCopy);

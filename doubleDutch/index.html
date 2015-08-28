@@ -138,6 +138,7 @@
           <a class="pull-right btn btn-primary btn-xs" data-nodrag ng-click="addFeatures('md', node)" ng-hide="isAssigning"><span class="glyphicon glyphicon-pencil"></span></a>
           <a class="pull-right btn btn-primary btn-xs" ng-show="node.isTargetShown" data-nodrag ng-click="viewTargets('md', node)"><span class="glyphicon glyphicon-screenshot"></span></a>
           <a class="{{node.constraintColor}}" ng-show="node.isConstraintShown" ng-disabled="isAssigning" data-nodrag ng-click="toggleConstraint(node)"><span class="{{node.constraintIcon}}"></span></a>
+          <a class="pull-right btn btn-warning btn-xs" ng-show="node.isMoveTopShown" data-nodrag ng-click="moveToTop(node)"><span class="glyphicon glyphicon-arrow-up"></span></a>
 			<label style="{{node.labelColor}}">Module</label><br>
 			<input type="text" style="height:25px" ng-model="node.bioDesign.module.name">
       <form ng-hide="node.isFNode">
