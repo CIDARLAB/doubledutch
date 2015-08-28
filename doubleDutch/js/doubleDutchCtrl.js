@@ -267,10 +267,7 @@ app.controller("doubleDutchCtrl", function($scope, $modal, $log) {
 			}
 			return clusterCopy;
 		};
-		this.calculateLevelCosts = function(sortLevelsByCost) {
-			if (arguments.length < 1) {
-				sortLevelsByCost = false;
-			}
+		this.calculateLevelCosts = function() {
 			this.levelCosts = [];
 	    	var maxCost = -1;
 	    	var minCost = -1;
@@ -291,26 +288,11 @@ app.controller("doubleDutchCtrl", function($scope, $modal, $log) {
 					this.levelCosts[i] = (this.levelCosts[i] - minCost)/(maxCost - minCost);
 				}
 			}
-			if (sortLevelsByCost) {
-				var costDict = {};
-				for (i = 0; i < this.levelCosts.length; i++) {
-					this.levelCosts.splice(i, 1, {value: this.levelCosts[i]});
-					costDict[hash(this.levelCosts[i])] = this.lNodes[i];
-				}
-				this.levelCosts.sort(function(a, b){return a.value - b.value});
-				for (i = 0; i < this.levelCosts.length; i++) {
-					this.lNodes.splice(i, 1, costDict[hash(this.levelCosts[i])]);
-					this.levelCosts.splice(i, 1, this.levelCosts[i].value);
-				}
-			}
 			return this.levelCosts;
 		};
-		this.calculateClusterCost = function(sortLevelsByCost) {
-			if (arguments.length < 1) {
-				sortLevelsByCost = false;
-			}
+		this.calculateClusterCost = function() {
 			var clusterCost = 0;
-			this.calculateLevelCosts(sortLevelsByCost);
+			this.calculateLevelCosts();
 			for (i = 0; i < this.levelCosts.length; i++) {
 				clusterCost += this.levelCosts[i];
 			}
@@ -685,10 +667,7 @@ app.controller("doubleDutchCtrl", function($scope, $modal, $log) {
 	};
 
 	function lClusterer() {
-		this.lfMeansCluster = function(fNodes, lNodes, numsClusters, numClusterings, sortLevelsByCost) {
-			if (arguments.length < 5) {
-				sortLevelsByCost = false;
-			}
+		this.lfMeansCluster = function(fNodes, lNodes, numsClusters, numClusterings, doeTemplate) {
 			var processNumsClusters = function(numsClusters, numFactors) {
 				if (numsClusters.constructor !== Array) {
 					numsClusters = [numsClusters];
@@ -733,7 +712,7 @@ app.controller("doubleDutchCtrl", function($scope, $modal, $log) {
 				}
 				return constraints;
 			};
-			var makeClusterGrid = function(lNodes, numFactors, kMeansCluster, constraints) {
+			var makeClusterGrid = function(lNodes, kMeansCluster, constraints) {
 				var clusterGrid = [];
 				var clusters;
 				var m, n;
@@ -745,7 +724,7 @@ app.controller("doubleDutchCtrl", function($scope, $modal, $log) {
 	    		}
 	    		return clusterGrid;
 			};
-			var calculateClusteringCost = function(clusterGrid, constraints, sortLevelsByCost) {
+			var calculateClusteringCost = function(clusterGrid, constraints) {
 				var totalClusteringCost = 0;
 				var clusteringCost;
 				var m, i, j;
@@ -753,7 +732,7 @@ app.controller("doubleDutchCtrl", function($scope, $modal, $log) {
 					clusteringCost = 0;
 					i = constraints[m].indices[0];
 					for (j = 0; j < clusterGrid[i].length; j++) {
-						clusteringCost += clusterGrid[i][j].calculateClusterCost(sortLevelsByCost);
+						clusteringCost += clusterGrid[i][j].calculateClusterCost();
 					}
 					totalClusteringCost += constraints[m].indices.length*clusteringCost;
 				}
@@ -767,8 +746,8 @@ app.controller("doubleDutchCtrl", function($scope, $modal, $log) {
 			var bestClusteringCost = -1;
 	    	var clusteringCount = 0;
 	    	while (clusteringCount <= numClusterings) {
-	    		clusterGrid = makeClusterGrid(lNodes, fNodes.length, this.kMeansCluster, constraints);
-	    		clusteringCost = calculateClusteringCost(clusterGrid, constraints, sortLevelsByCost);
+	    		clusterGrid = makeClusterGrid(lNodes, this.kMeansCluster, constraints);
+	    		clusteringCost = calculateClusteringCost(clusterGrid, constraints);
 		    	if (bestClusteringCost < 0 || clusteringCost < bestClusteringCost) {
 		    		bestClusteringCost = clusteringCost;
 		    		bestClusterGrid = clusterGrid;
@@ -880,10 +859,7 @@ app.controller("doubleDutchCtrl", function($scope, $modal, $log) {
 	    	} while (!hasConverged);
 	    	return clusters;
 		};
-		this.targetedCluster = function(fNodes, lNodes, sortLevelsByCost) {
-			if (arguments.length < 3) {
-				sortLevelsByCost = false;
-			}
+		this.targetedCluster = function(fNodes, lNodes) {
 			var initializeClusterGrid = function(fNodes) {
 				var clusterGrid = [];
 		    	var i, j;
@@ -1000,7 +976,7 @@ app.controller("doubleDutchCtrl", function($scope, $modal, $log) {
 			}
 			for (i = 0; i < clusterGrid.length; i++) {
 				for (j = 0; j < clusterGrid[i].length; j++) {
-					clusterGrid[i][j].calculateLevelCosts(sortLevelsByCost);
+					clusterGrid[i][j].calculateLevelCosts();
 					clusterGrid[i][j].applyConstraint();
 				}
 			}
@@ -1085,6 +1061,40 @@ app.controller("doubleDutchCtrl", function($scope, $modal, $log) {
 		}
 		result.stdDev = Math.sqrt(result.stdDev/arr.length);
 		return result;
+	};
+
+	logRegression = function(x, y) {
+		var logY = [];
+		var i;
+		for (i = 0; i < y.length; i++) {
+			logY[i] = Math.log(y[i])/Math.LN10;
+		}
+		return linearRegression(x, logY);
+	};
+
+	linearRegression = function(x, y) {
+        var lr = {};
+        var n = y.length;
+        var sumX = 0;
+        var sumY = 0;
+        var sumXY = 0;
+        var sumXX = 0;
+        var sumYY = 0;
+        var i;
+        for (i = 0; i < y.length; i++) {
+            sumX += x[i];
+            sumY += y[i];
+            sumXY += (x[i]*y[i]);
+            sumXX += (x[i]*x[i]);
+            sumYY += (y[i]*y[i]);
+        }
+        var diffXY = n*sumXY - sumX*sumY;
+        var diffX = n*sumXX - Math.pow(sumX, 2);
+        var diffY = n*sumYY - Math.pow(sumY, 2);
+        lr['slope'] = diffXY/diffX;
+        lr['intercept'] = (sumY - lr.slope*sumX)/n;
+        lr['se'] = Math.sqrt((diffY - Math.pow(diffXY, 2)/diffX)/(n - 2));
+        return lr;
 	};
 
 	decimalPlaces = function (num) {
@@ -2863,6 +2873,7 @@ app.controller("doubleDutchCtrl", function($scope, $modal, $log) {
 						} else {
 							$scope.fldNodes[i].children[j] = $scope.bestSoln.clusterGrid[i][j].lNodes[k].copy();
 							$scope.fldNodes[i].children[j].isConstraintShown = true;
+							$scope.fldNodes[i].children[j].isMoveTopShown = false;
 						}
 					}
 				}
