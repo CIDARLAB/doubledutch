@@ -452,7 +452,11 @@ app.controller("doubleDutchCtrl", function($scope, $modal, $log) {
 					}
 					levelTotal += this.levelSelections[i].length;
 				}
-				normalizationFactor += combinatorial(levelTotal, 2);
+				if (levelTotal < 2) {
+					normalizationFactor++;
+				} else {
+					normalizationFactor += combinatorial(levelTotal, 2);
+				}
 				var featDict = {};
 				var homologyDict;
 	    		var feats;
@@ -1264,7 +1268,7 @@ app.controller("doubleDutchCtrl", function($scope, $modal, $log) {
 		this.isRangeValid = function() {
 			var i;
 			for (i = 0; i < this.levelsPerFactor.length; i++) {
-				if (this.levelsPerFactor[i] < 2) {
+				if (this.levelsPerFactor[i] < 1) {
 					return false;
 				}
 			}
@@ -1306,11 +1310,15 @@ app.controller("doubleDutchCtrl", function($scope, $modal, $log) {
 				for (i = 0; i < levelsPerFactor.length; i++) {
 					ranges.push([]);
 					numDesigns *= levelsPerFactor[i];
-					for (j = -Math.floor(levelsPerFactor[i]/2); j <= Math.floor(levelsPerFactor[i]/2); j++) {
-		  				if (j != 0 || levelsPerFactor[i]%2 != 0) {
-		  					ranges[i].push(j);
-		  				}
-		  			}
+					if (levelsPerFactor[i] == 1) {
+						ranges[i].push(1);
+					} else {
+						for (j = -Math.floor(levelsPerFactor[i]/2); j <= Math.floor(levelsPerFactor[i]/2); j++) {
+			  				if (j != 0 || levelsPerFactor[i]%2 != 0) {
+			  					ranges[i].push(j);
+			  				}
+			  			}
+			  		}
 		  		}
 	  			
 	  			var k;
@@ -1930,7 +1938,7 @@ app.controller("doubleDutchCtrl", function($scope, $modal, $log) {
 
 	$scope.defaultLevelsPerFactor = 2;
 	$scope.levelsPerFactor = $scope.defaultLevelsPerFactor;
-	$scope.minLevelsPerFactor = 2;
+	$scope.minLevelsPerFactor = 1;
 	$scope.maxLevelsPerFactor = 100;
 	$scope.levelsPerFactorStep = 1;
 
