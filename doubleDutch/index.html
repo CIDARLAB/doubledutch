@@ -40,10 +40,13 @@
     <div class="row">
       <div class="col-sm-4">
         <label style="font-size:20pt">Level Assignment</label>
+        <br ng-show="isTemplateSelectAShown">
+        <label ng-show="isTemplateSelectAShown">DOE Template</label>
+        <select ng-show="isTemplateSelectAShown" ng-disabled="isTemplateSelectADisabled" ng-change="changeTemplate()" ng-init="selectedTemplateA = selectedTemplateA || defaultSelectedTemplate" ng-model="selectedTemplateA" ng-options="template as template.name for template in doeTemplates"></select>
         <br>
-        <label ng-show="clusteringOptions.autoTarget">Levels per Factor</label>
-        <input type="number" step="{{levelsPerFactorStep}}" min="{{minLevelsPerFactor}}" max="{{maxLevelsPerFactor}}" style="height:25px; width:50px" ng-show="clusteringOptions.autoTarget" ng-disabled="isAssigning" ng-model="levelsPerFactor">
-        <br ng-show="clusteringOptions.autoTarget">
+        <label ng-show="isNumLevelsPerFactorShown">Levels per Factor</label>
+        <input type="number" step="{{numLevelsPerFactorStep}}" min="{{minLevelsPerFactor}}" max="{{maxLevelsPerFactor}}" style="height:25px; width:50px" ng-show="isNumLevelsPerFactorShown" ng-disabled="isAssigning" ng-model="numLevelsPerFactor">
+        <br ng-show="isNumLevelsPerFactorShown">
         <button type="button" ng-disabled="bestSoln.isOptimal" class="btn btn-primary" ng-click="assignLevels()">Assign Levels</button>
         <button type="button" ng-disabled="bestSoln.isOptimal" class="btn btn-primary" ng-click="editAssignmentOptions('md')">Edit Options</button>
         <br><br>
@@ -51,13 +54,13 @@
         <button class="btn btn-warning" ng-click="quitAssigning()" ng-show="isAssigning">Done</button>
       </div>
       <div class="col-sm-4">
-         <label style="font-size:20pt">Library Download</label>
+        <label style="font-size:20pt">Library Download</label>
         <br>
         <label>DOE Template</label>
-        <select ng-init="selectedTemplate = selectedTemplate || doeTemplates[4]" ng-model="selectedTemplate" ng-options="template as template.name for template in doeTemplates"></select>
+        <select ng-init="selectedTemplateB = selectedTemplateB || defaultSelectedTemplate" ng-model="selectedTemplateB" ng-options="template as template.name for template in doeTemplates"></select>
         <br>
         <button type="button" class="btn btn-primary" ng-csv="generateDesigns()" filename="design_library.csv" field-separator=",">Download Library</button>
-        <button type="button" class="btn btn-primary" ng-csv="doeTemplater.serializeTemplate(selectedTemplate)" filename="doe_template.csv" field-separator=",">Download Template</button>
+        <button type="button" class="btn btn-primary" ng-csv="doeTemplater.serializeTemplate(selectedTemplateB)" filename="doe_template.csv" field-separator=",">Download Template</button>
       </div>
     </div>
 
@@ -226,6 +229,9 @@
               <div class="col-sm-6">
                   <label style="font-size:20pt">Level Assignment</label>
                   <br>
+                  <label>Assign to DOE Template</label>
+                  <input ng-disabled="isAssigning" ng-change="changeTemplateAssignment()" type="checkbox" ng-model="isTemplateAssignment">
+                  <br>
                   <label>Exhaustive Assignment</label>
                   <input ng-disabled="isAssigning" type="checkbox" ng-model="isAssignmentExhaustive">
                   <div ng-show="isAssignmentExhaustive">
@@ -261,7 +267,7 @@
                   <label style="font-size:20pt">Level Targets</label>
                   <br>
                   <label>Auto-Targeting</label>
-                  <input type="checkbox" ng-model="clusteringOptions.autoTarget">
+                  <input ng-disabled="isTemplateAssignment" type="checkbox" ng-model="clusteringOptions.autoTarget">
                   <br>
                   <label ng-show="clusteringOptions.autoTarget"># of Trials</label>
                   <input ng-show="clusteringOptions.autoTarget" type="number" step="{{inputStep}}" min="{{minInput}}" max="{{maxInput}}" style="height:25px; width:50px" ng-model="clusteringOptions.numClusterings">
