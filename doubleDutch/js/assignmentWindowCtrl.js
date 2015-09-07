@@ -15,7 +15,7 @@ app.controller('assignmentWindowCtrl', function ($scope, $modalInstance, items) 
 
   $scope.initialAnnealingOptions = items.annealingOptions;
   $scope.annealingOptions = {numAnnealings: items.annealingOptions.numAnnealings, iterPerAnnealing: items.annealingOptions.iterPerAnnealing, 
-      initialTemp: items.annealingOptions.initialTemp};
+      initialTemp: items.annealingOptions.initialTemp, reuseReward: items.annealingOptions.reuseReward};
   $scope.defaultAnnealingOptions = items.defaultAnnealingOptions;
 
   $scope.initialWeights = items.weights;
@@ -25,6 +25,8 @@ app.controller('assignmentWindowCtrl', function ($scope, $modalInstance, items) 
   $scope.initialNumClusterings = items.clusteringOptions.numClusterings;
   $scope.clusteringOptions = {numClusterings: items.clusteringOptions.numClusterings, autoTarget: items.clusteringOptions.autoTarget};
   $scope.defaultClusteringOptions = items.defaultClusteringOptions;
+
+  $scope.reuseOptions = items.reuseOptions;
 
   $scope.minInput = 1;
   $scope.maxInput = 1000000000;
@@ -40,6 +42,7 @@ app.controller('assignmentWindowCtrl', function ($scope, $modalInstance, items) 
       $scope.annealingOptions.numAnnealings = $scope.defaultAnnealingOptions.numAnnealings;
       $scope.annealingOptions.iterPerAnnealing = $scope.defaultAnnealingOptions.iterPerAnnealing;
       $scope.annealingOptions.initialTemp = $scope.defaultAnnealingOptions.initialTemp;
+      $scope.annealingOptions.reuseReward = $scope.defaultAnnealingOptions.reuseReward;
       $scope.weights = {levelMatch: $scope.defaultWeights.levelMatch, homology: $scope.defaultWeights.homology, reuse: $scope.defaultWeights.reuse};
       $scope.clusteringOptions = {numClusterings: $scope.defaultClusteringOptions.numClusterings, autoTarget: $scope.defaultClusteringOptions.autoTarget};
     } else if (!$scope.isExhaustivelyAssigning) {
