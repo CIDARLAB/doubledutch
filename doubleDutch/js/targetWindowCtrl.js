@@ -52,6 +52,7 @@ app.controller('targetWindowCtrl', function ($scope, $modalInstance, items) {
       levelTargets[i] = validateNumericInput($scope.levelTargets[i].value, $scope.minTarget, $scope.maxTarget, 
           $scope.targetStep, defaultLevelTarget);
     }
+    levelTargets.sort(function(a, b) {return a - b});
     $modalInstance.close(levelTargets);
   };
 

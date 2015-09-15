@@ -15,18 +15,18 @@ app.controller('assignmentWindowCtrl', function ($scope, $modalInstance, items) 
 
   $scope.initialAnnealingOptions = items.annealingOptions;
   $scope.annealingOptions = {numAnnealings: items.annealingOptions.numAnnealings, iterPerAnnealing: items.annealingOptions.iterPerAnnealing, 
-      initialTemp: items.annealingOptions.initialTemp, reuseReward: items.annealingOptions.reuseReward};
+      initialTemp: items.annealingOptions.initialTemp, synthesisOption: items.annealingOptions.synthesisOption};
   $scope.defaultAnnealingOptions = items.defaultAnnealingOptions;
 
   $scope.initialWeights = items.weights;
-  $scope.weights = {levelMatch: items.weights.levelMatch, homology: items.weights.homology, reuse: items.weights.reuse};
+  $scope.weights = {levelMatch: items.weights.levelMatch, homology: items.weights.homology, synthesis: items.weights.synthesis};
   $scope.defaultWeights = items.defaultWeights;
   
   $scope.initialNumClusterings = items.clusteringOptions.numClusterings;
   $scope.clusteringOptions = {numClusterings: items.clusteringOptions.numClusterings, autoTarget: items.clusteringOptions.autoTarget};
   $scope.defaultClusteringOptions = items.defaultClusteringOptions;
 
-  $scope.reuseOptions = items.reuseOptions;
+  $scope.synthesisOptions = items.synthesisOptions;
 
   $scope.minInput = 1;
   $scope.maxInput = 1000000000;
@@ -42,8 +42,8 @@ app.controller('assignmentWindowCtrl', function ($scope, $modalInstance, items) 
       $scope.annealingOptions.numAnnealings = $scope.defaultAnnealingOptions.numAnnealings;
       $scope.annealingOptions.iterPerAnnealing = $scope.defaultAnnealingOptions.iterPerAnnealing;
       $scope.annealingOptions.initialTemp = $scope.defaultAnnealingOptions.initialTemp;
-      $scope.annealingOptions.reuseReward = $scope.defaultAnnealingOptions.reuseReward;
-      $scope.weights = {levelMatch: $scope.defaultWeights.levelMatch, homology: $scope.defaultWeights.homology, reuse: $scope.defaultWeights.reuse};
+      $scope.annealingOptions.synthesisOption = $scope.defaultAnnealingOptions.synthesisOption;
+      $scope.weights = {levelMatch: $scope.defaultWeights.levelMatch, homology: $scope.defaultWeights.homology, synthesis: $scope.defaultWeights.synthesis};
       $scope.clusteringOptions = {numClusterings: $scope.defaultClusteringOptions.numClusterings, autoTarget: $scope.defaultClusteringOptions.autoTarget};
     } else if (!$scope.isExhaustivelyAssigning) {
       $scope.annealingOptions.numAnnealings = $scope.defaultAnnealingOptions.numAnnealings;
@@ -64,8 +64,8 @@ app.controller('assignmentWindowCtrl', function ($scope, $modalInstance, items) 
         $scope.initialWeights.levelMatch); 
     $scope.weights.homology = validateNumericInput($scope.weights.homology, $scope.minInputZero, $scope.maxInput, $scope.inputStep, 
         $scope.initialWeights.homology);
-    $scope.weights.reuse = validateNumericInput($scope.weights.reuse, $scope.minInputZero, $scope.maxInput, $scope.inputStep, 
-        $scope.initialWeights.reuse);
+    $scope.weights.synthesis = validateNumericInput($scope.weights.synthesis, $scope.minInputZero, $scope.maxInput, $scope.inputStep, 
+        $scope.initialWeights.synthesis);
 
     $scope.clusteringOptions.numClusterings = validateNumericInput($scope.clusteringOptions.numClusterings, $scope.minInput, $scope.maxInput, $scope.inputStep, 
         $scope.initialNumClusterings);

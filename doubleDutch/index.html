@@ -84,7 +84,7 @@
             <br>
             Pathway Homology cost is {{bestSolnCost.homology | number:2}}.
             <br>
-            Component Reuse cost is {{bestSolnCost.reuse | number:2}}.
+            DNA Synthesis cost is {{bestSolnCost.synthesis | number:2}}.
             <br>
             ______________________
             <br>
@@ -259,13 +259,13 @@
                     <label>Pathway Homology Weight</label>
                     <input ng-disabled="isAssigning" type="number" step="{{inputStep}}" min="{{minInputZero}}" max="{{maxInput}}" style="height:25px; width:50px" ng-model="weights.homology">
                     <br>
-                    <label>Component Reuse Weight</label>
-                    <input ng-disabled="isAssigning" type="number" step="{{inputStep}}" min="{{minInputZero}}" max="{{maxInput}}" style="height:25px; width:50px" ng-model="weights.reuse">
+                    <label>DNA Synthesis Weight</label>
+                    <input ng-disabled="isAssigning" type="number" step="{{inputStep}}" min="{{minInputZero}}" max="{{maxInput}}" style="height:25px; width:50px" ng-model="weights.synthesis">
                     <br>
-                    <label for="rewardRadio" ng-disabled="isAssigning">Reward Reuse</label>
-                    <input type="radio" id="rewardRadio" name="rewardReuse" value="{{reuseOptions.REWARD}}" ng-model="annealingOptions.reuseReward" ng-disabled="isAssigning"/>
-                    <label for="penaltyRadio">Penalize Reuse</label>
-                    <input type="radio" id="penaltyRadio" name="rewardReuse" value="{{reuseOptions.PENALIZE}}" ng-model="annealingOptions.reuseReward" ng-disabled="isAssigning"/>
+                    <label for="minSynthesisRadio" ng-disabled="isAssigning">Minimize Synthesis</label>
+                    <input type="radio" id="minSynthesisRadio" name="synthesisRadio" value="{{synthesisOptions.MINIMIZE}}" ng-model="annealingOptions.synthesisOption" ng-disabled="isAssigning"/>
+                    <label for="maxSynthesisRadio">Maximize Synthesis</label>
+                    <input type="radio" id="maxSynthesisRadio" name="synthesisRadio" value="{{synthesisOptions.MAXIMIZE}}" ng-model="annealingOptions.synthesisOption" ng-disabled="isAssigning"/>
                   </div>
               </div>
               <div ng-hide="isAssigning" class="col-sm-6">

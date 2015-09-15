@@ -213,7 +213,6 @@ app.controller("doubleDutchCtrl", function($scope, $modal, $log) {
 	};
 
 	$scope.areLNodesValid = function() {
-		$scope.reconcileFLNodes();
 		var levelRecord = {};
 		var levelCount = 0;
 		var j;
@@ -326,6 +325,20 @@ app.controller("doubleDutchCtrl", function($scope, $modal, $log) {
 		this.isEmpty = function() {
 			return this.lNodes.length == 0;
 		};
+		this.calculateMaxFeatures = function() {
+			this.maxFeats = 0;
+			var numFeats;
+			var j;
+			for (j = 0; j < this.lNodes.length; j++) {
+				numFeats = this.lNodes[j].bioDesign.module.getFeatures().length;
+				if (numFeats > this.maxFeats) {
+					this.maxFeats = numFeats;
+				}
+			}
+			this.maxFeats 
+			return this.maxFeats;
+		};
+		this.calculateMaxFeatures();
 	}
 
 	$scope.FLSolution = function(clusterGrid) {
@@ -340,164 +353,278 @@ app.controller("doubleDutchCtrl", function($scope, $modal, $log) {
 		this.clusterGrid = clusterGrid;
 	};
 
-	$scope.FLSolution.prototype.reuseOptions = {REWARD: "reward", PENALIZE: "penalize"};
+	$scope.FLSolution.prototype.synthesisOptions = {MINIMIZE: "minimize", MAXIMIZE: "maximize"};
 
-	$scope.FLSolution.prototype.calculateCost = function(weights, reuseReward, iBound, jBound) {
-		if (arguments.length < 4) {
-			if (arguments.length < 3) {
+	$scope.FLSolution.prototype.calculateCost = function(weights, synthesisOption, costModGrid, iBound, jBound) {
+		if (arguments.length < 5) {
+			if (arguments.length < 4) {
 				iBound = this.levelSelections.length - 1;
 				if (arguments.length < 2) {
-					reuseReward = this.reuseOptions.REWARD;
+					synthesisOption = this.synthesisOptions.MINIMIZE;
 					if (arguments.length < 1) {
-						weights = {levelMatch: 1, homology: 1, reuse: 1};
+						weights = {levelMatch: 1, homology: 1, synthesis: 1};
 					}
 				}
 			}
 			jBound = this.levelSelections[iBound].length - 1;
 		}
-		var levelMatchCost = this.calculateLevelMatchCost(iBound, jBound);
-		var homologyCost = this.calculateHomologyCost(iBound, jBound);
-		var reuseCost = this.calculateReuseCost(iBound, jBound);
-		if (reuseReward === this.reuseOptions.PENALIZE) {
-			reuseCost = 1 - reuseCost;
+		var levelMatchCost = this.calculateLevelMatchCost(iBound, jBound, costModGrid);
+		var synthesisCost = this.calculateSynthesisCost(iBound, jBound);
+		var homologyCost = this.calculateHomologyCost(iBound, jBound, costModGrid);
+		if (synthesisOption === this.synthesisOptions.MAXIMIZE) {
+			synthesisCost = 1 - synthesisCost;
 		}
-		return {weightedTotal: weights.levelMatch*levelMatchCost + weights.homology*homologyCost + weights.reuse*reuseCost, 
-				total: levelMatchCost + homologyCost + reuseCost, levelMatch: levelMatchCost, homology: homologyCost, reuse: reuseCost};
+		return {weightedTotal: weights.levelMatch*levelMatchCost + weights.homology*homologyCost + weights.synthesis*synthesisCost, 
+				total: levelMatchCost + homologyCost + synthesisCost, levelMatch: levelMatchCost, homology: homologyCost, synthesis: synthesisCost};
 	};
 
-	$scope.FLSolution.prototype.calculateLevelMatchCost = function(iBound, jBound) {
+	$scope.FLSolution.prototype.calculateLevelMatchCost = function(iBound, jBound, costModGrid) {
 		if (arguments.length < 2) {
 			if (arguments.length < 1) {
 				iBound = this.levelSelections.length - 1;
 			}
 			jBound = this.levelSelections[iBound].length - 1;
 		}
+		var calculateMaxLevelMatchCost = function(levelSelections, costModGrid) {
+			var maxLevelMatchCost = 0;
+			var i, j;
+			for (i = 0; i < levelSelections.length; i++) {
+				for (j = 0; j < levelSelections[i].length; j++) {
+					if (costModGrid) {
+						maxLevelMatchCost += costModGrid[i][j];
+					} else {
+						maxLevelMatchCost++;
+					}
+				}
+			}
+			return maxLevelMatchCost;
+		};
 		var levelMatchCost = 0;
-		var normalizationFactor = 0;
 		var i, j, k;
 		for (i = 0; i <= iBound; i++) {
 			for (j = 0; j <= (i == iBound ? jBound : this.levelSelections[i].length - 1); j++) {
 				k = this.levelSelections[i][j];
-				levelMatchCost += this.clusterGrid[i][j].levelCosts[k];
+				if (costModGrid) {
+					levelMatchCost += this.clusterGrid[i][j].levelCosts[k]*costModGrid[i][j];
+				} else {
+					levelMatchCost += this.clusterGrid[i][j].levelCosts[k];
+				}
 			}
-			normalizationFactor += this.levelSelections[i].length;
 		}
-		levelMatchCost /= normalizationFactor;
+		var maxLevelMatchCost = calculateMaxLevelMatchCost(this.levelSelections, costModGrid);
+		levelMatchCost /= maxLevelMatchCost;
 		return levelMatchCost;
 	};
 
-	$scope.FLSolution.prototype.calculateReuseCost = function(iBound, jBound) {
+	$scope.FLSolution.prototype.calculateSynthesisCost = function(iBound, jBound) {
 		if (arguments.length < 2) {
 			if (arguments.length < 1) {
 				iBound = this.levelSelections.length - 1;
 			}
 			jBound = this.levelSelections[iBound].length - 1;
 		}
-		var reuseCost = 0;
-		var i;
-		for (i = 0; i < this.levelSelections.length; i++) {
-			reuseCost += (this.levelSelections[i].length - 1);
+		var calculateMaxSynthesisCost = function(clusterGrid) {
+			var maxSynthesisCost = 0;
+			var i, j;
+			for (i = 0; i < clusterGrid.length; i++) {
+				for (j = 0; j < clusterGrid[i].length; j++) {
+					maxSynthesisCost += clusterGrid[i][j].maxFeats;
+				}
+			}
+			return maxSynthesisCost;
+		};
+		var featRecord = {};
+		var feats;
+		var synthesisCost = 0;
+		var i, j, k, f;
+		for (i = 0; i <= iBound; i++) {
+			for (j = 0; j <= (i == iBound ? jBound : this.levelSelections[i].length - 1); j++) {
+				k = this.levelSelections[i][j];
+				feats = this.clusterGrid[i][j].lNodes[k].bioDesign.module.getFeatures();
+				for (f = 0; f < feats.length; f++) {
+					if (!featRecord[hash(feats[f])]) {
+						synthesisCost++;
+						featRecord[hash(feats[f])] = true;
+					}
+				}
+			}
+		}	
+		var maxSynthesisCost = calculateMaxSynthesisCost(this.clusterGrid);
+		var minSynthesisCost;
+		if (synthesisCost == 0) {
+			minSynthesisCost = 0;
+		} else {
+			minSynthesisCost = 1;
 		}
-		if (reuseCost > 0) {
-			var normalizationFactor = reuseCost;
-			var factorFeatRecord;
-			var levelFeatRecord;
+		synthesisCost = (synthesisCost - minSynthesisCost)/(maxSynthesisCost - minSynthesisCost);
+		return synthesisCost;
+	};
+
+	$scope.FLSolution.prototype.calculateHomologyCost = function(iBound, jBound, costModGrid) {
+		if (arguments.length < 2) {
+			if (arguments.length < 1) {
+				iBound = this.levelSelections.length - 1;
+			}
+			jBound = this.levelSelections[iBound].length - 1;
+		}
+		var calculateFeatureFrequencies = function(levelSelections, clusterGrid, iBound, jBound, costModGrid) {
+			var initializeFrequencies = function(numFreqs) {
+				var freqs = [];
+				var i;
+				for (i = 0; i < numFreqs; i++) {
+					freqs[i] = 0;
+				}
+				return freqs;
+			};
+			var featFreqs = {};
 			var feats;
-			var j, k, f;
-			for (i = 0; i < this.levelSelections.length; i++) {
-				if (this.levelSelections[i].length > 1) {
-					if (i > iBound) {
-						reuseCost -= (this.levelSelections[i].length - 1);
-					} else {
-						factorFeatRecord = {};
-						for (j = 0; j < this.levelSelections[i].length; j++) {
-							if (i == iBound && j > jBound) {
-								reuseCost--;
-							} else {
-								k = this.levelSelections[i][j];
-								feats = this.clusterGrid[i][j].lNodes[k].bioDesign.module.getFeatures();
-								levelFeatRecord = {};
-								for (f = 0; f < feats.length; f++) {
-									if (factorFeatRecord[hash(feats[f])] && !levelFeatRecord[hash(feats[f])]) {
-										reuseCost--;
-										f = feats.length;
-									} else {
-										factorFeatRecord[hash(feats[f])] = true;
-										levelFeatRecord[hash(feats[f])] = true;
-									}
-								}
-							}
+			var i, j, k, f;
+			for (i = 0; i <= iBound; i++) {
+				for (j = 0; j <= (i == iBound ? jBound : levelSelections[i].length - 1); j++) {
+					k = levelSelections[i][j];
+					feats = clusterGrid[i][j].lNodes[k].bioDesign.module.getFeatures();
+					for (f = 0; f < feats.length; f++) {
+						if (!featFreqs[hash(feats[f])]) {
+							featFreqs[hash(feats[f])] = initializeFrequencies(levelSelections.length);
+						}
+						if (costModGrid) {
+							featFreqs[hash(feats[f])][i] += costModGrid[i][j];
+						} else {
+							featFreqs[hash(feats[f])][i]++;
 						}
 					}
 				}
 			}
-			reuseCost /= normalizationFactor;
-		}
-		return reuseCost;
+			return featFreqs;
+		};
+		var calculateMaxFeatureFrequencies = function(clusterGrid, costModGrid) {
+			var maxFeatFreqs = {};
+			var maxFeatHash = "maxFeat";
+			maxFeatFreqs[maxFeatHash] = [];
+			var i, j;
+			for (i = 0; i < clusterGrid.length; i++) {
+				maxFeatFreqs[maxFeatHash][i] = 0;
+				for (j = 0; j < clusterGrid[i].length; j++) {
+					if (costModGrid) {
+						maxFeatFreqs[maxFeatHash][i] += costModGrid[i][j]*clusterGrid[i][j].maxFeats;
+					} else {
+						maxFeatFreqs[maxFeatHash][i] += clusterGrid[i][j].maxFeats;
+					}
+				}
+			}
+			return maxFeatFreqs;
+		};
+		var calculateTotalHomologyCost = function(featFreqs, costModGrid) {
+			var determineMinCostMod = function(costModGrid) {
+				var minCostMod = -1;
+				var i, j;
+				for (i = 0; i < costModGrid.length; i++) {
+					for (j = 0; j < costModGrid[i].length; j++) {
+						if (minCostMod < 0 || costModGrid[i][j] < minCostMod) {
+							minCostMod = costModGrid[i][j];
+						}
+					}
+				}
+				return minCostMod;
+			};
+			var totalHomologyCost = 0;
+			var featHomologyCost;
+			var factorHomologyCount;
+			var homologousFeatCount = 0;
+			var featHash;
+			var i;
+			for (featHash in featFreqs) {
+				featHomologyCost = 0
+				factorHomologyCount = 0;
+				for (i = 0; i < featFreqs[featHash].length; i++) {
+					if (featFreqs[featHash][i] > 0) {
+						featHomologyCost += featFreqs[featHash][i];
+						factorHomologyCount++;
+					}
+				}
+				if (factorHomologyCount > 1) {
+					totalHomologyCost += featHomologyCost;
+					homologousFeatCount++;
+				}
+			}
+			if (homologousFeatCount > 1) {
+				if (costModGrid) {
+					totalHomologyCost -= (determineMinCostMod(costModGrid)*(homologousFeatCount - 1));
+				} else {
+					totalHomologyCost -= (homologousFeatCount - 1);
+				}
+			}
+			return totalHomologyCost;
+		};
+		var featFreqs = calculateFeatureFrequencies(this.levelSelections, this.clusterGrid, iBound, jBound, costModGrid);
+		var totalHomologyCost = calculateTotalHomologyCost(featFreqs);
+		var maxFeatFreqs = calculateMaxFeatureFrequencies(this.clusterGrid, costModGrid);
+		var maxHomologyCost = calculateTotalHomologyCost(maxFeatFreqs);
+		return totalHomologyCost/maxHomologyCost;
 	};
 
-	$scope.FLSolution.prototype.calculateHomologyCost = function(iBound, jBound) {
-		if (arguments.length < 2) {
-			if (arguments.length < 1) {
-				iBound = this.levelSelections.length - 1;
-			}
-			jBound = this.levelSelections[iBound].length - 1;
-		}
-		var homologyCost = 0;
-		if (this.levelSelections.length > 1) {
-			var normalizationFactor = 0;
-			var levelTotal = 0;
-			var i;
-			for (i = 0; i < this.levelSelections.length; i++) {
-				if (this.levelSelections[i].length > 1) {
-					normalizationFactor -= combinatorial(this.levelSelections[i].length, 2);
-				}
-				levelTotal += this.levelSelections[i].length;
-			}
-			if (levelTotal < 2) {
-				normalizationFactor++;
-			} else {
-				normalizationFactor += combinatorial(levelTotal, 2);
-			}
-			var featDict = {};
-			var homologyDict;
-    		var feats;
-    		var j, k, f, m, n;
-    		for (i = 0; i <= iBound; i++) {
-				for (j = 0; j <= (i == iBound ? jBound : this.levelSelections[i].length - 1); j++) {
-					k = this.levelSelections[i][j];
-	    			feats = this.clusterGrid[i][j].lNodes[k].bioDesign.module.getFeatures();
-	    			homologyDict = {};
-	    			for (f = 0; f < feats.length; f++) {
-	    				if (featDict[hash(feats[f])] == null) {
-	    					featDict[hash(feats[f])] = [];
-	    					for (m = 0; m <= iBound; m++) {
-	    						featDict[hash(feats[f])].push([]);
-	    						for (n = 0; n <= jBound; n++) {
-		    						featDict[hash(feats[f])][m].push(0);
-		    					}
-	    					}
-	    				} else {
-	    					for (m = 0; m <= iBound; m++) {
-	    						if (m != i) {
-	    							for (n = 0; n <= jBound; n++) {
-	    								if (featDict[hash(feats[f])][m][n] > 0 
-		    									&& homologyDict[hash(JSON.stringify(m) + JSON.stringify(n))] == null) {
-			    							homologyCost += featDict[hash(feats[f])][m][n];
-			    							homologyDict[hash(JSON.stringify(m) + JSON.stringify(n))] = true;
-				    					}
-		    						}
-	    						}
-	    					}
-	    				}
-    					featDict[hash(feats[f])][i][j]++;
-	    			}
-	    		}
-    		}
-    		homologyCost /= normalizationFactor;
-		}
-		return homologyCost;
-	};
+	// $scope.FLSolution.prototype.calculateHomologyCost = function(iBound, jBound) {
+	// 	if (arguments.length < 2) {
+	// 		if (arguments.length < 1) {
+	// 			iBound = this.levelSelections.length - 1;
+	// 		}
+	// 		jBound = this.levelSelections[iBound].length - 1;
+	// 	}
+	// 	var homologyCost = 0;
+	// 	if (this.levelSelections.length > 1) {
+	// 		var normalizationFactor = 0;
+	// 		var levelTotal = 0;
+	// 		var i;
+	// 		for (i = 0; i < this.levelSelections.length; i++) {
+	// 			if (this.levelSelections[i].length > 1) {
+	// 				normalizationFactor -= combinatorial(this.levelSelections[i].length, 2);
+	// 			}
+	// 			levelTotal += this.levelSelections[i].length;
+	// 		}
+	// 		if (levelTotal < 2) {
+	// 			normalizationFactor = 1;
+	// 		} else {
+	// 			normalizationFactor += combinatorial(levelTotal, 2);
+	// 		}
+	// 		var featDict = {};
+	// 		var homologyDict;
+ //    		var feats;
+ //    		var j, k, f, m, n;
+ //    		for (i = 0; i <= iBound; i++) {
+	// 			for (j = 0; j <= (i == iBound ? jBound : this.levelSelections[i].length - 1); j++) {
+	// 				k = this.levelSelections[i][j];
+	//     			feats = this.clusterGrid[i][j].lNodes[k].bioDesign.module.getFeatures();
+	//     			homologyDict = {};
+	//     			for (f = 0; f < feats.length; f++) {
+	//     				if (featDict[hash(feats[f])] == null) {
+	//     					featDict[hash(feats[f])] = [];
+	//     					for (m = 0; m <= iBound; m++) {
+	//     						featDict[hash(feats[f])].push([]);
+	//     						for (n = 0; n <= jBound; n++) {
+	// 	    						featDict[hash(feats[f])][m].push(0);
+	// 	    					}
+	//     					}
+	//     				} else {
+	//     					for (m = 0; m <= iBound; m++) {
+	//     						if (m != i) {
+	//     							for (n = 0; n <= jBound; n++) {
+	//     								if (featDict[hash(feats[f])][m][n] > 0 
+	// 	    									&& homologyDict[hash(JSON.stringify(m) + JSON.stringify(n))] == null) {
+	// 		    							homologyCost += featDict[hash(feats[f])][m][n];
+	// 		    							homologyDict[hash(JSON.stringify(m) + JSON.stringify(n))] = true;
+	// 			    					}
+	// 	    						}
+	//     						}
+	//     					}
+	//     				}
+ //    					featDict[hash(feats[f])][i][j]++;
+	//     			}
+	//     		}
+ //    		}
+ //    		homologyCost /= normalizationFactor;
+	// 	}
+	// 	return homologyCost;
+	// };
 
 	$scope.FLSolution.prototype.copy = function() {
 		var solnCopy = new $scope.FLSolution(this.clusterGrid);
@@ -511,10 +638,10 @@ app.controller("doubleDutchCtrl", function($scope, $modal, $log) {
 	};
 
 	function flSolver() {
-		this.randomSolve = function(clusterGrid, weights, reuseReward, numTrials, timer) {
-			if (arguments.length < 4) {
-    			timer = new Timer();
-    		}
+		this.randomSolve = function(clusterGrid, weights, synthesisOption, numTrials, costModGrid, timer) {
+			if (arguments.length < 6) {
+				timer = new Timer();
+			}
   			var soln;
   			var solnCost;
 			var bestSoln;
@@ -526,7 +653,7 @@ app.controller("doubleDutchCtrl", function($scope, $modal, $log) {
 	  			for (i = 0; i < soln.levelSelections.length; i++) {
 	  				for (j = 0; j < soln.levelSelections[i].length; j++) {
 	  					soln = this.mutateSolution(soln, i, j);
-	  					solnCost = soln.calculateCost(weights, reuseReward);
+	  					solnCost = soln.calculateCost(weights, synthesisOption, costModGrid);
 	  				}
 	  			}
 	  			if (trialCount == 0 || solnCost.weightedTotal < bestSoln.weightedTotal) {
@@ -548,14 +675,14 @@ app.controller("doubleDutchCtrl", function($scope, $modal, $log) {
     		}
     		return mutantSoln;
     	};
-    	this.annealSolve = function(clusterGrid, annealingOptions, weights, timer) {
-    		if (arguments.length < 4) {
+    	this.annealSolve = function(clusterGrid, annealingOptions, weights, costModGrid, timer) {
+    		if (arguments.length < 5) {
     			timer = new Timer();
     		}
 			var soln;
 			var solnCost;
-			var bestSoln = this.randomSolve(clusterGrid, weights, annealingOptions.reuseReward, 1, timer);
-			var bestSolnCost = bestSoln.calculateCost(weights, annealingOptions.reuseReward);
+			var bestSoln = this.randomSolve(clusterGrid, weights, annealingOptions.synthesisOption, 1, costModGrid, timer);
+			var bestSolnCost = bestSoln.calculateCost(weights, annealingOptions.synthesisOption, costModGrid);
 			var annealCount = 0;
 			var temp;
 			var phi = Math.pow(1/annealingOptions.initialTemp, 1/annealingOptions.iterPerAnnealing);
@@ -563,14 +690,14 @@ app.controller("doubleDutchCtrl", function($scope, $modal, $log) {
 			var mutantCost;
 			var i, j;
 			while (annealCount < annealingOptions.numAnnealings && !timer.hasTimedOut()) {
-				soln = this.randomSolve(clusterGrid, weights, annealingOptions.reuseReward, 1, timer);
-				solnCost = soln.calculateCost(weights, annealingOptions.reuseReward);
+				soln = this.randomSolve(clusterGrid, weights, annealingOptions.synthesisOption, 1, costModGrid, timer);
+				solnCost = soln.calculateCost(weights, annealingOptions.synthesisOption, costModGrid);
 				temp = annealingOptions.initialTemp;
 				while (temp >= 1) {
 					i = Math.floor(Math.random()*soln.levelSelections.length);
 					j = Math.floor(Math.random()*soln.levelSelections[i].length);
 					mutantSoln = this.mutateSolution(soln, i, j);
-					mutantCost = mutantSoln.calculateCost(weights, annealingOptions.reuseReward);
+					mutantCost = mutantSoln.calculateCost(weights, annealingOptions.synthesisOption, costModGrid);
 					if (mutantCost.weightedTotal <= solnCost.weightedTotal 
 							|| Math.random() <= Math.exp((solnCost.weightedTotal - mutantCost.weightedTotal)*0.1*annealingOptions.initTemp/temp)) {
 						soln = mutantSoln;
@@ -586,20 +713,18 @@ app.controller("doubleDutchCtrl", function($scope, $modal, $log) {
 			}
 			return bestSoln;
     	};
-    	this.boundSolve = function(clusterGrid, annealingOptions, weights, timer, levelSelections) {
+    	this.boundSolve = function(clusterGrid, annealingOptions, weights, timer, costModGrid, levelSelections) {
     		var soln = new $scope.FLSolution(clusterGrid);
-    		if (arguments.length > 4) {
-    			soln.levelSelections = levelSelections;
-    		}
-    		var solnCost;
     		var bestSoln;
-    		if (arguments.length > 4) {
+    		if (arguments.length > 5) {
+    			soln.levelSelections = levelSelections;
     			bestSoln = soln;
     			bestSoln.levelSelections = levelSelections;
     		} else {
-    			bestSoln = this.annealSolve(clusterGrid, annealingOptions, weights, timer);
+    			bestSoln = this.annealSolve(clusterGrid, annealingOptions, weights, costModGrid, timer);
     		}
-    		var bestSolnCost = bestSoln.calculateCost(weights, annealingOptions.reuseReward);
+    		var solnCost;
+    		var bestSolnCost = bestSoln.calculateCost(weights, annealingOptions.synthesisOption, costModGrid);
     		var backtrack = false;
     		var i = 0;
     		var j = 0;
@@ -607,7 +732,7 @@ app.controller("doubleDutchCtrl", function($scope, $modal, $log) {
     			while (!backtrack && j < soln.levelSelections[i].length && !timer.hasTimedOut()) {
     				backtrack = (soln.levelSelections[i][j] == soln.clusterGrid[i][j].lNodes.length);
     				if (!backtrack) {
-						solnCost = soln.calculateCost(weights, annealingOptions.reuseReward, i, j);
+						solnCost = soln.calculateCost(weights, annealingOptions.synthesisOption, costModGrid, i, j);
 						if (solnCost.weightedTotal >= bestSolnCost.weightedTotal) {
 							soln.levelSelections[i][j]++;
 						} else if (i == soln.levelSelections.length - 1 && j == soln.levelSelections[i].length - 1) {
@@ -733,7 +858,8 @@ app.controller("doubleDutchCtrl", function($scope, $modal, $log) {
 					}
 				}
 				var constraints = [];
-				for (var property in constraintMap) {
+				var property;
+				for (property in constraintMap) {
 					if (constraintMap.hasOwnProperty(property)) {
 						constraints.push(constraintMap[property]);
 					}
@@ -787,6 +913,7 @@ app.controller("doubleDutchCtrl", function($scope, $modal, $log) {
 	    		bestClusterGrid[i].sort(function(a, b) {return a.target - b.target});
 	    		for (j = 0; j < bestClusterGrid[i].length; j++) {
 	    			bestClusterGrid[i][j].applyConstraint();
+	    			bestClusterGrid[i][j].calculateMaxFeatures();
 	    		}
 	    	}
 	    	return bestClusterGrid;
@@ -1007,6 +1134,7 @@ app.controller("doubleDutchCtrl", function($scope, $modal, $log) {
 				for (j = 0; j < clusterGrid[i].length; j++) {
 					clusterGrid[i][j].calculateLevelCosts();
 					clusterGrid[i][j].applyConstraint();
+					clusterGrid[i][j].calculateMaxFeatures();
 				}
 			}
 			return clusterGrid;
@@ -1018,6 +1146,7 @@ app.controller("doubleDutchCtrl", function($scope, $modal, $log) {
     		var yData;
     		var i, j;
     		for (i = 0; i < fNodes.length; i++) {
+    			fNodes[i].levelTargets = [];
     			xData = [];
     			yData = [];
     			for (j = 0; j < doeTemplate.rangeGrid[i].length; j++) {
@@ -1027,24 +1156,26 @@ app.controller("doubleDutchCtrl", function($scope, $modal, $log) {
     				yData[j] = clusterGrid[i][j].target;
     			}
     			if (xData.length <= 2) {
-    				fNodes[i].levelTargets = yData;
+    				for (j = 0; j < yData.length; j++) {
+	    				fNodes[i].levelTargets[j] = parseFloat(yData[j].toFixed(2));
+	    			}
     			} else {
 	    			linReg = new LinearRegression(xData, yData);
 		    		logReg = new LogYRegression(xData, yData);
 		    		if (linReg.se < logReg.se) {
 		    			for (j = 0; j < xData.length; j++) {
 		    				if (clusterGrid[i][j].isConstrained()) {
-		    					fNodes[i].levelTargets[j] = yData[j];
+		    					fNodes[i].levelTargets[j] = parseFloat(yData[j].toFixed(2));
 			    			} else {
-			    				fNodes[i].levelTargets[j] = linReg.estimate(xData[j]);
+			    				fNodes[i].levelTargets[j] = parseFloat(linReg.estimate(xData[j]).toFixed(2));
 			    			}
 		    			}
 		    		} else {
 		    			for (j = 0; j < xData.length; j++) {
 		    				if (clusterGrid[i][j].isConstrained()) {
-		    					fNodes[i].levelTargets[j] = yData[j];
+		    					fNodes[i].levelTargets[j] = parseFloat(yData[j].toFixed(2));
 		    				} else {
-		    					fNodes[i].levelTargets[j] = Math.pow(10, logReg.estimate(xData[j]));
+		    					fNodes[i].levelTargets[j] = parseFloat(Math.pow(10, logReg.estimate(xData[j])).toFixed(2));
 			    			}
 		    			}
 		    		}
@@ -1312,6 +1443,7 @@ app.controller("doubleDutchCtrl", function($scope, $modal, $log) {
 		this.resolution = resolution;
 		this.generators = generators;
 		this.rangeGrid = [];
+		this.rangeFreqGrid = [];
 		this.rangeMaps = [];
 		this.isEmpty = function() {
 			return this.designGrid.length == 0;
@@ -1326,27 +1458,36 @@ app.controller("doubleDutchCtrl", function($scope, $modal, $log) {
 			return true;
 		};
 		if (!this.isEmpty() && this.isGridValid()) {
-			var rangeHash;
+			var rangeFreqMaps = [];
 			var i;
 			for (i = 0; i < this.designGrid[0].length; i++) {
-				this.rangeMaps[i] = {};
 				this.rangeGrid[i] = [];
+				this.rangeFreqGrid[i] = [];
+				this.rangeMaps[i] = {};
+				rangeFreqMaps[i] = {};
 			}
+			var rangeHash;
 			var k;
 			for (k = 0; k < this.designGrid.length; k++) {
 				for (i = 0; i < this.designGrid[k].length; i++) {
 					rangeHash = hash(this.designGrid[k][i]);
-					if (this.rangeMaps[i][rangeHash] == null) {
-						this.rangeMaps[i][rangeHash] = 0;
+					if (this.rangeMaps[i][rangeHash]) {
+						rangeFreqMaps[i][rangeHash]++;
+					} else {
 						this.rangeGrid[i].push(this.designGrid[k][i]);
+						this.rangeMaps[i][rangeHash] = -1;
+						rangeFreqMaps[i][rangeHash] = 1;
 					}
 				}
 			}
+			var fullFactorialFreqs = [];
 			var j;
 			for (i = 0; i < this.rangeGrid.length; i++) {
 				this.rangeGrid[i].sort(function(a, b) {return a - b});
+				fullFactorialFreqs[i] = designGrid.length/this.rangeGrid[i].length;
 				for (j = 0; j < this.rangeGrid[i].length; j++) {
 					this.rangeMaps[i][hash(this.rangeGrid[i][j])] = j;
+					this.rangeFreqGrid[i][j] = rangeFreqMaps[i][hash(this.rangeGrid[i][j])]/fullFactorialFreqs[i];
 				}
 			}
 		}
@@ -2029,7 +2170,7 @@ app.controller("doubleDutchCtrl", function($scope, $modal, $log) {
 	$scope.assignmentCost = 0;
 	$scope.levelMatchCost = 0;
 	$scope.homologyCost = 0;
-	$scope.reuseCost = 0;
+	$scope.synthesisCost = 0;
 
 	$scope.defaultIsTemplateAssignment = true;
 	$scope.isTemplateAssignment = $scope.defaultIsTemplateAssignment;
@@ -2040,12 +2181,12 @@ app.controller("doubleDutchCtrl", function($scope, $modal, $log) {
 	$scope.defaultTimeout = 0;
 	$scope.timeout = $scope.defaultTimeout;
 
-	$scope.defaultAnnealingOptions = {numAnnealings: 100, iterPerAnnealing: 100, initialTemp: 1000, reuseReward: $scope.FLSolution.prototype.reuseOptions.REWARD};
+	$scope.defaultAnnealingOptions = {numAnnealings: 100, iterPerAnnealing: 100, initialTemp: 1000, synthesisOption: $scope.FLSolution.prototype.synthesisOptions.MINIMIZE};
 	$scope.annealingOptions = {numAnnealings: $scope.defaultAnnealingOptions.numAnnealings, iterPerAnnealing: $scope.defaultAnnealingOptions.iterPerAnnealing, 
-			initialTemp: $scope.defaultAnnealingOptions.initialTemp, reuseReward: $scope.defaultAnnealingOptions.reuseReward};
+			initialTemp: $scope.defaultAnnealingOptions.initialTemp, synthesisOption: $scope.defaultAnnealingOptions.synthesisOption};
 
-	$scope.defaultWeights = {levelMatch: 1, homology: 1, reuse: 1};
-	$scope.weights = {levelMatch: $scope.defaultWeights.levelMatch, homology: $scope.defaultWeights.levelMatch, reuse: $scope.defaultWeights.levelMatch};
+	$scope.defaultWeights = {levelMatch: 1, homology: 1, synthesis: 1};
+	$scope.weights = {levelMatch: $scope.defaultWeights.levelMatch, homology: $scope.defaultWeights.homology, synthesis: $scope.defaultWeights.synthesis};
 
 	$scope.defaultClusteringOptions = {numClusterings: 10, autoTarget: true};
 	$scope.clusteringOptions = {numClusterings: $scope.defaultClusteringOptions.numClusterings, autoTarget: $scope.defaultClusteringOptions.autoTarget};
@@ -2146,7 +2287,7 @@ app.controller("doubleDutchCtrl", function($scope, $modal, $log) {
 		          			annealingOptions: $scope.annealingOptions, defaultAnnealingOptions: $scope.defaultAnnealingOptions,  
 			          		weights: $scope.weights, defaultWeights: $scope.defaultWeights, 
 			          		clusteringOptions: $scope.clusteringOptions, defaultClusteringOptions: $scope.defaultClusteringOptions,
-				          	reuseOptions: $scope.FLSolution.prototype.reuseOptions};
+				          	synthesisOptions: $scope.FLSolution.prototype.synthesisOptions};
 	        	}
 	      	}
 	    });
@@ -2253,8 +2394,6 @@ app.controller("doubleDutchCtrl", function($scope, $modal, $log) {
   				outputData[0].push(fNodes[i].bioDesign.name);
   				outputData[0].push(fNodes[i].bioDesign.name + " Levels");
   				outputData[0].push(fNodes[i].bioDesign.name + " Level Targets");
-  				fNodes[i].children.sort(function(a, b) {return a.parameter.value - b.parameter.value});
-  				fNodes[i].levelTargets.sort(function(a, b) {return a - b});
   				for (j = 0; j < fNodes[i].children.length; j++) {
   					if (!outputData[j + 1]) {
   						outputData[j + 1] = [];
@@ -2274,27 +2413,79 @@ app.controller("doubleDutchCtrl", function($scope, $modal, $log) {
 		    outputData[0].push("Assignment Time (min)");
 	        outputData[0].push("Level Matching Weight");
 	        outputData[0].push("Pathway Homology Weight");
-	        outputData[0].push("Feature Reuse Weight");
+	        outputData[0].push("DNA Synthesis Weight");
 	        outputData[0].push("Level Matching Cost");
 	        outputData[0].push("Pathway Homology Cost");
-	        outputData[0].push("Feature Reuse Cost");
+	        outputData[0].push("DNA Synthesis Cost");
 	        outputData[0].push("Total Assignment Cost");
 	        outputData[0].push("Weighted Total Assignment Cost");
 	        outputData[1].push(assignmentCount);
 	        outputData[1].push(assignmentTime);
 	        outputData[1].push(weights.levelMatch);
 	        outputData[1].push(weights.homology);
-	        outputData[1].push(weights.reuse);
+	        outputData[1].push(weights.synthesis);
 	        outputData[1].push(solnCost.levelMatch);
 	        outputData[1].push(solnCost.homology);
-	        outputData[1].push(solnCost.reuse);
+	        outputData[1].push(solnCost.synthesis);
 	        outputData[1].push(solnCost.total);
 	        outputData[1].push(solnCost.weightedTotal);
 	        return outputData;
 		};
-  		if (!$scope.areFLDNodesValid() || !$scope.areFLNodesValid()) {
-  			return [[]];
-  		} else if ($scope.isAssigning) {
+		var validateClusterGrid = function(clusterGrid) {
+			var invalidClusters = [];
+			var i, j;
+			for (i = 0; i < clusterGrid.length; i++) {
+				for (j = 0; j < clusterGrid[i].length; j++) {
+					if (clusterGrid[i][j].isEmpty()) {
+						invalidClusters.push(clusterGrid[i][j]);
+					}
+				}
+			}
+			if (invalidClusters.length > 0) {
+				var clusterErrorMessage = "";
+				for (j = 0; j < invalidClusters.length; j++) {
+					clusterErrorMessage += ", " + invalidClusters[j].target.toFixed(2);
+				}
+				clusterErrorMessage = clusterErrorMessage.substring(2);
+				clusterErrorMessage += "<br><br>There are no available levels that cluster around the above targets. Change these targets or upload additional "
+						+ "features with parameters that are close to them in magnitude.";
+				alertUser("md", "Error", clusterErrorMessage);
+				return false;
+			} else {
+				return true;
+			}
+		};
+		var calculateNumsClusters = function(fNodes) {
+			var numsClusters = [];
+			var i;
+			for (i = 0; i < fNodes.length; i++) {
+				numsClusters[i] = fNodes[i].children.length;
+			}
+			return numsClusters;
+		};
+		var targetedClusterByDesign = function(fNodes, lNodes, clusterer) {
+			var constraintRecord = {};
+			var i, j;
+			for (i = 0; i < fNodes.length; i++) { 
+				for (j = 0; j < fNodes[i].children.length; j++) {
+					if (fNodes[i].children[j].isConstraint) {
+						constraintRecord[hash(fNodes[i].children[j])] = true;
+					} else {
+						fNodes[i].children[j].isConstraint = true;
+					}
+				}
+			} 
+  			var clusterGrid = clusterer.targetedCluster(fNodes, lNodes);
+  			for (i = 0; i < fNodes.length; i++) { 
+				for (j = 0; j < fNodes[i].children.length; j++) {
+					if (!constraintRecord[hash(fNodes[i].children[j])]) {
+						fNodes[i].children[j].isConstraint = false;
+					}
+				}
+			}
+			return clusterGrid;
+		};
+  		if ($scope.isAssigning) {
   			if ($scope.isAssignmentExhaustive) {
   				return makeOutputData($scope.fldNodes, $scope.annealingOptions.numAnnealings, $scope.assignmentTime, 
 		  				$scope.weights, $scope.bestSolnCost, $scope.isAssignmentExhaustive);
@@ -2304,82 +2495,41 @@ app.controller("doubleDutchCtrl", function($scope, $modal, $log) {
 	  		}
 		} else {
 			$scope.reconcileFLNodes();
-			var clusterer = new lClusterer();
-			var clusterGrid; 
 			if ($scope.clusteringOptions.autoTarget) {
-				var numsClusters = [];
-  				for (i = 0; i < $scope.fldNodes.length; i++) {
-  					numsClusters[i] = $scope.fldNodes[i].children.length;
-  				}
-  				clusterGrid = clusterer.lfMeansCluster($scope.fldNodes, $scope.lNodes, numsClusters, 
-						$scope.clusteringOptions.numClusterings);
-  				for (i = 0; i < clusterGrid.length; i++) {
-					$scope.fldNodes[i].levelTargets = [];
-					for (j = 0; j < clusterGrid[i].length; j++) {
-						$scope.fldNodes[i].levelTargets[j] = parseFloat(clusterGrid[i][j].target.toFixed(2));
-					}
-				}
-  			}
-  			var constraintRecord = {};
-			var i, j;
-			for (i = 0; i < $scope.fldNodes.length; i++) { 
-				for (j = 0; j < $scope.fldNodes[i].children.length; j++) {
-					if ($scope.fldNodes[i].children[j].isConstraint) {
-						constraintRecord[hash($scope.fldNodes[i].children[j])] = true;
-					} else {
-						$scope.fldNodes[i].children[j].isConstraint = true;
-					}
-				}
-			} 
-  			clusterGrid = clusterer.targetedCluster($scope.fldNodes, $scope.lNodes);
-  			for (i = 0; i < $scope.fldNodes.length; i++) { 
-				for (j = 0; j < $scope.fldNodes[i].children.length; j++) {
-					if (!constraintRecord[hash($scope.fldNodes[i].children[j])]) {
-						$scope.fldNodes[i].children[j].isConstraint = false;
-					}
-				}
+				$scope.numLevelsPerFactor = validateNumericInput($scope.numLevelsPerFactor, $scope.minLevelsPerFactor, $scope.maxLevelsPerFactor, 
+					$scope.numLevelsPerFactorStep, $scope.defaultNumLevelsPerFactor);
 			}
-			var validateClusterGrid = function(clusterGrid) {
-				var invalidClusters = [];
-				var i, j;
-				for (i = 0; i < clusterGrid.length; i++) {
-					for (j = 0; j < clusterGrid[i].length; j++) {
-						if (clusterGrid[i][j].isEmpty()) {
-							invalidClusters.push(clusterGrid[i][j]);
-						}
+			if ($scope.areFLDNodesValid() && $scope.areFLNodesValid() && (!$scope.clusteringOptions.autoTarget || $scope.areLNodesValid())
+					&& (!$scope.isTemplateAssignment || $scope.loadSelectedTemplate(false))) {
+				var clusterer = new lClusterer();
+				var clusterGrid; 
+				if ($scope.clusteringOptions.autoTarget) {
+					if ($scope.isTemplateAssignment) {
+						clusterGrid = clusterer.templateCluster($scope.fldNodes, $scope.lNodes, $scope.selectedTemplateA, 
+								$scope.clusteringOptions.numClusterings);
+					} else {
+		  				clusterGrid = clusterer.lfMeansCluster($scope.fldNodes, $scope.lNodes, calculateNumsClusters($scope.fldNodes), 
+								$scope.clusteringOptions.numClusterings);
+		  				$scope.targetFLDNodes(clusterGrid);
+		  			}
+	  			}
+	  			clusterGrid = targetedClusterByDesign($scope.fldNodes, $scope.lNodes, clusterer);
+	  			if (validateClusterGrid(clusterGrid)) {
+	  				var soln = new $scope.FLSolution(clusterGrid);
+					var solnCost;
+					if ($scope.isTemplateAssignment) {
+						solnCost = soln.calculateCost($scope.weights, $scope.annealingOptions.synthesisOption, $scope.selectedTemplateA.rangeFreqGrid);
+						$scope.isNumLevelsPerFactorShown = false;
+					} else {
+						solnCost = soln.calculateCost($scope.weights, $scope.annealingOptions.synthesisOption);
 					}
-				}
-				if (invalidClusters.length > 0) {
-					var clusterErrorMessage = "";
-					for (j = 0; j < invalidClusters.length; j++) {
-						clusterErrorMessage += ", " + invalidClusters[j].target.toFixed(2);
-					}
-					clusterErrorMessage = clusterErrorMessage.substring(2);
-					clusterErrorMessage += "<br><br>There are no available levels that cluster around the above targets. Change these targets or upload additional "
-							+ "features with parameters that are close to them in magnitude.";
-					alertUser("md", "Error", clusterErrorMessage);
-					return false;
-				} else {
-					return true;
-				}
-			};
-  			if (validateClusterGrid(clusterGrid)) {
-  				var soln = new $scope.FLSolution(clusterGrid);
-  				for (i = 0; i < $scope.fldNodes.length; i++) {
-					$scope.fldNodes[i].children = [];
-				}
-  				var k;
-  				for (i = 0; i < soln.levelSelections.length; i++) {
-					for (j = 0; j < soln.levelSelections[i].length; j++) {
-						k = soln.levelSelections[i][j];
-						$scope.fldNodes[i].children[j] = soln.clusterGrid[i][j].lNodes[k];
-					}
-				}
-  				return makeOutputData($scope.fldNodes, 0, 0, $scope.weights, soln.calculateCost($scope.weights, $scope.annealingOptions.reuseReward), 
-	  					$scope.isAssignmentExhaustive);
-  			} else {
-  				return [[]];
-  			}
+					return makeOutputData($scope.fldNodes, 0, 0, $scope.weights, solnCost, $scope.isAssignmentExhaustive);
+	  			} else {
+	  				return [[]];
+	  			}
+	  		} else {
+	  			return [[]];
+	  		}
 		}
   	};
 
@@ -2561,6 +2711,7 @@ app.controller("doubleDutchCtrl", function($scope, $modal, $log) {
 								}
 							};
 					  		$scope.doeTemplates.sort(sortByName);
+					  		$scope.isNumLevelsPerFactorShown = false;
 							$scope.$apply();
 						}
 					}
@@ -2945,13 +3096,55 @@ app.controller("doubleDutchCtrl", function($scope, $modal, $log) {
 		// }
   //   };
 
+  	$scope.targetFLDNodes = function(clusterGrid) {
+  		var i;
+		for (i = 0; i < clusterGrid.length; i++) {
+			$scope.fldNodes[i].levelTargets = [];
+			for (j = 0; j < clusterGrid[i].length; j++) {
+				$scope.fldNodes[i].levelTargets[j] = parseFloat(clusterGrid[i][j].target.toFixed(2));
+			}
+		}
+  	};
+
+  	$scope.showFLDNodesTargets = function() {
+  		var i;
+		for (i = 0; i < $scope.fldNodes.length; i++) {
+			$scope.fldNodes[i].isTargetShown = true;
+			$scope.fldNodes[i].isToggleShown = true;
+		}
+  	};
+
 	$scope.assignLevels = function() {
+		var validateClusterGrid = function(clusterGrid) {
+			var invalidClusters = [];
+			var i, j;
+			for (i = 0; i < clusterGrid.length; i++) {
+				for (j = 0; j < clusterGrid[i].length; j++) {
+					if (clusterGrid[i][j].isEmpty()) {
+						invalidClusters.push(clusterGrid[i][j]);
+					}
+				}
+			}
+			if (invalidClusters.length > 0) {
+				var clusterErrorMessage = "";
+				for (j = 0; j < invalidClusters.length; j++) {
+					clusterErrorMessage += ", " + invalidClusters[j].target.toFixed(2);
+				}
+				clusterErrorMessage = clusterErrorMessage.substring(2);
+				clusterErrorMessage += "<br><br>There are no available levels that cluster around the above targets. Change these targets "
+						+ "or upload additional features with parameters that are close to them in magnitude.";
+				alertUser("md", "Error", clusterErrorMessage);
+				return false;
+			} else {
+				return true;
+			}
+		};
 		var isStarting = false;
 		var clusterGrid;
-		var i, j;
 		if ($scope.isAssigning) {
 			clusterGrid = $scope.bestSoln.clusterGrid;
 		} else {
+			$scope.reconcileFLNodes();
 			if ($scope.clusteringOptions.autoTarget) {
 				$scope.numLevelsPerFactor = validateNumericInput($scope.numLevelsPerFactor, $scope.minLevelsPerFactor, $scope.maxLevelsPerFactor, 
 					$scope.numLevelsPerFactorStep, $scope.defaultNumLevelsPerFactor);
@@ -2959,56 +3152,29 @@ app.controller("doubleDutchCtrl", function($scope, $modal, $log) {
 			if ($scope.areFLDNodesValid() && (!$scope.clusteringOptions.autoTarget || $scope.areLNodesValid())
 					&& (!$scope.isTemplateAssignment || $scope.loadSelectedTemplate(false))) {
 				var clusterer = new lClusterer();
-				if ($scope.isTemplateAssignment) {
-					clusterGrid = clusterer.templateCluster($scope.fldNodes, $scope.lNodes, $scope.selectedTemplateA, 
-							$scope.clusteringOptions.numClusterings);
-				} else if ($scope.clusteringOptions.autoTarget) {
-					clusterGrid = clusterer.lfMeansCluster($scope.fldNodes, $scope.lNodes, $scope.numLevelsPerFactor, 
-							$scope.clusteringOptions.numClusterings);
+				if ($scope.clusteringOptions.autoTarget) {
+					if ($scope.isTemplateAssignment) {
+						clusterGrid = clusterer.templateCluster($scope.fldNodes, $scope.lNodes, $scope.selectedTemplateA, 
+								$scope.clusteringOptions.numClusterings);
+					} else {
+						clusterGrid = clusterer.lfMeansCluster($scope.fldNodes, $scope.lNodes, $scope.numLevelsPerFactor, 
+								$scope.clusteringOptions.numClusterings);
+					}
 				} else {
 					clusterGrid = clusterer.targetedCluster($scope.fldNodes, $scope.lNodes);
 				}
-				var validateClusterGrid = function(clusterGrid) {
-					var invalidClusters = [];
-					var i, j;
-					for (i = 0; i < clusterGrid.length; i++) {
-						for (j = 0; j < clusterGrid[i].length; j++) {
-							if (clusterGrid[i][j].isEmpty()) {
-								invalidClusters.push(clusterGrid[i][j]);
-							}
-						}
-					}
-					if (invalidClusters.length > 0) {
-						var clusterErrorMessage = "";
-						for (j = 0; j < invalidClusters.length; j++) {
-							clusterErrorMessage += ", " + invalidClusters[j].target.toFixed(2);
-						}
-						clusterErrorMessage = clusterErrorMessage.substring(2);
-						clusterErrorMessage += "<br><br>There are no available levels that cluster around the above targets. Change these targets "
-								+ "or upload additional features with parameters that are close to them in magnitude.";
-						alertUser("md", "Error", clusterErrorMessage);
-						return false;
-					} else {
-						return true;
-					}
-				};
 				if (validateClusterGrid(clusterGrid)) {
+					if ($scope.clusteringOptions.autoTarget) {
+						if ($scope.isTemplateAssignment) {
+							$scope.isTemplateSelectADisabled = true;
+							$scope.isNumLevelsPerFactorShown = false;
+						} else {
+							$scope.targetFLDNodes(clusterGrid);
+						}
+						$scope.showFLDNodesTargets();
+					}
 					$scope.isAssigning = true;
 					isStarting = true;
-					if ($scope.clusteringOptions.autoTarget) {
-						for (i = 0; i < clusterGrid.length; i++) {
-							$scope.fldNodes[i].levelTargets = [];
-							for (j = 0; j < clusterGrid[i].length; j++) {
-								$scope.fldNodes[i].levelTargets[j] = parseFloat(clusterGrid[i][j].target.toFixed(2));
-							}
-							$scope.fldNodes[i].isTargetShown = true;
-							$scope.fldNodes[i].isToggleShown = true;
-						}
-					}
-					if ($scope.isTemplateAssignment) {
-						$scope.isTemplateSelectADisabled = true;
-						$scope.isNumLevelsPerFactorShown = false;
-					}
 				}
 			}
 		}
@@ -3018,10 +3184,21 @@ app.controller("doubleDutchCtrl", function($scope, $modal, $log) {
 			var timer = new Timer($scope.timeout);
 			if ($scope.isAssignmentExhaustive) {
 				if (isStarting) {
-					soln = solver.boundSolve(clusterGrid, $scope.annealingOptions, $scope.weights, timer);
+					if ($scope.isTemplateAssignment) {
+						soln = solver.boundSolve(clusterGrid, $scope.annealingOptions, $scope.weights, timer, $scope.selectedTemplateA.rangeFreqGrid);
+					} else {
+						soln = solver.boundSolve(clusterGrid, $scope.annealingOptions, $scope.weights, timer);
+					}
 				} else {
-					soln = solver.boundSolve(clusterGrid, $scope.annealingOptions, $scope.weights, timer, $scope.bestSoln.levelSelections);
+					if ($scope.isTemplateAssignment) {
+						soln = solver.boundSolve(clusterGrid, $scope.annealingOptions, $scope.weights, timer, $scope.selectedTemplateA.rangeFreqGrid, 
+								$scope.bestSoln.levelSelections);
+					} else {
+						soln = solver.boundSolve(clusterGrid, $scope.annealingOptions, $scope.weights, timer, null, $scope.bestSoln.levelSelections);
+					}
 				}
+			} else if ($scope.isTemplateAssignment) {
+				soln = solver.annealSolve(clusterGrid, $scope.annealingOptions, $scope.weights, $scope.selectedTemplateA.rangeFreqGrid);
 			} else {
 				soln = solver.annealSolve(clusterGrid, $scope.annealingOptions, $scope.weights);
 			}
@@ -3029,14 +3206,20 @@ app.controller("doubleDutchCtrl", function($scope, $modal, $log) {
 			if (!$scope.isAssignmentExhaustive) {
 				$scope.assignmentCount += $scope.annealingOptions.numAnnealings;
 			}
-			var solnCost = soln.calculateCost($scope.weights, $scope.annealingOptions.reuseReward);
+			var solnCost;
+			if ($scope.isTemplateAssignment) {
+				solnCost = soln.calculateCost($scope.weights, $scope.annealingOptions.synthesisOption, $scope.selectedTemplateA.rangeFreqGrid);
+			} else {
+				solnCost = soln.calculateCost($scope.weights, $scope.annealingOptions.synthesisOption);
+			}
 			if (isStarting || solnCost.weightedTotal <= $scope.bestSolnCost.weightedTotal) {
 				$scope.bestSoln = soln;
 				$scope.bestSolnCost = solnCost;
+				var i;
 				for (i = 0; i < $scope.fldNodes.length; i++) {
 					$scope.fldNodes[i].children = [];
 				}
-				var k;
+				var j, k;
 				for (i = 0; i < $scope.bestSoln.levelSelections.length; i++) {
 					for (j = 0; j < $scope.bestSoln.levelSelections[i].length; j++) {
 						k = $scope.bestSoln.levelSelections[i][j];
