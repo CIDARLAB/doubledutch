@@ -33,7 +33,7 @@
         <br>
         <button type="button" class="btn btn-primary" ng-click="uploadTemplate()">Upload Template</button>
       </div>
-      <div class="col-sm-4" align="center" valign="middle">
+      <div class="col-sm-4" align="center">
         <img src="img/double_dutch_logo.png" style="width:180.411px;height:168px;">
       </div>
     </div>
@@ -42,22 +42,22 @@
 
     <div class="row">
       <div class="col-sm-4">
-        <label style="font-size:20pt">Level Assignment</label>
+        <label style="font-size:20pt">Variant Assignment</label>
         <br ng-show="isTemplateSelectAShown">
         <label ng-show="isTemplateSelectAShown">DOE Template</label>
         <select ng-show="isTemplateSelectAShown" ng-disabled="isTemplateSelectADisabled" ng-change="changeTemplate()" ng-init="selectedTemplateA = selectedTemplateA || defaultSelectedTemplate" ng-model="selectedTemplateA" ng-options="template as template.name for template in doeTemplates"></select>
         <br>
-        <label ng-show="isNumLevelsPerFactorShown">Levels per Factor</label>
+        <label ng-show="isNumLevelsPerFactorShown">Variants per Gene</label>
         <input type="number" step="{{numLevelsPerFactorStep}}" min="{{minLevelsPerFactor}}" max="{{maxLevelsPerFactor}}" style="height:25px; width:50px" ng-show="isNumLevelsPerFactorShown" ng-disabled="isAssigning" ng-model="numLevelsPerFactor">
         <br ng-show="isNumLevelsPerFactorShown">
-        <button type="button" ng-disabled="bestSoln.isOptimal" class="btn btn-primary" ng-click="assignLevels()">Assign Levels</button>
+        <button type="button" ng-disabled="bestSoln.isOptimal" class="btn btn-primary" ng-click="assignLevels()">Assign Variants</button>
         <button type="button" ng-disabled="bestSoln.isOptimal" class="btn btn-primary" ng-click="editAssignmentOptions('md')">Edit Options</button>
         <br><br>
         <button type="button" class="btn btn-primary" ng-csv="downloadAssignment()" filename="level_assignment.csv" field-separator=",">Download Assignment</button>
         <button class="btn btn-warning" ng-click="quitAssigning()" ng-show="isAssigning">Done</button>
       </div>
       <div class="col-sm-4">
-        <label style="font-size:20pt">Library Download</label>
+        <label style="font-size:20pt">Pathway Library Download</label>
         <br>
         <label>DOE Template</label>
         <select ng-init="selectedTemplateB = selectedTemplateB || defaultSelectedTemplate" ng-model="selectedTemplateB" ng-options="template as template.name for template in doeTemplates"></select>
@@ -71,7 +71,7 @@
 
 		<div class="row">
   		<div class="col-sm-4">
-    		<label style="font-size:20pt" ng-hide="isAssigning">Available Factors</label>
+    		<label style="font-size:20pt" ng-hide="isAssigning">Available Genes</label>
         <div ng-show="isAssigning">
           <div ng-hide="isAssignmentExhaustive">
             <p>The best level assignment after {{assignmentCount}} trials is shown below.</p>
@@ -101,7 +101,7 @@
     		</div>
   		</div>
   		<div class="col-sm-4">
-    		<label style="font-size:20pt">Factorial Design</label>
+    		<label style="font-size:20pt">Pathway Gene Variants</label>
     		<div ui-tree="fldTreeOptions">
       			<ol ui-tree-nodes="" ng-model="fldNodes">
         			<li ng-repeat="node in fldNodes" ui-tree-node ng-include="'fl_tree_renderer.html'"></li>
@@ -109,7 +109,7 @@
     		</div>
   		</div>
   		<div class="col-sm-4">
-    		<label style="font-size:20pt" ng-hide="isAssigning">Available Levels</label>
+    		<label style="font-size:20pt" ng-hide="isAssigning">Available Components</label>
     		<div ui-tree="flTreeOptions">
       			<ol ui-tree-nodes="" ng-model="lNodes">
         			<li ng-repeat="node in lNodes" ui-tree-node ng-include="'fl_tree_renderer.html'" ng-hide="isAssigning"></li>
@@ -230,9 +230,9 @@
       <div class="modal-body">
           <div class="row">
               <div class="col-sm-6">
-                  <label style="font-size:20pt">Level Assignment</label>
+                  <label style="font-size:20pt">Variant Assignment</label>
                   <br>
-                  <label>Assign to DOE Template</label>
+                  <label>Base on DOE Template</label>
                   <input ng-disabled="isAssigning" ng-change="changeTemplateAssignment()" type="checkbox" ng-model="isTemplateAssignment">
                   <br>
                   <label>Exhaustive Assignment</label>
@@ -256,7 +256,7 @@
                     <br><br>
                   </div>
                   <div>
-                    <label>Level Matching Weight</label>
+                    <label>Expression Matching Weight</label>
                     <input ng-disabled="isAssigning" type="number" step="{{inputStep}}" min="{{minInputZero}}" max="{{maxInput}}" style="height:25px; width:50px" ng-model="weights.levelMatch">
                     <br>
                     <label>Pathway Homology Weight</label>
@@ -265,16 +265,16 @@
                     <label>DNA Synthesis Weight</label>
                     <input ng-disabled="isAssigning" type="number" step="{{inputStep}}" min="{{minInputZero}}" max="{{maxInput}}" style="height:25px; width:50px" ng-model="weights.synthesis">
                     <br>
-                    <label for="minSynthesisRadio" ng-disabled="isAssigning">Minimize Synthesis</label>
+                    <label for="minSynthesisRadio" ng-disabled="isAssigning">Min Synthesis</label>
                     <input type="radio" id="minSynthesisRadio" name="synthesisRadio" value="{{synthesisOptions.MINIMIZE}}" ng-model="annealingOptions.synthesisOption" ng-disabled="isAssigning"/>
-                    <label for="maxSynthesisRadio">Maximize Synthesis</label>
+                    <label for="maxSynthesisRadio">Max Synthesis</label>
                     <input type="radio" id="maxSynthesisRadio" name="synthesisRadio" value="{{synthesisOptions.MAXIMIZE}}" ng-model="annealingOptions.synthesisOption" ng-disabled="isAssigning"/>
                   </div>
               </div>
               <div ng-hide="isAssigning" class="col-sm-6">
-                  <label style="font-size:20pt">Level Targets</label>
+                  <label style="font-size:20pt">Expression Targets</label>
                   <br>
-                  <label>Auto-Targeting</label>
+                  <label>Auto-Target</label>
                   <input ng-disabled="isTemplateAssignment" type="checkbox" ng-model="clusteringOptions.autoTarget">
                   <br>
                   <label ng-show="clusteringOptions.autoTarget"># of Trials</label>

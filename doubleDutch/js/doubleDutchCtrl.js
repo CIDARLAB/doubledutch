@@ -563,69 +563,6 @@ app.controller("doubleDutchCtrl", function($scope, $modal, $log) {
 		return totalHomologyCost/maxHomologyCost;
 	};
 
-	// $scope.FLSolution.prototype.calculateHomologyCost = function(iBound, jBound) {
-	// 	if (arguments.length < 2) {
-	// 		if (arguments.length < 1) {
-	// 			iBound = this.levelSelections.length - 1;
-	// 		}
-	// 		jBound = this.levelSelections[iBound].length - 1;
-	// 	}
-	// 	var homologyCost = 0;
-	// 	if (this.levelSelections.length > 1) {
-	// 		var normalizationFactor = 0;
-	// 		var levelTotal = 0;
-	// 		var i;
-	// 		for (i = 0; i < this.levelSelections.length; i++) {
-	// 			if (this.levelSelections[i].length > 1) {
-	// 				normalizationFactor -= combinatorial(this.levelSelections[i].length, 2);
-	// 			}
-	// 			levelTotal += this.levelSelections[i].length;
-	// 		}
-	// 		if (levelTotal < 2) {
-	// 			normalizationFactor = 1;
-	// 		} else {
-	// 			normalizationFactor += combinatorial(levelTotal, 2);
-	// 		}
-	// 		var featDict = {};
-	// 		var homologyDict;
- //    		var feats;
- //    		var j, k, f, m, n;
- //    		for (i = 0; i <= iBound; i++) {
-	// 			for (j = 0; j <= (i == iBound ? jBound : this.levelSelections[i].length - 1); j++) {
-	// 				k = this.levelSelections[i][j];
-	//     			feats = this.clusterGrid[i][j].lNodes[k].bioDesign.module.getFeatures();
-	//     			homologyDict = {};
-	//     			for (f = 0; f < feats.length; f++) {
-	//     				if (featDict[hash(feats[f])] == null) {
-	//     					featDict[hash(feats[f])] = [];
-	//     					for (m = 0; m <= iBound; m++) {
-	//     						featDict[hash(feats[f])].push([]);
-	//     						for (n = 0; n <= jBound; n++) {
-	// 	    						featDict[hash(feats[f])][m].push(0);
-	// 	    					}
-	//     					}
-	//     				} else {
-	//     					for (m = 0; m <= iBound; m++) {
-	//     						if (m != i) {
-	//     							for (n = 0; n <= jBound; n++) {
-	//     								if (featDict[hash(feats[f])][m][n] > 0 
-	// 	    									&& homologyDict[hash(JSON.stringify(m) + JSON.stringify(n))] == null) {
-	// 		    							homologyCost += featDict[hash(feats[f])][m][n];
-	// 		    							homologyDict[hash(JSON.stringify(m) + JSON.stringify(n))] = true;
-	// 			    					}
-	// 	    						}
-	//     						}
-	//     					}
-	//     				}
- //    					featDict[hash(feats[f])][i][j]++;
-	//     			}
-	//     		}
- //    		}
- //    		homologyCost /= normalizationFactor;
-	// 	}
-	// 	return homologyCost;
-	// };
-
 	$scope.FLSolution.prototype.copy = function() {
 		var solnCopy = new $scope.FLSolution(this.clusterGrid);
 		var i, j;
