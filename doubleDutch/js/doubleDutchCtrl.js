@@ -2772,266 +2772,241 @@ app.controller("doubleDutchCtrl", function($scope, $modal, $log) {
 		}
     };
 
-  //   $scope.testAssign3 = function() {
-  //   	var numFactors = [7];
-		// var numLevels = [2];
-		// var boundCosts = [];
-		// var boundTimes = [];
-		// var n;
-		// for (n = 0; n < numFactors.length; n++) {
-		// 	boundCosts[n] = [];
-		// 	boundTimes[n] = [];
-		// }
-		// var fNodes = [];
-		// var i;
-		// for (i = 0; i < numFactors[0] - 1; i++) {
-		// 	fNodes[i] = new fNode(new bioDesign());
-		// }
-		// var clusterer = new lClusterer();
-		// var clusterGrid;
-		// var solver = new flSolver();
-		// var boundSoln;
-		// var m;
-		// for (n = 0; n < numFactors.length; n++) {
-		// 	fNodes.push(new fNode(new bioDesign()));
-		// 	for (m = 0; m < numLevels.length; m++) {
-	 //    		clusterGrid = clusterer.lfMeansCluster(fNodes, $scope.lNodes, numLevels[m], 
-		// 			$scope.clusteringOptions.numClusterings);
-	 //    		var timer = new Timer();
-  //   			boundSoln = solver.boundSolve(clusterGrid, $scope.annealingOptions, $scope.weights, timer);
-  //   			boundTimes[n].push(timer.getElapsedTime());
-  //   			boundCosts[n].push(boundSoln.calculateCost($scope.weights));
-	 //    	}
-	 //    }
-		// console.log("bound");
-		// for (n = 0; n < numFactors.length; n++) {
-		// 	for (m = 0; m < numLevels.length; m++) {
-		// 		console.log("fl(" + numFactors[n] + "," + numLevels[m] + "): total = " + boundCosts[n][m].total + ", levelMatch = " 
-		// 			+ boundCosts[n][m].levelMatch + ", homology = " + boundCosts[n][m].homology + ", reuse = " + boundCosts[n][m].reuse
-		// 			+ ", time = " + boundTimes[n][m]);
-		// 	}
-		// }
-  //   };
-
-  //   $scope.testAssign = function(fNodes, lNodes, numDesignFactors, numLevelsPerDesignFactor, clusteringOptions, annealingOptions, numTrials) {
-  //   	numDesignFactors.sort(function(a, b){return b.value - a.value});
-  //   	if (fNodes.length < numDesignFactors[0]) {
-		// 		throw "Number of available factors is less than largest number of design factors to be tested.";
-		// } else {
-		// 	var clusterer = new lClusterer();
-		// 	var clusterGrid;
-		// 	var m, n, i, j;
-		// 	for (m = 0; m < numDesignFactors.length; m++) {
-		// 		for (n = 0; n < numLevelsPerDesignFactor.length; n++) {
-		// 			if (!clusteringOptions.autoTarget || validateLevelsPerFactor(lNodes, numLevelsPerDesignFactor[n])) {
-		// 				if (clusteringOptions.autoTarget) {
-		// 					clusterGrid = clusterer.lfMeansCluster(fNodes, lNodes, numLevelsPerDesignFactor[n], 
-		// 							clusteringOptions.numClusterings);
-		// 				} else {
-		// 					clusterGrid = clusterer.targetedCluster(fNodes, lNodes);
-		// 				}
-		// 				if (validateClusterGrid(clusterGrid)) {
-		// 					if (clusteringOptions.autoTarget) {
-		// 						for (i = 0; i < clusterGrid.length; i++) {
-		// 							fNodes[i].levelTargets = [];
-		// 							for (j = 0; j < clusterGrid[i].length; j++) {
-		// 								fNodes[i].levelTargets[j] = parseFloat(clusterGrid[i][j].target.toFixed(2));
-		// 							}
-		// 						}
-		// 					}
-							
-		// 				}
-		// 			}
-		// 		}
-		// 	}
-		// }
-  //   };
-
-  //   $scope.testAssign2 = function() {
-		// var gTotal = 100;
-		// var numFactors = [5, 6, 7, 8, 9];
-		// var numLevels = [2, 3, 4, 5];
-		// var randomCosts = [];
-		// var annealCosts = [];
-		// var comparedCosts = [];
-		// var randomTimes = [];
-		// var annealTimes = [];
-		// var n, m;
-		// for (n = 0; n < numFactors.length; n++) {
-		// 		randomCosts[n] = [];
-		// 		annealCosts[n] = [];
-		// 		comparedCosts[n] = [];
-		// 		annealTimes[n] = [];
-		// 		randomTimes[n] = [];
-		// 	for (m = 0; m < numLevels.length; m++) {
-		// 		randomCosts[n][m] = [];
-		// 		annealCosts[n][m] = [];
-		// 		comparedCosts[n][m] = [];
-		// 		annealTimes[n][m] = [];
-		// 		randomTimes[n][m] = [];
-		// 	}
-		// }
-		// var fNodes = [];
-		// var i;
-		// for (i = 0; i < numFactors[0] - 1; i++) {
-		// 	fNodes[i] = new fNode(new bioDesign());
-		// }
- 	// 	var clusterer = new lClusterer();
-		// var clusterGrid;
-		// var solver = new flSolver();
-		// var randomSoln, annealSoln;
-		// var timer;
-		// var g;
-		// for (n = 0; n < numFactors.length; n++) {
-		// 	fNodes.push(new fNode(new bioDesign()));
-		// 	for (m = 0; m < numLevels.length; m++) {
-		// 		clusterGrid = clusterer.lfMeansCluster(fNodes, $scope.lNodes, numLevels[m], 
-		// 			$scope.clusteringOptions.numClusterings);
-		// 		for (g = 0; g < gTotal; g++) {
-		//     		timer = new Timer();
-		//     		timer.startSec();
-	 //    			randomSoln = solver.randomSolve(clusterGrid, $scope.weights, $scope.annealingOptions.numAnnealings, timer);
-	 //    			randomTimes[n][m][g] = timer.getElapsedTimeSec();
-	 //    			randomCosts[n][m][g] = randomSoln.calculateCost($scope.weights);
-	 //    			timer = new Timer();
-	 //    			timer.startSec();
-		// 			annealSoln = solver.annealSolve(clusterGrid, $scope.annealingOptions, $scope.weights, timer);
-		// 			annealTimes[n][m][g] = timer.getElapsedTimeSec();
-		// 			annealCosts[n][m][g] = annealSoln.calculateCost($scope.weights);
-		// 		}
-	 //    	}
-	 //    }
-	 //    var randomTotal = [];
-	 //    var randomLevelMatch = [];
-	 //    var randomHomology = [];
-	 //    var randomReuse = [];
-	 //    var annealTotal = [];
-	 //    var annealLevelMatch = [];
-	 //    var annealHomology = [];
-	 //    var annealReuse = [];
-	 //    for (n = 0; n < numFactors.length; n++) {
-	 //    	randomTotal[n] = [];
-	 //    	randomLevelMatch[n] = [];
-		//     randomHomology[n] = [];
-		//     randomReuse[n] = [];
-		//     annealTotal[n] = [];
-		//     annealLevelMatch[n] = [];
-		//     annealHomology[n] = [];
-		//     annealReuse[n] = [];
-	 //    	for (m = 0; m < numLevels.length; m++) {
-	 //    		randomTotal[n][m] = [];
-		//     	randomLevelMatch[n][m] = [];
-		// 	    randomHomology[n][m] = [];
-		// 	    randomReuse[n][m] = [];
-		// 	    annealTotal[n][m] = [];
-		// 	    annealLevelMatch[n][m] = [];
-		// 	    annealHomology[n][m] = [];
-		// 	    annealReuse[n][m] = [];
-	 //    		for (g = 0; g < gTotal; g++) {
-		//     		randomTotal[n][m][g] = randomCosts[n][m][g].total;
-		// 	    	randomLevelMatch[n][m][g] = randomCosts[n][m][g].levelMatch;
-		// 		    randomHomology[n][m][g] = randomCosts[n][m][g].homology;
-		// 		    randomReuse[n][m][g] = randomCosts[n][m][g].reuse;
-		// 		    annealTotal[n][m][g] = annealCosts[n][m][g].total;
-		// 		    annealLevelMatch[n][m][g] = annealCosts[n][m][g].levelMatch;
-		// 		    annealHomology[n][m][g] = annealCosts[n][m][g].homology;
-		// 		    annealReuse[n][m][g] = annealCosts[n][m][g].reuse;
-		// 		}
-	 //    	}
-	 //    }
-	 //    for (n = 0; n < numFactors.length; n++) {
-	 //    	for (m = 0; m < numLevels.length; m++) {
-	 //    		randomTimes[n][m] = basicStats(randomTimes[n][m]);
-	 //    		annealTimes[n][m] = basicStats(annealTimes[n][m]);
-	 //    		randomTotal[n][m] = basicStats(randomTotal[n][m]);
-		//     	randomLevelMatch[n][m] = basicStats(randomLevelMatch[n][m]);
-		// 	    randomHomology[n][m] = basicStats(randomHomology[n][m]);
-		// 	    randomReuse[n][m] = basicStats(randomReuse[n][m]);
-		// 	    annealTotal[n][m] = basicStats(annealTotal[n][m]);
-		// 	    annealLevelMatch[n][m] = basicStats(annealLevelMatch[n][m]);
-		// 	    annealHomology[n][m] = basicStats(annealHomology[n][m]);
-		// 	    annealReuse[n][m] = basicStats(annealReuse[n][m]);
-	 //    	}
-	 //    }
-	 //    var comparedTotal = [];
-	 //    var comparedLevelMatch = [];
-	 //    var comparedHomology = [];
-	 //    var comparedReuse = [];
-	 //    for (n = 0; n < numFactors.length; n++) {
-	 //    	comparedTotal[n] = [];
-		//     comparedLevelMatch[n] = [];
-		//     comparedHomology[n] = [];
-		//     comparedReuse[n] = [];
-	 //    	for (m = 0; m < numLevels.length; m++) {
-	 //    		comparedTotal[n][m] = {mean: randomTotal[n][m].mean - annealTotal[n][m].mean, 
-	 //    			stdDev: Math.sqrt(Math.pow(randomTotal[n][m].stdDev, 2) + Math.pow(annealTotal[n][m].stdDev, 2))};
-		// 	    comparedLevelMatch[n][m] = {mean: randomLevelMatch[n][m].mean - annealLevelMatch[n][m].mean, 
-	 //    			stdDev: Math.sqrt(Math.pow(randomLevelMatch[n][m].stdDev, 2) + Math.pow(annealLevelMatch[n][m].stdDev, 2))};
-		// 	    comparedHomology[n][m] = {mean: randomHomology[n][m].mean - annealHomology[n][m].mean, 
-	 //    			stdDev: Math.sqrt(Math.pow(randomHomology[n][m].stdDev, 2) + Math.pow(annealHomology[n][m].stdDev, 2))};
-		// 	    comparedReuse[n][m] = {mean: randomReuse[n][m].mean - annealReuse[n][m].mean, 
-	 //    			stdDev: Math.sqrt(Math.pow(randomReuse[n][m].stdDev, 2) + Math.pow(annealReuse[n][m].stdDev, 2))};
-	 //    	}
-	 //    }		 
-		// console.log("compared");
-		// for (n = 0; n < numFactors.length; n++) {
-		// 	for (m = 0; m < numLevels.length; m++) {
-		// 		console.log("fl(" + numFactors[n] + "," + numLevels[m] + "): total = " + comparedTotal[n][m].mean + ", levelMatch = " 
-		// 			+ comparedLevelMatch[n][m].mean + ", homology = " + comparedHomology[n][m].mean + ", reuse = " + comparedReuse[n][m].mean);
-		// 	}
-		// }
-		// console.log("anneal");
-		// for (n = 0; n < numFactors.length; n++) {
-		// 	for (m = 0; m < numLevels.length; m++) {
-		// 		console.log("fl(" + numFactors[n] + "," + numLevels[m] + "): total = " + annealTotal[n][m].mean + ", levelMatch = " 
-		// 			+ annealLevelMatch[n][m].mean + ", homology = " + annealHomology[n][m].mean + ", reuse = " + annealReuse[n][m].mean
-		// 			+ ", time = " + annealTimes[n][m].mean);
-		// 	}
-		// }
-		// console.log("random");
-		// for (n = 0; n < numFactors.length; n++) {
-		// 	for (m = 0; m < numLevels.length; m++) {
-		// 		console.log("fl(" + numFactors[n] + "," + numLevels[m] + "): total = " + randomTotal[n][m].mean + ", levelMatch = " 
-		// 			+ randomLevelMatch[n][m].mean + ", homology = " + randomHomology[n][m].mean + ", reuse = " + randomReuse[n][m].mean
-		// 			+ ", time = " + randomTimes[n][m].mean);
-		// 	}
-		// }
-		// console.log("compared sd");
-		// for (n = 0; n < numFactors.length; n++) {
-		// 	for (m = 0; m < numLevels.length; m++) {
-		// 		console.log("fl(" + numFactors[n] + "," + numLevels[m] + "): total = " + comparedTotal[n][m].stdDev + ", levelMatch = " 
-		// 			+ comparedLevelMatch[n][m].stdDev + ", homology = " + comparedHomology[n][m].stdDev + ", reuse = " + comparedReuse[n][m].stdDev);
-		// 	}
-		// }
-		// console.log("anneal sd");
-		// for (n = 0; n < numFactors.length; n++) {
-		// 	for (m = 0; m < numLevels.length; m++) {
-		// 		console.log("fl(" + numFactors[n] + "," + numLevels[m] + "): total = " + annealTotal[n][m].stdDev + ", levelMatch = " 
-		// 			+ annealLevelMatch[n][m].stdDev + ", homology = " + annealHomology[n][m].stdDev + ", reuse = " + annealReuse[n][m].stdDev
-		// 			+ ", time = " + annealTimes[n][m].stdDev);
-		// 	}
-		// }
-		// console.log("random sd");
-		// for (n = 0; n < numFactors.length; n++) {
-		// 	for (m = 0; m < numLevels.length; m++) {
-		// 		console.log("fl(" + numFactors[n] + "," + numLevels[m] + "): total = " + randomTotal[n][m].stdDev + ", levelMatch = " 
-		// 			+ randomLevelMatch[n][m].stdDev + ", homology = " + randomHomology[n][m].stdDev + ", reuse = " + randomReuse[n][m].stdDev
-		// 			+ ", time = " + randomTimes[n][m].stdDev);
-		// 	}
-		// }
-		// console.log("anneal min");
-		// for (n = 0; n < numFactors.length; n++) {
-		// 	for (m = 0; m < numLevels.length; m++) {
-		// 		console.log("fl(" + numFactors[n] + "," + numLevels[m] + "): total = " + annealTotal[n][m].min);
-		// 	}
-		// }
-		// console.log("random min");
-		// for (n = 0; n < numFactors.length; n++) {
-		// 	for (m = 0; m < numLevels.length; m++) {
-		// 		console.log("fl(" + numFactors[n] + "," + numLevels[m] + "): total = " + randomTotal[n][m].min);
-		// 	}
-		// }
-  //   };
+    $scope.testMonteCarloSolvers = function(numsFactors, numsLevels, numTrials) {
+    	var testCluster = function(numFactors, numLevels) {
+    		var makeDummyFNodes = function(numFactors) {
+    			var fNodes = [];
+    			var i;
+    			for (i = 0; i < numFactors; i++) {
+    				fNodes[i] = new fNode(new bioDesign());
+    			}	
+    			return fNodes;
+    		};
+    		var validateClusterGrid = function(clusterGrid) {
+				var invalidClusters = [];
+				var i, j;
+				for (i = 0; i < clusterGrid.length; i++) {
+					for (j = 0; j < clusterGrid[i].length; j++) {
+						if (clusterGrid[i][j].isEmpty()) {
+							invalidClusters.push(clusterGrid[i][j]);
+						}
+					}
+				}
+				if (invalidClusters.length > 0) {
+					var clusterErrorMessage = "";
+					for (j = 0; j < invalidClusters.length; j++) {
+						clusterErrorMessage += ", " + invalidClusters[j].target.toFixed(2);
+					}
+					clusterErrorMessage = clusterErrorMessage.substring(2);
+					clusterErrorMessage += "<br><br>There are no available levels that cluster around the above targets. Change these targets "
+							+ "or upload additional features with parameters that are close to them in magnitude.";
+					alertUser("md", "Error", clusterErrorMessage);
+					return false;
+				} else {
+					return true;
+				}
+			};
+			var areLNodesValid = function(fNodes, lNodes, numLevelsPerFactor) {
+				var levelRecord = {};
+				var levelCount = 0;
+				var j;
+				for (j = 0; j < lNodes.length; j++) {
+					if (!levelRecord[hash(lNodes[j].parameter.value)]) {
+						levelCount++;
+						if (levelCount >= numLevelsPerFactor) {
+							return true;
+						}
+						levelRecord[hash(lNodes[j].parameter.value)] = true;
+					}
+				}
+				var constraintCount;
+				var i;
+				for (i = 0; i < fNodes.length; i++) {
+					constraintCount = 0;
+					for (j = 0; j < fNodes[i].children.length; j++) {
+						if (fNodes[i].children[j].isConstraint && !levelRecord[hash(fNodes.children[j].parameter.value)]) {
+							constraintCount++;
+						}
+					}
+					if (constraintCount + levelCount < numLevelsPerFactor) {
+						alertUser("md", "Error", "The number of available unique levels is not greater than or equal to the number of levels per factor that "
+								+ "you've selected for your design. Select a lower number of levels per factor or upload additional uniquely parameterized features.");
+						return false;
+					}
+				}
+				return true;
+			};
+			if (numFactors > 0 && numLevels > 0) {
+				var fNodes = makeDummyFNodes(numFactors);
+				if (areLNodesValid(fNodes, $scope.lNodes, numLevels)) {
+					var clusterer = new lClusterer();
+					var clusterGrid = clusterer.lfMeansCluster(fNodes, $scope.lNodes, numLevels, $scope.clusteringOptions.numClusterings);
+					if (validateClusterGrid(clusterGrid)) {
+						return clusterGrid;
+					}
+				}
+			}
+			return null;
+    	};
+    	var testAnnealSolver = function(clusterGrid) {
+    		var results = {};
+			var solver = new flSolver();
+			var timer = new Timer($scope.timeout);
+			results.soln = solver.annealSolve(clusterGrid, $scope.annealingOptions, $scope.weights);
+			results.time = timer.getElapsedTimeSec();
+			results.cost = results.soln.calculateCost($scope.weights, $scope.annealingOptions.synthesisOption);
+			return results;
+    	};
+    	var testRandomSolver = function(clusterGrid) {
+    		var results = {};
+			var solver = new flSolver();
+			var timer = new Timer();
+			results.soln = solver.randomSolve(clusterGrid, $scope.weights, $scope.annealingOptions.synthesisOption, 1);
+			results.time = timer.getElapsedTimeSec();
+			results.cost = results.soln.calculateCost($scope.weights, $scope.annealingOptions.synthesisOption);
+			return results;
+    	};
+    	var makeOutputData = function(numsFactors, numsLevels, clusterGrids, annealResults, randomResults, numTrials) {
+    		var addTestSettings = function(numTrials, outputData) {
+    			outputData.push([]);
+    			outputData[outputData.length - 1].push("Number of Trials");
+				outputData[outputData.length - 1].push("Number of Annealing Steps");
+				outputData[outputData.length - 1].push("Initial Annealing Temperature");
+				outputData.push([]);
+				outputData[outputData.length - 1].push(numTrials);
+		        outputData[outputData.length - 1].push($scope.annealingOptions.iterPerAnnealing);
+		        outputData[outputData.length - 1].push($scope.annealingOptions.initialTemp);
+		        return outputData;
+    		};
+    		var addTestTargets = function(numsFactors, numsLevels, clusterGrids, outputData) {
+    			var addTargetData = function(numFactors, numLevels, clusters, outputData) {
+    				outputData.push([]);
+    				outputData[outputData.length - 1].push(numFactors);
+	        		outputData[outputData.length - 1].push(numLevels);
+	        		if (clusters) {
+	        			for (j = 0; j < clusters.length; j++) {
+	        				outputData[outputData.length - 1].push(clusters[j].target);
+	        			}
+	        		}
+	        		return outputData
+    			};
+    			outputData.push([]);
+		        outputData[outputData.length - 1].push("Number of Factors");
+		        outputData[outputData.length - 1].push("Number of Levels");
+		        outputData[outputData.length - 1].push("Level Targets");
+		        var n, m;
+		        for (n = 0; n < numsFactors.length; n++) {
+		        	for (m = 0; m < numsLevels.length; m++) {
+		        		if (clusterGrids[n][m] && clusterGrids[n][m][0]) {
+			        		outputData = addTargetData(numsFactors[n], numsLevels[m], clusterGrids[n][m][0], outputData);
+			        	}
+		        	}
+		        }
+		        return outputData;
+    		};
+    		var addTestSolutions = function(numsFactors, numsLevels, annealResults, randomResults, outputData) {
+    			var addSolutionData = function(type, numFactors, numLevels, results, outputData) {
+    				var addFeatureData = function(soln, outputData) {
+    					var concatenatedFeats = "";
+    					var feats;
+    					var i, j, k, f;
+    					for (i = 0; i < soln.levelSelections.length; i++) {
+    						for (j = 0; j < soln.levelSelections[i].length; j++) {
+    							k = soln.levelSelections[i][j];
+    							feats = soln.clusterGrid[i][j].lNodes[k].bioDesign.module.getFeatures();
+    							for (f = 0; f < feats.length; f++) {
+    								concatenatedFeats += (feats[f].name + ",");
+    							}
+    						}
+    						concatenatedFeats = concatenatedFeats.substring(0, concatenatedFeats.length - 1);
+    						concatenatedFeats += ":";
+    					}
+    					concatenatedFeats = concatenatedFeats.substring(0, concatenatedFeats.length - 1);
+    					outputData[outputData.length - 1].push(concatenatedFeats);
+    					return outputData;
+    				};
+    				var addLevelData = function(soln, outputData) {
+    					var i, j, k;
+    					for (i = 0; i < soln.levelSelections.length; i++) {
+    						for (j = 0; j < soln.levelSelections[i].length; j++) {
+    							k = soln.levelSelections[i][j];
+    							outputData[outputData.length - 1].push(soln.clusterGrid[i][j].lNodes[k].parameter.value);
+    						}
+    					}
+    					return outputData;
+    				};
+    				var t;
+    				for (t = 0; t < results.length; t++) {
+    					outputData.push([]);
+			        	outputData[outputData.length - 1].push(type);
+			        	outputData[outputData.length - 1].push(numFactors);
+			        	outputData[outputData.length - 1].push(numLevels);
+			        	outputData[outputData.length - 1].push(results[t].cost.total);
+			        	outputData[outputData.length - 1].push(results[t].cost.levelMatch);
+			        	outputData[outputData.length - 1].push(results[t].cost.synthesis);
+			        	outputData[outputData.length - 1].push(results[t].cost.homology);
+			        	outputData[outputData.length - 1].push(results[t].time);
+			        	outputData = addFeatureData(results[t].soln, outputData);
+			        	outputData = addLevelData(results[t].soln, outputData); 
+    				}
+    				return outputData;
+    			};
+    			outputData.push([]);
+    			outputData[outputData.length - 1].push("Solver");
+		        outputData[outputData.length - 1].push("Number of Factors");
+		        outputData[outputData.length - 1].push("Number of Levels");
+		        outputData[outputData.length - 1].push("Total Cost");
+		        outputData[outputData.length - 1].push("Matching Cost");
+		        outputData[outputData.length - 1].push("Synthesis Cost");
+		        outputData[outputData.length - 1].push("Homology Cost");
+		        outputData[outputData.length - 1].push("Time");
+		        outputData[outputData.length - 1].push("Features");
+		        outputData[outputData.length - 1].push("Levels");
+		        var n, m;
+		        for (n = 0; n < numsFactors.length; n++) {
+		        	for (m = 0; m < numsLevels.length; m++) {
+		        		if (annealResults[n][m]) {
+		        			addSolutionData("Anneal", numsFactors[n], numsLevels[m], annealResults[n][m], outputData);
+			        	}
+		        	}
+		        } 
+		        for (n = 0; n < numsFactors.length; n++) {
+		        	for (m = 0; m < numsLevels.length; m++) {
+		        		if (randomResults[n][m]) {
+			        		addSolutionData("Random", numsFactors[n], numsLevels[m], randomResults[n][m], outputData);
+			        	}
+		        	}
+		        }
+		        return outputData;
+    		};
+			var outputData = [];
+			outputData = addTestSettings(numTrials, outputData);
+	        outputData = addTestTargets(numsFactors, numsLevels, clusterGrids, outputData);
+	        outputData = addTestSolutions(numsFactors, numsLevels, annealResults, randomResults, outputData);
+	        return outputData;
+		};
+		var annealResults = [];
+		var randomResults = [];
+		var clusterGrids = [];
+		var n, m;
+		for (n = 0; n < numsFactors.length; n++) {
+			annealResults[n] = [];
+			randomResults[n] = [];
+			clusterGrids[n] = [];
+			for (m = 0; m < numsLevels.length; m++) {
+				clusterGrids[n][m] = testCluster(numsFactors[n], numsLevels[m]);
+				if (clusterGrids[n][m]) {
+					annealResults[n][m] = [];
+					randomResults[n][m] = [];
+					for (t = 0; t < numTrials; t++) {
+						annealResults[n][m][t] = testAnnealSolver(clusterGrids[n][m]);
+						randomResults[n][m][t] = testRandomSolver(clusterGrids[n][m]);
+					}
+				}
+			}
+		}
+		return makeOutputData(numsFactors, numsLevels, clusterGrids, annealResults, randomResults, numTrials);
+    };
 
   	$scope.targetFLDNodes = function(clusterGrid) {
   		var i;
