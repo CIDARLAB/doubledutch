@@ -316,12 +316,6 @@ app.controller("doubleDutchCtrl", function($scope, $modal, $log) {
 				return false;
 			}
 		};
-		this.applyConstraint = function() {
-			if (this.isConstrained()) {
-				this.lNodes = this.lNodes.slice(0, 1);
-		    	this.levelCosts = this.levelCosts.slice(0, 1);
-			}
-		};
 		this.isEmpty = function() {
 			return this.lNodes.length == 0;
 		};
@@ -335,7 +329,6 @@ app.controller("doubleDutchCtrl", function($scope, $modal, $log) {
 					this.maxFeats = numFeats;
 				}
 			}
-			this.maxFeats 
 			return this.maxFeats;
 		};
 		this.calculateMaxFeatures();
@@ -411,8 +404,10 @@ app.controller("doubleDutchCtrl", function($scope, $modal, $log) {
 				}
 			}
 		}
-		var maxLevelMatchCost = calculateMaxLevelMatchCost(this.levelSelections, costModGrid);
-		levelMatchCost /= maxLevelMatchCost;
+		if (!this.maxLevelMatchCost) {
+			this.maxLevelMatchCost = calculateMaxLevelMatchCost(this.levelSelections, costModGrid);
+		}
+		levelMatchCost /= this.maxLevelMatchCost;
 		return levelMatchCost;
 	};
 
@@ -425,13 +420,33 @@ app.controller("doubleDutchCtrl", function($scope, $modal, $log) {
 		}
 		var calculateMaxSynthesisCost = function(clusterGrid) {
 			var maxSynthesisCost = 0;
-			var i, j;
+			var featRecord = {};
+			var numUniqueFeats = 0;
+			var feats;
+			var i, j, k, f;
 			for (i = 0; i < clusterGrid.length; i++) {
 				for (j = 0; j < clusterGrid[i].length; j++) {
 					maxSynthesisCost += clusterGrid[i][j].maxFeats;
+					for (k = 0; k < clusterGrid[i][j].lNodes.length; k++) {
+						feats = clusterGrid[i][j].lNodes[k].bioDesign.module.getFeatures();
+						for (f = 0; f < feats.length; f++) {
+							if (!featRecord[hash(feats[f])]) {
+								featRecord[hash(feats[f])] = true;
+								numUniqueFeats++;
+							}
+						}
+					}
 				}
 			}
-			return maxSynthesisCost;
+			return Math.min(maxSynthesisCost, numUniqueFeats);
+		};
+		var calculateMinSynthesisCost = function(clusterGrid) {
+			var minSynthesisCost = 1;
+			var i;
+			for (i = 0; i < clusterGrid.length; i++) {
+				minSynthesisCost = Math.max(minSynthesisCost, clusterGrid[i].length);
+			}
+			return minSynthesisCost;
 		};
 		var featRecord = {};
 		var feats;
@@ -448,15 +463,14 @@ app.controller("doubleDutchCtrl", function($scope, $modal, $log) {
 					}
 				}
 			}
-		}	
-		var maxSynthesisCost = calculateMaxSynthesisCost(this.clusterGrid);
-		var minSynthesisCost;
-		if (synthesisCost == 0) {
-			minSynthesisCost = 0;
-		} else {
-			minSynthesisCost = 1;
 		}
-		synthesisCost = (synthesisCost - minSynthesisCost)/(maxSynthesisCost - minSynthesisCost);
+		if (!this.maxSynthesisCost) {
+			this.maxSynthesisCost = calculateMaxSynthesisCost(this.clusterGrid);
+		}
+		if (!this.minSynthesisCost) {
+			this.minSynthesisCost = calculateMinSynthesisCost(this.clusterGrid);
+		}
+		synthesisCost = (synthesisCost - this.minSynthesisCost)/(this.maxSynthesisCost - this.minSynthesisCost);
 		return synthesisCost;
 	};
 
@@ -558,9 +572,11 @@ app.controller("doubleDutchCtrl", function($scope, $modal, $log) {
 		};
 		var featFreqs = calculateFeatureFrequencies(this.levelSelections, this.clusterGrid, iBound, jBound, costModGrid);
 		var totalHomologyCost = calculateTotalHomologyCost(featFreqs);
-		var maxFeatFreqs = calculateMaxFeatureFrequencies(this.clusterGrid, costModGrid);
-		var maxHomologyCost = calculateTotalHomologyCost(maxFeatFreqs);
-		return totalHomologyCost/maxHomologyCost;
+		if (!this.maxHomologyCost) {
+			var maxFeatFreqs = calculateMaxFeatureFrequencies(this.clusterGrid, costModGrid);
+			this.maxHomologyCost = calculateTotalHomologyCost(maxFeatFreqs);
+		}
+		return totalHomologyCost/this.maxHomologyCost;
 	};
 
 	$scope.FLSolution.prototype.copy = function() {
@@ -570,6 +586,18 @@ app.controller("doubleDutchCtrl", function($scope, $modal, $log) {
 			for (j = 0; j < solnCopy.levelSelections[i].length; j++) {
 				solnCopy.levelSelections[i][j] = this.levelSelections[i][j];
 			}
+		}
+		if (this.maxLevelMatchCost) {
+			solnCopy.maxLevelMatchCost = this.maxLevelMatchCost;
+		}
+		if (this.maxHomologyCost) {
+			solnCopy.maxHomologyCost = this.maxHomologyCost;
+		}
+		if (this.maxSynthesisCost) {
+			solnCopy.maxSynthesisCost = this.maxSynthesisCost;
+		}
+		if (this.minSynthesisCost) {
+			solnCopy.minSynthesisCost = this.minSynthesisCost;
 		}
 		return solnCopy;
 	};
@@ -589,10 +617,12 @@ app.controller("doubleDutchCtrl", function($scope, $modal, $log) {
   				soln = new $scope.FLSolution(clusterGrid);
 	  			for (i = 0; i < soln.levelSelections.length; i++) {
 	  				for (j = 0; j < soln.levelSelections[i].length; j++) {
-	  					soln = this.mutateSolution(soln, i, j);
-	  					solnCost = soln.calculateCost(weights, synthesisOption, costModGrid);
+	  					if (!soln.clusterGrid[i][j].isConstrained()) {
+		  					soln = this.mutateSolution(soln, i, j);
+		  				}
 	  				}
 	  			}
+	  			solnCost = soln.calculateCost(weights, synthesisOption, costModGrid);
 	  			if (trialCount == 0 || solnCost.weightedTotal < bestSoln.weightedTotal) {
 	  				bestSoln = soln;
 	  				bestSolnCost = solnCost;
@@ -633,12 +663,14 @@ app.controller("doubleDutchCtrl", function($scope, $modal, $log) {
 				while (temp >= 1) {
 					i = Math.floor(Math.random()*soln.levelSelections.length);
 					j = Math.floor(Math.random()*soln.levelSelections[i].length);
-					mutantSoln = this.mutateSolution(soln, i, j);
-					mutantCost = mutantSoln.calculateCost(weights, annealingOptions.synthesisOption, costModGrid);
-					if (mutantCost.weightedTotal <= solnCost.weightedTotal 
-							|| Math.random() <= Math.exp((solnCost.weightedTotal - mutantCost.weightedTotal)*0.1*annealingOptions.initTemp/temp)) {
-						soln = mutantSoln;
-						solnCost = mutantCost;
+					if (!soln.clusterGrid[i][j].isConstrained()) {
+						mutantSoln = this.mutateSolution(soln, i, j);
+						mutantCost = mutantSoln.calculateCost(weights, annealingOptions.synthesisOption, costModGrid);
+						if (mutantCost.weightedTotal <= solnCost.weightedTotal 
+								|| Math.random() <= Math.exp((solnCost.weightedTotal - mutantCost.weightedTotal)*0.1*annealingOptions.initTemp/temp)) {
+							soln = mutantSoln;
+							solnCost = mutantCost;
+						}
 					}
 					temp *= phi;
 				}
@@ -667,7 +699,8 @@ app.controller("doubleDutchCtrl", function($scope, $modal, $log) {
     		var j = 0;
     		while (!backtrack && !timer.hasTimedOut()) {
     			while (!backtrack && j < soln.levelSelections[i].length && !timer.hasTimedOut()) {
-    				backtrack = (soln.levelSelections[i][j] == soln.clusterGrid[i][j].lNodes.length);
+    				backtrack = (soln.levelSelections[i][j] == soln.clusterGrid[i][j].lNodes.length 
+	    					|| (soln.clusterGrid[i][j].isConstrained() && soln.levelSelections[i][j] > 0));
     				if (!backtrack) {
 						solnCost = soln.calculateCost(weights, annealingOptions.synthesisOption, costModGrid, i, j);
 						if (solnCost.weightedTotal >= bestSolnCost.weightedTotal) {
@@ -849,7 +882,6 @@ app.controller("doubleDutchCtrl", function($scope, $modal, $log) {
 	    	for (i = 0; i < bestClusterGrid.length; i++) {
 	    		bestClusterGrid[i].sort(function(a, b) {return a.target - b.target});
 	    		for (j = 0; j < bestClusterGrid[i].length; j++) {
-	    			bestClusterGrid[i][j].applyConstraint();
 	    			bestClusterGrid[i][j].calculateMaxFeatures();
 	    		}
 	    	}
@@ -1070,7 +1102,6 @@ app.controller("doubleDutchCtrl", function($scope, $modal, $log) {
 				clusterGrid[i].sort(function(a, b) {return a.target - b.target});
 				for (j = 0; j < clusterGrid[i].length; j++) {
 					clusterGrid[i][j].calculateLevelCosts();
-					clusterGrid[i][j].applyConstraint();
 					clusterGrid[i][j].calculateMaxFeatures();
 				}
 			}
@@ -2772,7 +2803,7 @@ app.controller("doubleDutchCtrl", function($scope, $modal, $log) {
 		}
     };
 
-    $scope.testMonteCarloSolvers = function(numsFactors, numsLevels, numTrials) {
+    $scope.testMonteCarloSolvers = function(numsFactors, levelGrid, numTrials) {
     	var testCluster = function(numFactors, numLevels) {
     		var makeDummyFNodes = function(numFactors) {
     			var fNodes = [];
@@ -2866,7 +2897,7 @@ app.controller("doubleDutchCtrl", function($scope, $modal, $log) {
 			results.cost = results.soln.calculateCost($scope.weights, $scope.annealingOptions.synthesisOption);
 			return results;
     	};
-    	var makeOutputData = function(numsFactors, numsLevels, clusterGrids, annealResults, randomResults, numTrials) {
+    	var makeOutputData = function(numsFactors, levelGrid, clusterGrids, annealResults, randomResults, numTrials) {
     		var addTestSettings = function(numTrials, outputData) {
     			outputData.push([]);
     			outputData[outputData.length - 1].push("Number of Trials");
@@ -2878,7 +2909,7 @@ app.controller("doubleDutchCtrl", function($scope, $modal, $log) {
 		        outputData[outputData.length - 1].push($scope.annealingOptions.initialTemp);
 		        return outputData;
     		};
-    		var addTestTargets = function(numsFactors, numsLevels, clusterGrids, outputData) {
+    		var addTestTargets = function(numsFactors, levelGrid, clusterGrids, outputData) {
     			var addTargetData = function(numFactors, numLevels, clusters, outputData) {
     				outputData.push([]);
     				outputData[outputData.length - 1].push(numFactors);
@@ -2896,15 +2927,15 @@ app.controller("doubleDutchCtrl", function($scope, $modal, $log) {
 		        outputData[outputData.length - 1].push("Level Targets");
 		        var n, m;
 		        for (n = 0; n < numsFactors.length; n++) {
-		        	for (m = 0; m < numsLevels.length; m++) {
+		        	for (m = 0; m < levelGrid[n].length; m++) {
 		        		if (clusterGrids[n][m] && clusterGrids[n][m][0]) {
-			        		outputData = addTargetData(numsFactors[n], numsLevels[m], clusterGrids[n][m][0], outputData);
+			        		outputData = addTargetData(numsFactors[n], levelGrid[n][m], clusterGrids[n][m][0], outputData);
 			        	}
 		        	}
 		        }
 		        return outputData;
     		};
-    		var addTestSolutions = function(numsFactors, numsLevels, annealResults, randomResults, outputData) {
+    		var addTestSolutions = function(numsFactors, levelGrid, annealResults, randomResults, outputData) {
     			var addSolutionData = function(type, numFactors, numLevels, results, outputData) {
     				var addFeatureData = function(soln, outputData) {
     					var concatenatedFeats = "";
@@ -2964,16 +2995,16 @@ app.controller("doubleDutchCtrl", function($scope, $modal, $log) {
 		        outputData[outputData.length - 1].push("Levels");
 		        var n, m;
 		        for (n = 0; n < numsFactors.length; n++) {
-		        	for (m = 0; m < numsLevels.length; m++) {
+		        	for (m = 0; m < levelGrid[n].length; m++) {
 		        		if (annealResults[n][m]) {
-		        			addSolutionData("Anneal", numsFactors[n], numsLevels[m], annealResults[n][m], outputData);
+		        			addSolutionData("Anneal", numsFactors[n], levelGrid[n][m], annealResults[n][m], outputData);
 			        	}
 		        	}
 		        } 
 		        for (n = 0; n < numsFactors.length; n++) {
-		        	for (m = 0; m < numsLevels.length; m++) {
+		        	for (m = 0; m < levelGrid[n].length; m++) {
 		        		if (randomResults[n][m]) {
-			        		addSolutionData("Random", numsFactors[n], numsLevels[m], randomResults[n][m], outputData);
+			        		addSolutionData("Random", numsFactors[n], levelGrid[n][m], randomResults[n][m], outputData);
 			        	}
 		        	}
 		        }
@@ -2981,8 +3012,8 @@ app.controller("doubleDutchCtrl", function($scope, $modal, $log) {
     		};
 			var outputData = [];
 			outputData = addTestSettings(numTrials, outputData);
-	        outputData = addTestTargets(numsFactors, numsLevels, clusterGrids, outputData);
-	        outputData = addTestSolutions(numsFactors, numsLevels, annealResults, randomResults, outputData);
+	        outputData = addTestTargets(numsFactors, levelGrid, clusterGrids, outputData);
+	        outputData = addTestSolutions(numsFactors, levelGrid, annealResults, randomResults, outputData);
 	        return outputData;
 		};
 		var annealResults = [];
@@ -2993,8 +3024,8 @@ app.controller("doubleDutchCtrl", function($scope, $modal, $log) {
 			annealResults[n] = [];
 			randomResults[n] = [];
 			clusterGrids[n] = [];
-			for (m = 0; m < numsLevels.length; m++) {
-				clusterGrids[n][m] = testCluster(numsFactors[n], numsLevels[m]);
+			for (m = 0; m < levelGrid[n].length; m++) {
+				clusterGrids[n][m] = testCluster(numsFactors[n], levelGrid[n][m]);
 				if (clusterGrids[n][m]) {
 					annealResults[n][m] = [];
 					randomResults[n][m] = [];
@@ -3005,7 +3036,7 @@ app.controller("doubleDutchCtrl", function($scope, $modal, $log) {
 				}
 			}
 		}
-		return makeOutputData(numsFactors, numsLevels, clusterGrids, annealResults, randomResults, numTrials);
+		return makeOutputData(numsFactors, levelGrid, clusterGrids, annealResults, randomResults, numTrials);
     };
 
   	$scope.targetFLDNodes = function(clusterGrid) {

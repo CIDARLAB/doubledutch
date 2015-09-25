@@ -65,9 +65,9 @@
         <button type="button" class="btn btn-primary" ng-csv="generateDesigns()" filename="design_library.csv" field-separator=",">Download Library</button>
         <button type="button" class="btn btn-primary" ng-csv="doeTemplater.serializeTemplate(selectedTemplateB)" filename="doe_template.csv" field-separator=",">Download Template</button>
       </div>
-      <!-- <div ng-hide="{{false}}" class="col-sm-4" align="center">
-        <button type="button" class="btn btn-primary" ng-csv="testMonteCarloSolvers([5, 10, 20], [5, 10, 20], 100)" filename="test_results.csv" field-separator=",">Test Solvers</button>
-      </div> -->
+      <div ng-hide="{{true}}" class="col-sm-4" align="center">
+        <button type="button" class="btn btn-primary" ng-csv="testMonteCarloSolvers([10, 15], [[5], [3, 5]], 100)" filename="test_results.csv" field-separator=",">Test Solvers</button>
+      </div>
     </div>
 
     <br>
