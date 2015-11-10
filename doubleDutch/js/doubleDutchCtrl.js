@@ -163,9 +163,6 @@ app.controller("doubleDutchCtrl", function($scope, $modal, $log) {
 		this.constraintColor = "pull-right btn btn-default btn-xs";
 		this.children = [];
 		this.copy = function() {
-			// var nodeCopy = new lNode(this.bioDesign, this.pIndex);
-			// nodeCopy.isConstraint = this.isConstraint;
-			// return nodeCopy;
 			return new lNode(this.bioDesign, this.pIndex);
 		};
 		this.cost = function(target) {
@@ -331,7 +328,18 @@ app.controller("doubleDutchCtrl", function($scope, $modal, $log) {
 			}
 			return this.maxFeats;
 		};
-		this.calculateMaxFeatures();
+		this.calculateMinFeatures = function() {
+			this.minFeats = 0;
+			var numFeats;
+			var j;
+			for (j = 0; j < this.lNodes.length; j++) {
+				numFeats = this.lNodes[j].bioDesign.module.getFeatures().length;
+				if (this.minFeats == 0 || numFeats < this.minFeats) {
+					this.minFeats = numFeats;
+				}
+			}
+			return this.minFeats;
+		};
 	}
 
 	$scope.FLSolution = function(clusterGrid) {
@@ -360,6 +368,29 @@ app.controller("doubleDutchCtrl", function($scope, $modal, $log) {
 				}
 			}
 			jBound = this.levelSelections[iBound].length - 1;
+		}
+		var calculateNumUniqueFeatures = function(clusterGrid) {
+			var featRecord = {};
+			var numUniqueFeats = 0;
+			var feats;
+			var i, j, k, f;
+			for (i = 0; i < clusterGrid.length; i++) {
+				for (j = 0; j < clusterGrid[i].length; j++) {
+					for (k = 0; k < clusterGrid[i][j].lNodes.length; k++) {
+						feats = clusterGrid[i][j].lNodes[k].bioDesign.module.getFeatures();
+						for (f = 0; f < feats.length; f++) {
+							if (!featRecord[hash(feats[f])]) {
+								featRecord[hash(feats[f])] = true;
+								numUniqueFeats++;
+							}
+						}
+					}
+				}
+			}
+			return numUniqueFeats;
+		};
+		if (!this.clusterGrid.numUniqueFeats) {
+			this.clusterGrid.numUniqueFeats = calculateNumUniqueFeatures(this.clusterGrid);
 		}
 		var levelMatchCost = this.calculateLevelMatchCost(iBound, jBound, costModGrid);
 		var synthesisCost = this.calculateSynthesisCost(iBound, jBound);
@@ -420,31 +451,30 @@ app.controller("doubleDutchCtrl", function($scope, $modal, $log) {
 		}
 		var calculateMaxSynthesisCost = function(clusterGrid) {
 			var maxSynthesisCost = 0;
-			var featRecord = {};
-			var numUniqueFeats = 0;
-			var feats;
-			var i, j, k, f;
+			var i, j;
 			for (i = 0; i < clusterGrid.length; i++) {
 				for (j = 0; j < clusterGrid[i].length; j++) {
 					maxSynthesisCost += clusterGrid[i][j].maxFeats;
-					for (k = 0; k < clusterGrid[i][j].lNodes.length; k++) {
-						feats = clusterGrid[i][j].lNodes[k].bioDesign.module.getFeatures();
-						for (f = 0; f < feats.length; f++) {
-							if (!featRecord[hash(feats[f])]) {
-								featRecord[hash(feats[f])] = true;
-								numUniqueFeats++;
-							}
-						}
-					}
 				}
 			}
-			return Math.min(maxSynthesisCost, numUniqueFeats);
+			return Math.min(maxSynthesisCost, clusterGrid.numUniqueFeats);
 		};
 		var calculateMinSynthesisCost = function(clusterGrid) {
 			var minSynthesisCost = 1;
+			var numFeatsPerModuleSize;
 			var i;
 			for (i = 0; i < clusterGrid.length; i++) {
-				minSynthesisCost = Math.max(minSynthesisCost, clusterGrid[i].length);
+				numFeatsPerModuleSize = [];
+				for (j = 0; j < clusterGrid[i].length; j++) {
+					if (numFeatsPerModuleSize[clusterGrid[i][j].minFeats]) {
+						numFeatsPerModuleSize[clusterGrid[i][j].minFeats]++;
+					} else {
+						numFeatsPerModuleSize[clusterGrid[i][j].minFeats] = clusterGrid[i][j].minFeats;
+					}
+					if (minSynthesisCost < numFeatsPerModuleSize[clusterGrid[i][j].minFeats]) {
+						minSynthesisCost = numFeatsPerModuleSize[clusterGrid[i][j].minFeats];
+					}
+				}
 			}
 			return minSynthesisCost;
 		};
@@ -481,55 +511,166 @@ app.controller("doubleDutchCtrl", function($scope, $modal, $log) {
 			}
 			jBound = this.levelSelections[iBound].length - 1;
 		}
-		var calculateFeatureFrequencies = function(levelSelections, clusterGrid, iBound, jBound, costModGrid) {
-			var initializeFrequencies = function(numFreqs) {
-				var freqs = [];
-				var i;
-				for (i = 0; i < numFreqs; i++) {
-					freqs[i] = 0;
-				}
-				return freqs;
-			};
+		var initializeFrequencies = function(numFreqs) {
+			var freqs = [];
+			var i;
+			for (i = 0; i < numFreqs; i++) {
+				freqs[i] = 0;
+			}
+			return freqs;
+		};
+		var calculateFeatureFrequencies = function(levelSelections, clusterGrid, iBound, jBound, costModGrid, initializeFrequencies) {
 			var featFreqs = {};
+			var featRecord;
 			var feats;
 			var i, j, k, f;
 			for (i = 0; i <= iBound; i++) {
 				for (j = 0; j <= (i == iBound ? jBound : levelSelections[i].length - 1); j++) {
 					k = levelSelections[i][j];
+					featRecord = {};
 					feats = clusterGrid[i][j].lNodes[k].bioDesign.module.getFeatures();
 					for (f = 0; f < feats.length; f++) {
 						if (!featFreqs[hash(feats[f])]) {
 							featFreqs[hash(feats[f])] = initializeFrequencies(levelSelections.length);
 						}
-						if (costModGrid) {
-							featFreqs[hash(feats[f])][i] += costModGrid[i][j];
-						} else {
-							featFreqs[hash(feats[f])][i]++;
+						if (!featRecord[hash(feats[f])]) {
+							featRecord[hash(feats[f])] = true;
+							if (costModGrid) {
+								featFreqs[hash(feats[f])][i] += costModGrid[i][j];
+							} else {
+								featFreqs[hash(feats[f])][i]++;
+							}
 						}
 					}
 				}
 			}
 			return featFreqs;
 		};
-		var calculateMaxFeatureFrequencies = function(clusterGrid, costModGrid) {
+		var calculateMaxFeatureFrequencies = function(clusterGrid, costModGrid, initializeFrequencies) {
 			var maxFeatFreqs = {};
-			var maxFeatHash = "maxFeat";
-			maxFeatFreqs[maxFeatHash] = [];
-			var i, j;
+			var maxFeatHash;
+			var i, j, f;
 			for (i = 0; i < clusterGrid.length; i++) {
-				maxFeatFreqs[maxFeatHash][i] = 0;
 				for (j = 0; j < clusterGrid[i].length; j++) {
-					if (costModGrid) {
-						maxFeatFreqs[maxFeatHash][i] += costModGrid[i][j]*clusterGrid[i][j].maxFeats;
-					} else {
-						maxFeatFreqs[maxFeatHash][i] += clusterGrid[i][j].maxFeats;
+					for (f = 0; f < clusterGrid[i][j].maxFeats; f++) {
+						maxFeatHash = "maxFeat" + f;
+						if (!maxFeatFreqs[maxFeatHash]) {
+							maxFeatFreqs[maxFeatHash] = initializeFrequencies(clusterGrid.length);
+						}
+						if (costModGrid) {
+							maxFeatFreqs[maxFeatHash][i] += costModGrid[i][j];
+						} else {
+							maxFeatFreqs[maxFeatHash][i]++;
+						}
 					}
 				}
 			}
 			return maxFeatFreqs;
 		};
+		var calculateMinFeatureFrequencies = function(clusterGrid, costModGrid, initializeFrequencies) {
+			var costFeatures = function(clusterGrid, costModGrid) {
+				var costedFeats = [];
+				var featCount = 0;
+				var i, j, f;
+				for (i = 0; i < clusterGrid.length; i++) {
+					costedFeats[i] = [];
+					for (j = 0; j < clusterGrid[i].length; j++) {
+						costedFeats[i][j] = {featHashes: [], f: 0};
+						if (costModGrid) {
+							costedFeats[i][j].cost = costModGrid[i][j];
+						} else {
+							costedFeats[i][j].cost = 1;
+						}
+						for (f = 0; f < clusterGrid[i][j].minFeats; f++) {
+							costedFeats[i][j].featHashes[f] = "minFeat" + featCount;
+							featCount++;
+						}
+					}
+				}
+				return costedFeats;
+			};
+			var countFeatures = function(clusterGrid) {
+				var featCount = 0;
+				var i, j;
+				for (i = 0; i < clusterGrid.length; i++) {
+					for (j = 0; j < clusterGrid[i].length; j++) {
+						featCount += clusterGrid[i][j].minFeats;
+					}
+				}
+				return featCount;
+			};
+			var sortFeaturesByCost = function(costedFeats) {
+				var i;
+				for (i = 0; i < costedFeats.length; i++) {
+					costedFeats[i].sort(function(a, b) {return a.cost - b.cost});
+				}
+				return costedFeats;
+			};
+			var consolidateFeatures = function(costedFeats, numConsolidations) {
+				var consolidationCount = 0;
+				var bestI, nextBestI;
+				var i;
+				do {
+					bestI = -1;
+					for (i = 0; i < costedFeats.length; i++) {
+						if (bestI < 0 || costedFeats[i][0].cost < costedFeats[bestI][0].cost) {
+							bestI = i;
+						}
+					}
+					nextBestI = -1;
+					for (i = 0; i < costedFeats.length; i++) {
+						if (i != bestI && (nextBestI < 0 || costedFeats[i][0].cost < costedFeats[nextBestI][0].cost)) {
+							nextBestI = i;
+						}
+					}
+					do {
+						costedFeats[nextBestI][0].featHashes[costedFeats[nextBestI][0].f] 
+								= costedFeats[bestI][0].featHashes[costedFeats[bestI][0].f];
+						costedFeats[bestI][0].f++;
+						costedFeats[nextBestI][0].f++;
+						consolidationCount++;
+					} while (consolidationCount < numConsolidations 
+							&& costedFeats[bestI][0].f < costedFeats[bestI][0].featHashes.length 
+							&& costedFeats[nextBestI][0].f < costedFeats[nextBestI][0].featHashes.length);
+					if (costedFeats[bestI][0].f == costedFeats[bestI][0].featHashes.length) {
+						costedFeats[bestI].push(costedFeats[bestI].shift());
+					}
+					if (costedFeats[nextBestI][0].f == costedFeats[nextBestI][0].featHashes.length) {
+						costedFeats[nextBestI].push(costedFeats[nextBestI].shift());
+					}
+				} while (consolidationCount < numConsolidations);
+				return costedFeats;
+			};
+			var minFeatFreqs = {};
+			var costedFeats = costFeatures(clusterGrid, costModGrid);
+			var featCount = countFeatures(clusterGrid);
+			if (featCount > clusterGrid.numUniqueFeats) {
+				if (costModGrid) {
+					costedFeats = sortByFeaturesByCost(costedFeats);
+				}
+				costedFeats = consolidateFeatures(costedFeats, featCount - clusterGrid.numUniqueFeats)
+			}
+			var featHash;
+			var i, j, f;
+			for (i = 0; i < costedFeats.length; i++) {
+				for (j = 0; j < costedFeats[i].length; j++) {
+					for (f = 0; f < costedFeats[i][j].featHashes.length; f++) {
+						featHash = costedFeats[i][j].featHashes[f];
+						if (!minFeatFreqs[featHash]) {
+							minFeatFreqs[featHash] = initializeFrequencies(clusterGrid.length);
+						}
+						if (costModGrid) {
+							minFeatFreqs[featHash][i] += costModGrid[i][j];
+						} else {
+							minFeatFreqs[featHash][i]++;
+						}
+					}
+				}
+			}
+			return minFeatFreqs;
+		};
 		var calculateTotalHomologyCost = function(featFreqs, costModGrid) {
-			var determineMinCostMod = function(costModGrid) {
+			var getMinCostMod = function(costModGrid) {
 				var minCostMod = -1;
 				var i, j;
 				for (i = 0; i < costModGrid.length; i++) {
@@ -548,35 +689,45 @@ app.controller("doubleDutchCtrl", function($scope, $modal, $log) {
 			var featHash;
 			var i;
 			for (featHash in featFreqs) {
-				featHomologyCost = 0
-				factorHomologyCount = 0;
-				for (i = 0; i < featFreqs[featHash].length; i++) {
-					if (featFreqs[featHash][i] > 0) {
-						featHomologyCost += featFreqs[featHash][i];
-						factorHomologyCount++;
+				if (featFreqs.hasOwnProperty(featHash)) {
+					featHomologyCost = 0
+					factorHomologyCount = 0;
+					for (i = 0; i < featFreqs[featHash].length; i++) {
+						if (featFreqs[featHash][i] > 0) {
+							featHomologyCost += featFreqs[featHash][i];
+							factorHomologyCount++;
+						}
 					}
-				}
-				if (factorHomologyCount > 1) {
-					totalHomologyCost += featHomologyCost;
-					homologousFeatCount++;
+					if (factorHomologyCount > 1) {
+						totalHomologyCost += featHomologyCost;
+						homologousFeatCount++;
+					}
 				}
 			}
 			if (homologousFeatCount > 1) {
 				if (costModGrid) {
-					totalHomologyCost -= (determineMinCostMod(costModGrid)*(homologousFeatCount - 1));
+					totalHomologyCost -= (getMinCostMod(costModGrid)*(homologousFeatCount - 1));
 				} else {
 					totalHomologyCost -= (homologousFeatCount - 1);
 				}
 			}
 			return totalHomologyCost;
 		};
-		var featFreqs = calculateFeatureFrequencies(this.levelSelections, this.clusterGrid, iBound, jBound, costModGrid);
+		var featFreqs = calculateFeatureFrequencies(this.levelSelections, this.clusterGrid, iBound, jBound, costModGrid, initializeFrequencies);
 		var totalHomologyCost = calculateTotalHomologyCost(featFreqs);
 		if (!this.maxHomologyCost) {
-			var maxFeatFreqs = calculateMaxFeatureFrequencies(this.clusterGrid, costModGrid);
+			var maxFeatFreqs = calculateMaxFeatureFrequencies(this.clusterGrid, costModGrid, initializeFrequencies);
 			this.maxHomologyCost = calculateTotalHomologyCost(maxFeatFreqs);
 		}
-		return totalHomologyCost/this.maxHomologyCost;
+		if (!this.minHomologyCost) {
+			if (this.clusterGrid.length < 2) {
+				this.minHomologyCost = 0;
+			} else {
+				var minFeatFreqs = calculateMinFeatureFrequencies(this.clusterGrid, costModGrid, initializeFrequencies);
+				this.minHomologyCost = calculateTotalHomologyCost(minFeatFreqs);
+			}
+		}
+		return (totalHomologyCost - this.minHomologyCost)/(this.maxHomologyCost - this.minHomologyCost);
 	};
 
 	$scope.FLSolution.prototype.copy = function() {
@@ -592,6 +743,9 @@ app.controller("doubleDutchCtrl", function($scope, $modal, $log) {
 		}
 		if (this.maxHomologyCost) {
 			solnCopy.maxHomologyCost = this.maxHomologyCost;
+		}
+		if (this.minHomologyCost) {
+			solnCopy.minHomologyCost = this.minHomologyCost;
 		}
 		if (this.maxSynthesisCost) {
 			solnCopy.maxSynthesisCost = this.maxSynthesisCost;
@@ -828,10 +982,10 @@ app.controller("doubleDutchCtrl", function($scope, $modal, $log) {
 					}
 				}
 				var constraints = [];
-				var property;
-				for (property in constraintMap) {
-					if (constraintMap.hasOwnProperty(property)) {
-						constraints.push(constraintMap[property]);
+				var constraintKey;
+				for (constraintKey in constraintMap) {
+					if (constraintMap.hasOwnProperty(constraintKey)) {
+						constraints.push(constraintMap[constraintKey]);
 					}
 				}
 				return constraints;
@@ -883,6 +1037,7 @@ app.controller("doubleDutchCtrl", function($scope, $modal, $log) {
 	    		bestClusterGrid[i].sort(function(a, b) {return a.target - b.target});
 	    		for (j = 0; j < bestClusterGrid[i].length; j++) {
 	    			bestClusterGrid[i][j].calculateMaxFeatures();
+	    			bestClusterGrid[i][j].calculateMinFeatures();
 	    		}
 	    	}
 	    	return bestClusterGrid;
@@ -1103,6 +1258,7 @@ app.controller("doubleDutchCtrl", function($scope, $modal, $log) {
 				for (j = 0; j < clusterGrid[i].length; j++) {
 					clusterGrid[i][j].calculateLevelCosts();
 					clusterGrid[i][j].calculateMaxFeatures();
+					clusterGrid[i][j].calculateMinFeatures();
 				}
 			}
 			return clusterGrid;
