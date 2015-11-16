@@ -64,7 +64,7 @@
     var lastRequestId = -1;
     function nextId(){
         lastRequestId++;
-        return lastRequestId; 
+        return lastRequestId;
     }
 
     // Helper function: Sends message to server 
@@ -109,7 +109,7 @@
             /** Three cases below (in order):
              *  Input param is a JSON object. Ex: Clotho.create({"name":"My New Part", "sequence":"GGGGGG"})
              *  Input param is an object containing a single JSON. Ex: Clotho.create([{"name":"My New Part", "sequence":"GGGGGG"}])
-             *  Input param is an object containing multiple JSONs. Ex: 
+             *  Input param is an object containing multiple JSONs. Ex:
              */
             if (object.length == undefined) {
                 return socket.emit("create", object, options);
@@ -117,102 +117,6 @@
                 return socket.emit("create", object[0], options);
             } else {
                 return socket.emit("createAll", object, options);
-            }
-        },
-
-        //Upload CSV with header = true works. Call back for then function not working. Need to figure out whats going on.
-        uploadCSV: function(file,csvOptions,options){
-
-            if(csvOptions.celloSpecial == true)
-            {
-                var objects = [];
-                var reader = new FileReader();
-                reader.onload = function(progressEvent){
-                    // Entire file
-                    //console.log(this.result);
-
-                    // By lines
-                    var lines = this.result.split('\n');
-                    for(var line = 0; line < lines.length; line++){
-                        if(line == 0)
-                        {
-                            var keys = lines[line].split(',');
-
-                        }
-                        else
-                        {
-                            //var array = lines[line].
-
-                        }
-                        //console.log(lines[line]);
-                    }
-                };
-                reader.readAsText(file);
-            }
-            else
-            {
-                if(csvOptions.header == true)
-                {
-                    var results = Papa.parse(file, {
-                        header: true,
-
-                        complete: function(results) {
-                            var lastGarbage = false;
-                            //Check if Final value is junk (needs a better fix)
-                            if(results.data.length>0) {
-                                var last = results.data.length-1;
-                                if(Object.keys(results.data[last]).length == 1){
-                                    var keys = Object.keys(results.data[last])[0];
-                                    if(results.data[last].keys == undefined) {
-                                        lastGarbage = true;
-                                    }
-                                }
-                            }
-                            var length = results.data.length;
-                            if(lastGarbage){
-                                length--;
-                            }
-
-                            if(length == 1) {
-                                if(results.data[0].id == undefined) {
-                                    if(csvOptions.cello == true)
-                                    {
-                                        var line = results.data[0].assignment.split(";");
-                                        results.data[0].assignArray = line;
-                                    }
-                                    return socket.emit("create",results.data[0],options);
-                                }
-                                else{
-                                    if(csvOptions.cello == true)
-                                    {
-                                        var line = results.data[0].assignment.split(";");
-                                        results.data[0].assignArray = line;
-                                    }
-                                    return socket.emit("set",results.data[0],options);
-                                }
-
-                            }
-                            else {
-                                objArr =[];
-                                for (var i = 0; i < length; i++){
-                                    if(csvOptions.cello == true)
-                                    {
-                                        var line = results.data[i].assignment.split(";");
-                                        results.data[i].assignArray = line;
-                                    }
-                                    objArr[i] = results.data[i];
-                                }
-                                return socket.emit("setAll",objArr,options);
-                            }
-                        }
-                    });
-
-                }
-                else
-                {
-                    return null;
-                    //Handle this later
-                }
             }
         },
 
@@ -243,7 +147,7 @@
             }
         },
 
-        /** 
+        /**
          * Clotho.get
          * Gets object(s) as defined by the input parameter(s).
          * @param {Object} JSON object selector(s) describing an instance(s) of Clotho schema.
@@ -285,10 +189,10 @@
         /**
          * Clotho.run
          * Executes specified function with args as its input.
-         * @param {Object} Object selector with 2 or 3 fields: 
-         *  'Object.module' {String} indicates function module to run [OPTIONAL], 
+         * @param {Object} Object selector with 2 or 3 fields:
+         *  'Object.module' {String} indicates function module to run [OPTIONAL],
          *  'Object.func' {String} indicates the function to run,
-         *  'Object.input' {Object} indicates input arguments for function. 
+         *  'Object.input' {Object} indicates input arguments for function.
          */
         run: function(object, options) {
             if (object.args == undefined)
@@ -315,12 +219,12 @@
          */
         validate: function (object, options) {
             return socket.emit("validate", object, options);
-        }, 
+        },
 
         /**
          * Clotho.login
          * Login to Clotho
-         * @param {Object} 
+         * @param {Object}
          */
         login: function(name, pass) {
             return socket.emit("login", {"username":name, "credentials":pass});
@@ -329,7 +233,7 @@
         /**
          * Clotho.logout
          * Login to Clotho
-         * @param {Object} 
+         * @param {Object}
          */
         logout: function() {
             return socket.emit("logout", "");
@@ -345,6 +249,18 @@
                 return socket.emit("grant", {"user":user, "id":id, "add":add, "remove":remove});
             else
                 return socket.emit("grantAll", {"user":user, "id":id, "add":add, "remove":remove});
+        },
+        /**
+         * Clotho.autocomplete
+         * Return autocompleted objects
+         * @param {string}
+         */
+        autocomplete: function(substring,options){
+            if((substring!="") && (substring!= undefined))
+            {
+                autocompleteString = {"query":substring};
+                return socket.emit("autocomplete",autocompleteString,options);
+            }
         }
     };
 }(Clotho = window.Clotho || {}));

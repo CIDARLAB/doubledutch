@@ -22,15 +22,6 @@ function getCluster()
 
 }
 
-function getAutocomplete()
-{
-    substring = document.getElementById('autocompleteInput').value;
-    Clotho.autocomplete(substring).then(function(objects){
-        alert(JSON.stringify(objects));
-    });
-
-}
-
 
 function login(){
     user = document.getElementById('username').value;
