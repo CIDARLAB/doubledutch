@@ -58,39 +58,50 @@
  <img src = "img/gradient.png" style = "width: 100%; height: 50px;position: absolute;
 top: 0px;">
 
-    <div class="container" style = "padding-top:40px;">
+   <div class="container" style = "padding-top:40px;">
 
-      <div class="row"><div class="col-xs-12">
-      <div class="jumbotron">
-        <!-- <h1>Eugene</h1> -->
-        <img src="img/double_dutch_logo.png" style = "height: 40%; width:40%">
-        
-        <p class="lead">        
-        A Tool for Designing Combinatorial Libraries of Biological Systems Using Response Surface Methodology
-        </p>
-        <!-- <p><a class="btn btn-lg btn-success" href="#" role="button">Sign up today</a></p> -->
-      </div></div></div>
-
+     <div class="row">
+  <div class="col-xs-12" style = "border-bottom: 1px solid #cccccc;">
+    <h1 class = "head">What is Double Dutch?</h1>
+    </div>
 </div>
-	<div class="container">
-    	<div class="row">
-	  
-	  		<!-- doubleDutch -->
-      		<div class="col-xs-12">
-        		<img class = "tools" src = "img/biosynthetic_pathways.jpg">
-        		<h4><a href="doubleDutch.html" target="_blank">Pathway Designer</a></h4>
-        		<p>A tool for designing libraries of biosynthetic pathways</p>
-      		</div>
 
-          <div class="row text-center">
-            <p><b>Stay tuned for more apps!</b></p>
-          </div>
+    <div style="margin-left:50px">
+      <br/>
+      Double Dutch is tool for designing combinatorial libraries of biological systems based on designs from response surface methodology. In practice, it is prohibitive to assemble and test millions of variants to determine how different DNA components affect the behavior of a pathway. RSM, however, provides the means to construct empirical models of system behavior without testing all variants. In RSM, a factorial design is the set of designs that tests how one or more "factors" affect a system of interest when taking on different combinations of quantitative "levels" chosen beforehand. In order for RSM to be used in the context of genetic design, the genes and characterized DNA components that make up pathway variants must first be assigned to the factors and levels of a factorial design, respectively. Double Dutch uses heuristic algorithms, such as k-means clustering and simulated annealing, to optimize this assignment process with respect to three concerns, including the match between component parameters and design levels, the risk of homologous recombination within each pathway, and the number of unique components that must be synthesized to implement the pathway library.
 
-     	</div>
-     	
-	 <hr/>
+      <!-- <br/><br/>
+      Double Dutch's capabilities include:
+        <ul>
+          <li>
+            Specification of <b>(synthetic) biological components</b> 
+          </li>
+          <li>
+            Support of <b>Data Exchange</b> standards
+          </li>
+          <li>
+            <b>Library Management</b> of design and components 
+          </li>
+          <li>
+            Specification of <b>design constraints ("Rules")</b> on composing components into novel systems
+          </li>
+          <li>
+            <b>Built-In functions</b> to enumerate rule-compliant designs automatically 
+          </li>
+          <li>
+            <b>Control structures</b> and <b>functions</b> for the specification of design synthesis
+          </li>
+        </ul> -->
+    </div>
 
-    </div> <!-- /container -->
+    <div class="row">
+      <div class="col-xs-12">
+      <img src = "img/workflow.jpg" style = "height: 85%; width:85%; display:block; margin-left: auto; margin-right:auto; padding-top:30px;">
+      </div>
+    </div>
+
+    <hr/>
+  </div>
 
   	<div class="row">
 	  	<div class="col-xs-3">

@@ -174,7 +174,7 @@ app.controller("doubleDutchCtrl", function($scope, $modal, $log) {
 		if ($scope.fldNodes.length > 0) {
 			return true;
 		} else {
-			alertUser("md", "Error", "Factorial design contains no factors. Upload one or more coding sequences and drag a factor from the leftmost column " 
+			alertUser("md", "Error", "Module assignment contains no factor modules. Upload one or more coding sequences and drag a factor module from the leftmost column " 
 					+ "to the center column.");
 			return false;
 		}
@@ -184,8 +184,8 @@ app.controller("doubleDutchCtrl", function($scope, $modal, $log) {
 		var i;
 		for (i = 0; i < $scope.fldNodes.length; i++) {
 			if ($scope.fldNodes[i].children.length == 0) {
-				alertUser("md", "Error", "Factorial design does not have at least one level associated with each factor. "
-						+ "Upload parameterized features and select 'Assign Levels' or drag levels from the rightmost column to the center column.");
+				alertUser("md", "Error", "Module assignment does not have at least one level module associated with each factor module. "
+						+ "Upload parameterized DNA components and select 'Assign Modules' or drag level modules from the rightmost column to the center column.");
 				return false;
 			}
 		}
@@ -232,8 +232,8 @@ app.controller("doubleDutchCtrl", function($scope, $modal, $log) {
 				}
 			}
 			if (constraintCount + levelCount < $scope.numLevelsPerFactor) {
-				alertUser("md", "Error", "The number of available unique levels is not greater than or equal to the number of levels per factor that "
-						+ "you've selected for your design. Select a lower number of levels per factor or upload additional uniquely parameterized features.");
+				alertUser("md", "Error", "The number of available unique level modules is not greater than or equal to the number of levels per factor that "
+						+ "you've selected for your design. Select a lower number of levels per factor or upload additional uniquely parameterized DNA components.");
 				return false;
 			}
 		}
@@ -1558,7 +1558,45 @@ app.controller("doubleDutchCtrl", function($scope, $modal, $log) {
 								[0, 1, 0, 1, 0, 0, 0, 0, 0, 1, 1, 0],
 								[0, 0, 1, 0, 1, 0, 0, 0, 0, 0, 1, 1],
 								[1, 0, 0, 1, 0, 1, 0, 0, 0, 0, 0, 1],
-								[12]];										
+								[12]];		
+
+	exampleFactorData = [["cnifH"],["cnifD"],["cnifK"],["cnifU"],["cnifS"],["cnifM"],["cnifE"],["cnifN"],["cnifB"]];
+
+	exampleLevelData = [["","","p24","p36","p22","p7","p44","p2","p16","p26","p25","p23","p10","p21","p9","p19","p5","p18","p20","p6","p11","p1","p15","p38","p30","p27","p35","p12","p17","p28","p4","p34","p31","p13","p3","p14","p37","p29","p33"],
+	["","",24,36,22,7,44,2,16,26,25,23,10,21,9,19,5,18,20,6,11,1,15,38,30,27,35,12,17,28,4,34,31,13,3,14,37,29,33],
+	["t12",12,14500,15100,11900,12700,11400,7140,6508,7401,7951,8734,5046,5665,4793,4929,5150,4356,3013,2963,2379,1919,839,399,430,443,647,330,356,370,92.9,148,112,139,98.9,102,78.4,96.4,79.8],
+	["t14",14,15100,15600,12000,12800,9981,7860,7320,6243,5150,4997,4488,3691,4481,3854,3024,3409,3400,3426,2015,1718,800,946,492,454,435,397,371,394,417,303,128,141,116,128,102,86.1,72.7],
+	["t7",7,14700,11600,6884,11500,4932,4773,5693,4868,4690,5645,2968,3860,3340,3399,3051,2517,1938,1649,1428,1568,563,1053,385,417,485,358,357,179,334,136,132,148,102,113,79.4,98.6,82.7],
+	["t18",18,9218,9027,8265,6109,7499,4057,3855,4284,3212,2756,3179,3139,2807,3476,2442,2235,2314,1899,925,1398,735,840,530,408,432,422,340,383,366,140,133,133,119,111,74.1,93.7,74.5],
+	["t13",13,11000,7798,8729,6499,8345,5087,5533,3353,3963,3709,3464,2592,2705,3216,1979,2600,2141,2521,1291,1128,628,440,632,432,339,329,362,363,98.1,325,109,123,96.7,103,81.5,87.5,69.2],
+	["t11",11,9192,8162,6820,6662,5104,7733,4688,4012,3682,4082,3189,3315,3026,3090,2672,2489,1572,1785,1110,1004,567,409,366,396,322,328,342,161,95.1,318,888,143,102,104,73.4,94.2,78.3],
+	["t19",19,10100,7058,10000,8307,2036,4565,6633,2774,4527,4140,4304,4168,4200,3396,3591,2294,2272,1887,1130,1665,815,354,374,422,430,355,336,160,103,115,125,133,100,110,71.6,97.5,88.8],
+	["t39",39,7286,9184,7209,6468,6392,4930,5125,4144,3063,2741,2542,2109,2486,2460,2196,2170,1688,1497,1446,1425,671,771,487,456,411,326,325,359,326,167,136,130,110,104,88.1,94.8,87.1],
+	["t38",38,7932,9621,9565,6134,5725,4363,4545,4084,2935,3442,3089,2711,2832,2416,2257,2021,1650,1408,4048,945,612,455,639,359,451,324,315,324,272,321,126,116,76.8,91.5,87.4,89.6,92.5],
+	["t10",10,9881,5543,7254,7720,5524,4935,4707,4301,4226,4581,3038,3258,2562,3082,2556,2474,1578,1853,924,988,496,129,550,375,360,146,313,138,88.5,114,102,129,88.5,92.6,67.8,95,81.2],
+	["t20",20,7946,16500,8985,7472,1519,4709,5591,2476,3805,3550,3176,3770,3765,2719,3257,1996,1888,1637,997,1347,702,432,370,455,396,368,341,154,116,122,130,144,103,108,74,95.4,78.9],
+	["t5",5,9164,4942,10700,6397,5523,3452,3811,5066,3072,3197,4766,2350,2012,2582,1797,1817,1736,1688,952,1080,455,100,387,400,419,334,383,391,739,118,109,134,101,99.4,116,91.9,76.2],
+	["t30",30,8649,15100,8999,4719,5564,3524,3313,2648,2441,2373,2188,1841,2590,1880,1578,1647,1896,1845,1355,1020,544,492,351,402,323,377,332,337,104,131,112,109,107,95.4,80,96.9,76],
+	["t16",16,11500,6591,6256,7426,5456,4502,4956,4319,3291,2487,3018,2123,2761,2887,2248,1486,2210,2028,1076,1212,598,623,352,401,327,349,312,337,96.8,118,99.9,117,99,96.8,110,88.4,77.2],
+	["t8",8,9682,5468,6405,8997,4783,4791,4027,3586,5088,3871,2915,2670,2412,2571,2273,1951,1103,1297,977,1081,588,441,364,408,370,355,332,157,129,131,132,161,107,111,266,107,81.4],
+	["t9",9,6917,4780,5555,7738,2970,4237,4800,3757,3769,4300,2918,3178,2519,3016,2070,2149,1445,1485,985,864,593,366,369,413,224,339,356,162,359,317,137,139,122,121,81.3,99.6,78.5],
+	["t15",15,11500,3799,6327,4292,5950,4479,3777,4675,2413,2054,2633,1913,1887,2186,1720,1909,1607,1678,941,1009,665,565,98.3,435,351,360,327,348,154,136,123,131,114,104,68.3,83.5,81],
+	["t2",2,8483,4626,7222,4940,4898,4137,4332,3913,2629,2706,2819,1950,2007,2361,1313,1304,1466,1717,982,866,450,443,368,427,214,344,321,343,134,115,110,140,108,101,72,85.5,71.6],
+	["t17",17,7187,10000,6228,4648,5247,4393,2907,3169,2162,1750,2149,1495,1549,2125,1788,1401,1393,1350,602,907,444,127,342,169,333,303,150,139,91.8,117,104,114,101,93.7,111,80.8,79.9],
+	["t6",6,6132,3944,8460,5907,6801,1976,2713,3645,2311,2644,3231,1763,1805,2231,1428,1480,1198,1159,714,779,387,409,336,390,359,396,327,370,105,102,106,127,102,93.9,136,93.9,76.9],
+	["t37",37,6737,7552,5024,3551,4474,1816,2616,1853,1400,2070,2001,2222,1980,1673,1255,1722,1477,680,2116,599,404,434,381,350,406,297,163,339,143,250,127,105,97.1,90.5,80.7,92.8,91.8],
+	["t26",26,5915,4359,5277,3279,3733,3466,2546,1912,1914,2128,2205,1494,1467,1239,1112,981,1347,1219,1182,677,450,418,332,149,322,350,142,143,140,117,112,100,104,129,75,90.9,71.8],
+	["t22",22,4813,3773,4070,4542,1509,3634,2872,1333,2272,2103,1896,2133,2333,1210,1625,1280,1163,1155,586,796,444,364,330,355,333,323,147,110,108,113,112,131,105,102,76.4,99,84.1],
+	["t21",21,3046,2731,4126,2806,1157,2192,2088,994,1840,1568,1450,1590,1796,1274,1527,1075,815,751,524,673,426,409,329,371,306,326,330,121,126,114,122,130,107,107,158,97,75.6],
+	["t1",1,4776,2788,4496,2374,2412,2359,2644,2108,2013,1228,2133,939,974,787,856,615,648,824,622,497,366,339,325,148,129,305,125,132,114,101,100,120,94.4,96.1,77.6,88.3,72.3],
+	["t25",25,3417,3362,3197,2372,3476,2816,2192,1229,1388,1387,1645,794,1129,831,721,871,870,763,844,504,395,310,264,128,146,128,116,135,95.2,106,95.9,103,91.8,98.9,82,91.4,70.6],
+	["t23",23,3187,2182,2535,2823,2243,2325,1685,1047,1341,1242,1334,1460,1265,985,1064,871,791,811,528,517,386,321,296,382,292,139,127,113,98.7,109,104,116,95,90.9,67.6,96.6,75.5],
+	["t4",4,2761,1651,2718,1679,1536,2971,1175,1481,861,1219,1524,809,511,746,517,668,633,625,434,424,324,107,144,107,300,139,132,124,102,86.1,91.7,107,102,92.5,90.7,86,77.8],
+	["t24",24,2404,1269,2648,2093,4200,1675,1468,702,1059,832,1174,886,969,587,863,572,613,720,519,550,359,102,134,390,126,117,105,110,94.6,105,96.3,109,94.8,93.3,69.9,102,71.9],
+	["t27",27,1584,945,1538,1382,2127,1492,838,643,622,709,755,541,598,497,596,468,474,498,377,388,310,289,140,103,111,126,114,131,121,95.2,99.6,97.2,103,95.7,76.4,89.7,78],
+	["t28",28,1063,4153,1089,723,1395,789,560,475,478,530,467,468,433,413,403,397,463,389,367,351,146,144,104,94.1,101,106,102,131,110,91.6,95.6,92.1,94.2,86.5,78.4,90.2,77.6],
+	["t3",3,1447,719,1614,975,960,614,796,884,570,613,942,473,427,494,524,426,438,458,352,394,334,94.4,149,122,406,131,114,127,104,90.3,97.1,115,99.4,94,149,81.5,76.2],
+	["t29",29,770,542,970,459,3435,480,418,393,350,331,476,340,410,324,345,321,349,326,323,168,117,78.5,80.8,96.5,90.5,88.9,88.6,79.6,94.4,80.3,94.2,93,96.6,87.2,79.5,87.8,76.5]];								
 
 	function doeTemplate(name, designGrid, type, resolution, generators) {
 		this.name = name;
@@ -2571,8 +2609,8 @@ app.controller("doubleDutchCtrl", function($scope, $modal, $log) {
 					clusterErrorMessage += ", " + invalidClusters[j].target.toFixed(2);
 				}
 				clusterErrorMessage = clusterErrorMessage.substring(2);
-				clusterErrorMessage += "<br><br>There are no available levels that cluster around the above targets. Change these targets or upload additional "
-						+ "features with parameters that are close to them in magnitude.";
+				clusterErrorMessage += "<br><br>There are no available level modules that cluster around the above targets. Change these targets or upload additional "
+						+ "DNA components with parameters that are close to them in magnitude.";
 				alertUser("md", "Error", clusterErrorMessage);
 				return false;
 			} else {
@@ -2775,8 +2813,8 @@ app.controller("doubleDutchCtrl", function($scope, $modal, $log) {
 		  			$scope.selectedTemplateB = selectedTemplate;
 		  			return true;
 		  		} else {
-		  			var errorMessage = "The ranges of values for each column in the DOE template are not equal in size to the numbers of levels for "
-				  			+ "each factor in the factorial design. Upload or select a template that has columns containing ranges of ";
+		  			var errorMessage = "The ranges of values for each column in the factorial design are not equal in size to the numbers of level modules "
+				  			+ "per factor module in the module assignment. Upload or select a design that has columns containing ranges of ";
 				  	for (i = 0; i < $scope.fldNodes.length; i++) {
 				  		errorMessage += $scope.fldNodes[i].children.length + ", ";
 				  	}
@@ -2791,31 +2829,31 @@ app.controller("doubleDutchCtrl", function($scope, $modal, $log) {
 	  			return true;
 	  		}
   		} else {
-  			alertUser("md", "Error", "The lengths of rows in the DOE template are not equal to the number of factors in the factorial design. "
-  					+ "Upload or select a template that has rows of length " + $scope.fldNodes.length + ".");
+  			alertUser("md", "Error", "The lengths of rows in the factorial design are not equal to the number of factor modules in the module assignment. "
+  					+ "Upload or select a design that has rows of length " + $scope.fldNodes.length + ".");
   			return false;
   		}
   	};
 
   	$scope.uploadTemplate = function() {
   		if ($scope.templateFiles == null || $scope.templateFiles.length == 0) {
-			alertUser("md", "Warning", "No file selected. Browse and select a DOE template file (.csv) to upload.");
+			alertUser("md", "Warning", "No file selected. Browse and select a factorial design file (.csv) to upload.");
 		} else if ($scope.templateFiles[0].name.length < 4 || $scope.templateFiles[0].name.substring($scope.templateFiles[0].name.length - 4) !== ".csv") {
-			alertUser("md", "Error", "Selected file lacks the .csv file extension. Browse and select a DOE template file (.csv) to upload.");
+			alertUser("md", "Error", "Selected file lacks the .csv file extension. Browse and select a factorial design file (.csv) to upload.");
 		} else {
 			Papa.parse($scope.templateFiles[0], {dynamicTyping: true, 
 				complete: function(results) {
 					if (results.data.length == 0) {
-						alertUser("md", "Error", "DOE template file contains no data. Browse and select a new DOE template file (.csv) to upload.");
+						alertUser("md", "Error", "Factorial design file contains no data. Browse and select a new design file (.csv) to upload.");
 					} else {
 						var template = $scope.doeTemplater.parseTemplate($scope.templateFiles[0].name.substring(0, $scope.templateFiles[0].name.length - 4), 
 								results.data);
 						if (template.isEmpty()) {
-							alertUser("md", "Error", "Failed to parse DOE template file. Check file format.");
+							alertUser("md", "Error", "Failed to parse factorial design file. Check file format.");
 						} else if (!template.isGridValid()) {
-							alertUser("md", "Error", "DOE template is not a grid. Upload template that contains rows of equal length.");
+							alertUser("md", "Error", "Factorial design is not a grid. Upload factorial design that contains rows of equal length.");
 						} else if (!template.isRangeValid()) {
-							alertUser("md", "Error", "DOE template has an invalid range. Upload template that has a range of at least two non-equal numbers "
+							alertUser("md", "Error", "Factorial design has an invalid range. Upload design that has a range of at least two non-equal numbers "
 									+ "per column.");
 						} else {
 							$scope.doeTemplates.push(template);
@@ -2844,6 +2882,14 @@ app.controller("doubleDutchCtrl", function($scope, $modal, $log) {
 		}
   	};
 
+  	$scope.loadFactorExample = function() {
+  		$scope.parseFileData(exampleFactorData);
+  	};
+
+  	$scope.loadLevelExample = function() {
+  		$scope.parseFileData(exampleLevelData);
+  	};
+
 	$scope.uploadFeatures = function() {
 		var allCSVFiles = function(files) {
 			var i;
@@ -2854,9 +2900,13 @@ app.controller("doubleDutchCtrl", function($scope, $modal, $log) {
 			}
 			return true;
 		}
+		var completeParse = function(results) {
+			$scope.parseFileData(results.data, this.i);
+			$scope.$apply();
+		};
 		var parseFile = function(results) {
 			if (results.data.length == 0) {
-				alertUser("md", "Error", $scope.featFiles[this.i].name + " contains no data. Browse and select a new feature file (.csv) to upload.");
+				alertUser("md", "Error", $scope.featFiles[this.i].name + " contains no data. Browse and select a new DNA component file (.csv) to upload.");
 			} else {
 				var bioDesignParser = $scope.bioDesignParsers[$scope.uploadSelector];
 				var bioDesigns = bioDesignParser.parseDesign(results.data);
@@ -2944,18 +2994,116 @@ app.controller("doubleDutchCtrl", function($scope, $modal, $log) {
 			}
 		};
 		if ($scope.featFiles == null) {
-			alertUser("md", "Warning", "No files selected. Browse and select one or more feature files (.csv) to upload.");
+			alertUser("md", "Warning", "No files selected. Browse and select one or more DNA component files (.csv) to upload.");
 		} else if (!allCSVFiles($scope.featFiles)) {
-			alertUser("md", "Error", "One or more of selected files lack the .csv file extension. Browse and select feature files (.csv) to upload.");
+			alertUser("md", "Error", "One or more of selected files lack the .csv file extension. Browse and select DNA component files (.csv) to upload.");
 		} else {
 			$scope.numFeatsUploaded = 0;
 			$scope.numModsUploaded = 0;
 			var i;
 	    	for (i = 0; i < $scope.featFiles.length; i++) {
 	    		Papa.parse($scope.featFiles[i], 
-	    			{i: i, dynamicTyping: true, complete: parseFile});
+	    			{i: i, dynamicTyping: true, complete: completeParse});
 	    	}
 	    	$scope.isNumUploadsShown = true;
+		}
+    };
+
+    $scope.parseFileData = function(data, fileIndex) {
+    	if (data.length == 0) {
+    		if (arguments.length > 1 && fileIndex >= 0) {
+				alertUser("md", "Error", $scope.featFiles[filedIndex].name + " contains no data. Browse and select a new DNA component file (.csv) to upload.");
+			} else {
+				alertUser("md", "Error", "File contains no data. Browse and select a new DNA component file (.csv) to upload.");
+			}
+		} else {
+			var bioDesignParser = $scope.bioDesignParsers[$scope.uploadSelector];
+			var bioDesigns = bioDesignParser.parseDesign(data);
+			if (bioDesigns.length == 0) {
+				if (arguments.length > 1 && fileIndex >= 0) {
+					alertUser("md", "Error", "Failed to parse contents of " + $scope.featFiles[this.i].name + ". Check file format.");
+				} else {
+					alertUser("md", "Error", "Failed to parse contents of file. Check file format.");
+				}
+			} else {
+				var isCodedExpression = function(bioDesign) {
+					if ('module' in bioDesign) { 
+						if (bioDesign.module.role === modRole.EXPRESSION) {
+							var feats = bioDesign.module.getFeatures();
+							var i;
+							for (i = 0; i < feats.length; i++) {
+								if (feats[i].role === featRole.CDS) {
+									return true;
+								}
+							}
+							return false;
+						} else {
+							return false;
+						}
+					} else {
+						return false;
+					}
+				};
+				var isParameterizedExpression = function(bioDesign) {
+					if ('module' in bioDesign && 'parameters' in bioDesign) { 
+						var inferredVaria = expressGrammar.inferVariable(bioDesign.module);
+						if (inferredVaria == null) {
+							return -1;
+						} else {
+							var i = 0;
+							while (i < bioDesign.parameters.length) {
+								if (bioDesign.parameters[i].variable.name === inferredVaria.name) {
+									return i;
+								} else {
+									i++;
+								}
+							}
+							return -1;
+						}
+					} else {
+						return -1;
+					}
+				};
+				var i, j;
+				var feats;
+				for (i = 0; i < bioDesigns.length; i++) {
+					if (isCodedExpression(bioDesigns[i])) {
+						$scope.fNodes.push(new fNode(bioDesigns[i]));
+						$scope.numModsUploaded++;
+					} else {
+						j = isParameterizedExpression(bioDesigns[i]);
+						if (j >= 0) {
+							$scope.lNodes.push(new lNode(bioDesigns[i], j));
+							$scope.numModsUploaded++;
+						} 
+					}
+					feats = bioDesigns[i].module.getFeatures();
+					for (j = 0; j < feats.length; j++) {
+						if ($scope.featNameDict[hash(feats[j])] == null) {
+							$scope.featNameDict[hash(feats[j])] = true;
+							$scope.feats.push(feats[j]);
+							$scope.numFeatsUploaded++;
+						}
+					}
+				}
+				$scope.fNodes.sort(function(a, b) {
+					var nameA = a.bioDesign.module.name;
+					var nameB = b.bioDesign.module.name;
+					if (nameA < nameB) {
+						return -1;
+					} else if (nameA > nameB) {
+						return 1;
+					} else {
+						return 0;
+					}
+				});
+				$scope.lNodes.sort(function(a, b) {return a.parameter.value - b.parameter.value});
+				if ($scope.lNodes.length > 0) {
+					$scope.minTarget = Math.floor($scope.lNodes[0].parameter.value);
+					$scope.maxTarget = Math.ceil($scope.lNodes[$scope.lNodes.length - 1].parameter.value);
+				}
+				// $scope.$apply();
+			}
 		}
     };
 
@@ -2986,7 +3134,7 @@ app.controller("doubleDutchCtrl", function($scope, $modal, $log) {
 					}
 					clusterErrorMessage = clusterErrorMessage.substring(2);
 					clusterErrorMessage += "<br><br>There are no available levels that cluster around the above targets. Change these targets "
-							+ "or upload additional features with parameters that are close to them in magnitude.";
+							+ "or upload additional DNA components with parameters that are close to them in magnitude.";
 					alertUser("md", "Error", clusterErrorMessage);
 					return false;
 				} else {
@@ -3016,8 +3164,8 @@ app.controller("doubleDutchCtrl", function($scope, $modal, $log) {
 						}
 					}
 					if (constraintCount + levelCount < numLevelsPerFactor) {
-						alertUser("md", "Error", "The number of available unique levels is not greater than or equal to the number of levels per factor that "
-								+ "you've selected for your design. Select a lower number of levels per factor or upload additional uniquely parameterized features.");
+						alertUser("md", "Error", "The number of available unique level modules is not greater than or equal to the number of levels per factor that "
+								+ "you've selected for your design. Select a lower number of levels per factor or upload additional uniquely parameterized DNA components.");
 						return false;
 					}
 				}
@@ -3230,8 +3378,8 @@ app.controller("doubleDutchCtrl", function($scope, $modal, $log) {
 					clusterErrorMessage += ", " + invalidClusters[j].target.toFixed(2);
 				}
 				clusterErrorMessage = clusterErrorMessage.substring(2);
-				clusterErrorMessage += "<br><br>There are no available levels that cluster around the above targets. Change these targets "
-						+ "or upload additional features with parameters that are close to them in magnitude.";
+				clusterErrorMessage += "<br><br>There are no available level modules that cluster around the above targets. Change these targets "
+						+ "or upload additional DNA components with parameters that are close to them in magnitude.";
 				alertUser("md", "Error", clusterErrorMessage);
 				return false;
 			} else {

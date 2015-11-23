@@ -1,0 +1,310 @@
+<!DOCTYPE html>
+<html ng-app = "doubleDutchApp">
+<head>
+<title>Double Dutch</title>
+  <meta charset="utf-8">
+  <!-- Include meta tag to ensure proper rendering and touch zooming -->
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <!-- <link href="css/application.css" rel="stylesheet"> -->
+  <link href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.1/css/bootstrap.min.css" rel="stylesheet">
+  <link href="css/tree.css" rel="stylesheet">
+  <link href="css/angular-ui-tree.min.css" rel="stylesheet">
+</head>
+<body ng-controller="doubleDutchCtrl">
+
+	<div class="container">
+			
+    <div class="row">
+      <div class="col-sm-4">
+        <label style="font-size:20pt">DNA Components (.csv)</label>
+        <br>
+        <label for="gridRadio" ng-disabled="isAssigning">Grid</label>
+        <input type="radio" id="gridRadio" name="uploadSelect" value="0" ng-model="uploadSelector" ng-disabled="isAssigning"/>
+        <label for="tableRadio">Table</label>
+        <input type="radio" id="tableRadio" name="uploadSelect" value="1" ng-model="uploadSelector" ng-disabled="isAssigning"/>
+        <input type="file" file-input="featFiles" multiple ng-disabled="isAssigning">
+        <br>
+        <button type="button" class="btn btn-primary" ng-click="uploadFeatures()" ng-disabled="isAssigning">Upload Components</button>
+        <br><br>
+        <p ng-show="isNumUploadsShown">{{numFeatsUploaded | number:0}} components uploaded into {{numModsUploaded | number:0}} modules.</p>
+      </div>
+      <div class="col-sm-4">
+        <label style="font-size:20pt">Factorial Design (.csv)</label>
+        <label ng-show="isTemplateSelectAShown">Factorial Design</label>
+        <select ng-show="isTemplateSelectAShown" ng-disabled="isTemplateSelectADisabled" ng-change="changeTemplate()" ng-init="selectedTemplateA = selectedTemplateA || defaultSelectedTemplate" ng-model="selectedTemplateA" ng-options="template as template.name for template in doeTemplates"></select>
+        <br ng-show="isTemplateSelectAShown">
+        <input type="file" file-input="templateFiles" ng-disabled="isAssigning">
+        <br>
+        <button type="button" class="btn btn-primary" ng-click="uploadTemplate()" ng-disabled="isAssigning">Upload Design</button>
+
+      </div>
+      <div class="col-sm-4" align="center">
+        <img src="img/double_dutch_logo.png" style="width:216px;height:198px;">
+      </div>
+    </div>
+
+    <br>
+
+    <div class="row" ng-hide="true">
+      <div class="col-sm-4">
+        <label style="font-size:20pt">Module Assignment</label>
+        
+      </div>
+      <div class="col-sm-4">
+        <label style="font-size:20pt">Pathway Variant Libary</label>
+        <br>
+        <label>Factorial Design</label>
+        <select ng-init="selectedTemplateB = selectedTemplateB || defaultSelectedTemplate" ng-model="selectedTemplateB" ng-options="template as template.name for template in doeTemplates"></select>
+        <br>
+        <button type="button" class="btn btn-primary" ng-csv="doeTemplater.serializeTemplate(selectedTemplateB)" filename="doe_template.csv" field-separator=",">Download Design</button>
+      </div>
+      <div class="col-sm-4" align="center">
+        <button type="button" class="btn btn-primary" ng-csv="testMonteCarloSolvers([5, 10, 15, 20], [[6], [6], [6], [2, 3, 5, 6]], 100)" filename="test_results.csv" field-separator=",">Test Solvers</button>
+      </div>
+    </div>
+
+    <br ng-hide="true">
+
+		<div class="row">
+  		<div class="col-sm-4">
+    		<label style="font-size:20pt" ng-hide="isAssigning">Factor Modules</label>
+        <label style="font-size:20pt" ng-show="isAssigning">Assignment Cost</label>
+        <div ng-hide="isAssigning">
+            <button type="button" class="btn btn-primary" ng-click="loadFactorExample()">Load Example</button>
+        </div>
+        <br>
+        <div ng-show="isAssigning">
+          <div ng-hide="isAssignmentExhaustive">
+            <p>The best level assignment after {{assignmentCount}} trials is shown below.</p>
+            <p>Would you like to continue assignment for another {{annealingOptions.numAnnealings}} trials?</p>
+          </div>
+          <div ng-show="isAssignmentExhaustive">
+            <p ng-show="bestSoln.isOptimal">The best level assignment was found after {{assignmentTime | number:2}} min.</p>
+            <p ng-hide="bestSoln.isOptimal">The best level assignment after {{assignmentTime | number:2}} min is shown below.</p>
+            <p ng-hide="bestSoln.isOptimal">Would you like to continue assignment for another {{timeout}} min?</p>
+          </div>
+          <p>
+            Level matching cost is {{bestSolnCost.levelMatch | number:2}}.
+            <br>
+            Pathway Homology cost is {{bestSolnCost.homology | number:2}}.
+            <br>
+            DNA Synthesis cost is {{bestSolnCost.synthesis | number:2}}.
+            <br>
+            ______________________
+            <br>
+            Total assignment cost is {{bestSolnCost.total | number:2}}.
+          </p>
+        </div>
+    		<div ui-tree="flTreeOptions">
+      			<ol ui-tree-nodes="" ng-model="fNodes">
+        			<li ng-repeat="node in fNodes" ui-tree-node ng-include="'fl_tree_renderer.html'" ng-hide="isAssigning"></li>
+      			</ol>
+    		</div>
+  		</div>
+  		<div class="col-sm-4">
+    		<label style="font-size:20pt">Module Assignment</label>
+        <br>
+        <div>
+          <label ng-show="isNumLevelsPerFactorShown">Levels per Factor</label>
+          <input type="number" step="{{numLevelsPerFactorStep}}" min="{{minLevelsPerFactor}}" max="{{maxLevelsPerFactor}}" style="height:25px; width:50px" ng-show="isNumLevelsPerFactorShown" ng-disabled="isAssigning" ng-model="numLevelsPerFactor">
+          <br ng-show="isNumLevelsPerFactorShown">
+          <button type="button" ng-disabled="bestSoln.isOptimal" class="btn btn-primary" ng-click="assignLevels()">Assign Modules</button>
+          <button type="button" ng-disabled="bestSoln.isOptimal" class="btn btn-primary" ng-click="editAssignmentOptions('md')">Edit Options</button>
+           <button class="btn btn-warning" ng-click="quitAssigning()" ng-show="isAssigning">Done</button>
+          <br><br>
+          <button type="button" class="btn btn-primary" ng-csv="downloadAssignment()" filename="level_assignment.csv" field-separator=",">Download Assignment</button>
+          <button type="button" class="btn btn-primary" ng-csv="generateDesigns()" filename="design_library.csv" field-separator=",">Download Library</button>
+        </div>
+        <br>
+    		<div ui-tree="fldTreeOptions">
+      			<ol ui-tree-nodes="" ng-model="fldNodes">
+        			<li ng-repeat="node in fldNodes" ui-tree-node ng-include="'fl_tree_renderer.html'"></li>
+      			</ol>
+    		</div>
+  		</div>
+  		<div class="col-sm-4">
+    		<label style="font-size:20pt" ng-hide="isAssigning">Level Modules</label>
+        <div ng-hide="isAssigning">
+            <button type="button" class="btn btn-primary" ng-click="loadLevelExample()">Load Example</button>
+        </div>
+        <br>
+    		<div ui-tree="flTreeOptions">
+      			<ol ui-tree-nodes="" ng-model="lNodes">
+        			<li ng-repeat="node in lNodes" ui-tree-node ng-include="'fl_tree_renderer.html'" ng-hide="isAssigning"></li>
+      			</ol>
+    		</div>
+  		</div>
+  	</div>
+
+	</div>
+
+	<script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.3.9/angular.min.js"></script>
+	<script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.3.9/angular-sanitize.min.js"></script>
+	<script src="js/ui-bootstrap-tpls-0.12.0.min.js"></script>
+	<script src="js/angular-ui-tree.min.js"></script>
+	<script src="//cdnjs.cloudflare.com/ajax/libs/q.js/0.9.6/q.min.js"></script>
+	<script src="js/papaparse.min.js"></script>
+	<script src="js/ng-csv.min.js"></script>
+	<!--<script src="js/clotho3API.js"></script>-->
+	<script src="js/doubleDutchApp.js"></script>
+	<script src="js/doubleDutchCtrl.js"></script>
+	<script src="js/featureWindowCtrl.js"></script>
+  <script src="js/alertWindowCtrl.js"></script>
+  <script src="js/assignmentWindowCtrl.js"></script>
+  <script src="js/targetWindowCtrl.js"></script>
+	<script src="js/fileInput.js"></script>
+
+	<script type="text/ng-template" id="fl_tree_renderer.html">
+  	<div ui-tree-handle class="tree-node" style="{{node.backgroundColor}}">
+  		<div class="tree-node-content">
+        	<a class="btn btn-success btn-xs" ng-show="node.isToggleShown" data-nodrag ng-click="toggle()"><span class="glyphicon" ng-class="{'glyphicon-chevron-right': collapsed, 'glyphicon-chevron-down': !collapsed}"></span></a>
+          <a class="pull-right btn btn-danger btn-xs" data-nodrag ng-click="removeFLNode(this)" ng-hide="isAssigning"><span class="glyphicon glyphicon-remove"></span></a>
+          <a class="pull-right btn btn-primary btn-xs" data-nodrag ng-click="addFeatures('md', node)" ng-hide="true"><span class="glyphicon glyphicon-pencil"></span></a>
+          <a class="pull-right btn btn-primary btn-xs" ng-show="node.isTargetShown" data-nodrag ng-click="viewTargets('md', node)"><span class="glyphicon glyphicon-screenshot"></span></a>
+          <a class="{{node.constraintColor}}" ng-show="node.isConstraintShown" ng-disabled="isAssigning" data-nodrag ng-click="toggleConstraint(node)"><span class="{{node.constraintIcon}}"></span></a>
+          <a class="pull-right btn btn-primary btn-xs" ng-show="node.isMoveTopShown" data-nodrag ng-click="moveToTop(node)"><span class="glyphicon glyphicon-arrow-up"></span></a>
+			<label style="{{node.labelColor}}">Module</label><br>
+			<input type="text" style="height:25px" ng-disabled="true" ng-model="node.bioDesign.module.name">
+      <form ng-hide="node.isFNode">
+				<label style="{{node.labelColor}}">{{node.parameter.variable.name}}</label><br>
+				<input type="text" style="height:25px" ng-disabled="true" ng-model="node.parameter.value">
+			</form>   
+    		</div>
+  	</div>
+  	<ol ui-tree-nodes="" data-max-depth="{{node.depth}}" ng-model="node.children" ng-class="{hidden: collapsed}">
+    		<li ng-repeat="node in node.children" ui-tree-node ng-include="'fl_tree_renderer.html'">
+    		</li>
+  	</ol>
+	</script>
+
+	<script type="text/ng-template" id="featureWindow.html">
+      <div class="modal-header">
+          <label style="font-size:20pt">Add/Remove Components</label>
+      </div>
+      <div class="modal-body">
+          <label>Current Components</label>
+          <br>
+           <ul>
+              <li ng-repeat="item in selected">
+                  <a ng-click="moveFeature(item)">{{item.feature.name}}</a>
+              </li>
+          </ul>
+          <label>Available Components</label>
+          <br>
+          <ul>
+              <li ng-repeat="feat in features">
+                  <a ng-click="selected.push({feature: feat})">{{feat.name}}</a>
+              </li>
+          </ul>
+      </div>
+      <div class="modal-footer">
+          <button class="btn btn-primary" ng-click="ok()">OK</button>
+          <button class="btn btn-warning" ng-click="cancel()">Cancel</button>
+      </div>
+  </script>
+
+  <script type="text/ng-template" id="targetWindow.html">
+      <div class="modal-header">
+          <label style="font-size:20pt">Levels</label>
+      </div>
+      <div class="modal-body">
+        <div ng-hide="autoTarget">
+          <button class="btn btn-primary" ng-disabled="isAssigning" ng-click="addTarget()">Add Level</button>
+          <button class="btn btn-primary" ng-disabled="isAssigning" ng-click="removeTarget()">Remove Level</button>
+          <br><br>
+        </div>
+        <ul class="list-unstyled">
+          <li ng-repeat="levelTarget in levelTargets">
+              <input type="number" step="0.01" min="{{minTarget}}" max="{{maxTarget}}" style="height:25px; width:95px" ng-disabled="isAssigning" ng-model="levelTarget.value">
+              <br>
+          </li>
+        </ul>
+        <br>
+        <p ng-show="hasCopied">Levels successfully copied to all other factors.</p>
+      </div>
+      <div class="modal-footer">
+          <button ng-hide="autoTarget" ng-disabled="isAssigning" class="pull-left btn btn-primary" ng-click="copyToAllTargets()">Copy to All</button>
+          <button class="btn btn-primary" ng-click="ok()">OK</button>
+          <button class="btn btn-warning" ng-click="cancel()">Cancel</button>
+      </div>
+  </script>
+
+  <script type="text/ng-template" id="alertWindow.html">
+      <div class="modal-header">
+          <label style="font-size:20pt">{{alertType}}</label>
+      </div>
+      <div class="modal-body">
+          <p ng-bind-html="alertMessage"></p>
+      </div>
+      <div class="modal-footer">
+          <button class="btn btn-primary" ng-click="ok()">OK</button>
+      </div>
+  </script>
+
+  <script type="text/ng-template" id="assignmentWindow.html">
+      <div class="modal-header">
+          <label style="font-size:20pt">Assignment Options</label>
+      </div>
+      <div class="modal-body">
+          <div class="row">
+              <div class="col-sm-6">
+                  <label style="font-size:20pt">Module Assignment</label>
+                  <br>
+                  <label>Assign to Factorial Design</label>
+                  <input ng-disabled="isAssigning" ng-change="changeTemplateAssignment()" type="checkbox" ng-model="isTemplateAssignment">
+                  <br>
+                  <label>Assign Exhaustively</label>
+                  <input ng-disabled="isAssigning" type="checkbox" ng-model="isAssignmentExhaustive">
+                  <div ng-show="isAssignmentExhaustive">
+                    <label>Timeout</label>
+                    <input type="number" step="{{inputStep}}" min="{{minInputZero}}" max="{{maxInput}}" style="height:25px; width:65px" ng-model="timeout">
+                    <label>min</label>
+                  </div>
+                  <div>
+                    <br>
+                    <label ng-hide="isAssignmentExhaustive"># of Trials</label>
+                    <label ng-show="isAssignmentExhaustive"># of Pretrials</label>
+                    <input ng-disabled="isExhaustivelyAssigning" type="number" step="{{inputStep}}" min="{{minInput}}" max="{{maxInput}}" style="height:25px; width:65px" ng-model="annealingOptions.numAnnealings">
+                    <br>
+                    <label>Iterations per Trial</label>
+                    <input ng-disabled="isAssigning" type="number" step="{{inputStep}}" min="{{minInput}}" max="{{maxInput}}" style="height:25px; width:65px" ng-model="annealingOptions.iterPerAnnealing">
+                    <br>
+                    <label ng-disabled="isAssigning">Initial Temperature</label>
+                    <input ng-disabled="isAssigning" type="number" step="{{inputStep}}" min="{{minInput}}" max="{{maxInput}}" style="height:25px; width:65px" ng-model="annealingOptions.initialTemp">
+                    <br><br>
+                  </div>
+                  <div>
+                    <label>Level Matching Weight</label>
+                    <input ng-disabled="isAssigning" type="number" step="{{inputStep}}" min="{{minInputZero}}" max="{{maxInput}}" style="height:25px; width:50px" ng-model="weights.levelMatch">
+                    <br>
+                    <label>Pathway Homology Weight</label>
+                    <input ng-disabled="isAssigning" type="number" step="{{inputStep}}" min="{{minInputZero}}" max="{{maxInput}}" style="height:25px; width:50px" ng-model="weights.homology">
+                    <br>
+                    <label>DNA Synthesis Weight</label>
+                    <input ng-disabled="isAssigning" type="number" step="{{inputStep}}" min="{{minInputZero}}" max="{{maxInput}}" style="height:25px; width:50px" ng-model="weights.synthesis">
+                    <br>
+                    <label for="minSynthesisRadio" ng-disabled="isAssigning">Min Synthesis</label>
+                    <input type="radio" id="minSynthesisRadio" name="synthesisRadio" value="{{synthesisOptions.MINIMIZE}}" ng-model="annealingOptions.synthesisOption" ng-disabled="isAssigning"/>
+                    <label for="maxSynthesisRadio">Max Synthesis</label>
+                    <input type="radio" id="maxSynthesisRadio" name="synthesisRadio" value="{{synthesisOptions.MAXIMIZE}}" ng-model="annealingOptions.synthesisOption" ng-disabled="isAssigning"/>
+                  </div>
+              </div>
+              <div ng-hide="isAssigning" class="col-sm-6">
+                  <label style="font-size:20pt">Level Calculation</label>
+                  <br>
+                  <label>Calculate with K-Means Clustering</label>
+                  <input ng-disabled="isTemplateAssignment" type="checkbox" ng-model="clusteringOptions.autoTarget">
+                  <br>
+                  <label ng-show="clusteringOptions.autoTarget"># of Trials</label>
+                  <input ng-show="clusteringOptions.autoTarget" type="number" step="{{inputStep}}" min="{{minInput}}" max="{{maxInput}}" style="height:25px; width:50px" ng-model="clusteringOptions.numClusterings">
+              </div>     
+          </div>
+      </div>
+      <div class="modal-footer">
+          <button class="pull-left btn btn-primary" ng-click="restoreDefaults()">Restore Defaults</button>
+          <button class="btn btn-primary" ng-click="ok()">OK</button>
+          <button class="btn btn-warning" ng-click="cancel()">Cancel</button>
+      </div>
+  </script>
+</body>
+</html>
