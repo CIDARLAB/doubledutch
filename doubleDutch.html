@@ -36,7 +36,7 @@
         <input type="file" file-input="templateFiles" ng-disabled="isAssigning">
         <br>
         <button type="button" class="btn btn-primary" ng-click="uploadTemplate()" ng-disabled="isAssigning">Upload Design</button>
-
+        <button type="button" class="btn btn-primary" ng-csv="doeTemplater.serializeTemplate(selectedTemplateB)" filename="doe_template.csv" field-separator=",">Download Design</button>
       </div>
       <div class="col-sm-4" align="center">
         <img src="img/double_dutch_logo.png" style="width:216px;height:198px;">
@@ -56,7 +56,6 @@
         <label>Factorial Design</label>
         <select ng-init="selectedTemplateB = selectedTemplateB || defaultSelectedTemplate" ng-model="selectedTemplateB" ng-options="template as template.name for template in doeTemplates"></select>
         <br>
-        <button type="button" class="btn btn-primary" ng-csv="doeTemplater.serializeTemplate(selectedTemplateB)" filename="doe_template.csv" field-separator=",">Download Design</button>
       </div>
       <div class="col-sm-4" align="center">
         <button type="button" class="btn btn-primary" ng-csv="testMonteCarloSolvers([5, 10, 15, 20], [[6], [6], [6], [2, 3, 5, 6]], 100)" filename="test_results.csv" field-separator=",">Test Solvers</button>
