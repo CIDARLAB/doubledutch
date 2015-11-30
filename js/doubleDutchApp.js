@@ -1,1 +1,0 @@
-var app = angular.module("doubleDutchApp", ['ui.tree','ngSanitize', 'ngCsv', 'ui.bootstrap.tpls', 'ui.bootstrap.modal']);

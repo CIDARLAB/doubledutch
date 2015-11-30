@@ -1,16 +1,16 @@
 <!DOCTYPE html>
-<html ng-app = "doubleDutchApp">
+<html ng-app = "pathwayDesignerApp">
 <head>
-<title>Double Dutch</title>
+<title>Pathway Designer</title>
   <meta charset="utf-8">
   <!-- Include meta tag to ensure proper rendering and touch zooming -->
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <!-- <link href="css/application.css" rel="stylesheet"> -->
+
   <link href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.1/css/bootstrap.min.css" rel="stylesheet">
-  <link href="css/tree.css" rel="stylesheet">
-  <link href="css/angular-ui-tree.min.css" rel="stylesheet">
+  <link href="../style/tree.css" rel="stylesheet">
+  <link href="../style/angular-ui-tree.min.css" rel="stylesheet">
 </head>
-<body ng-controller="doubleDutchCtrl">
+<body ng-controller="pathwayDesigner">
 
 	<div class="container">
 			
@@ -39,7 +39,7 @@
         <button type="button" class="btn btn-primary" ng-csv="doeTemplater.serializeTemplate(selectedTemplateB)" filename="doe_template.csv" field-separator=",">Download Design</button>
       </div>
       <div class="col-sm-4" align="center">
-        <img src="img/double_dutch_logo.png" style="width:216px;height:198px;">
+        <img src="../../image/double_dutch_logo.png" style="width:216px;height:198px;">
       </div>
     </div>
 
@@ -137,21 +137,22 @@
 
 	</div>
 
+  <!--<script src="//cdnjs.cloudflare.com/ajax/libs/q.js/0.9.6/q.min.js"></script>-->
+  <!--<script src="js/clotho3API.js"></script>-->
+  <script src="../io/papaparse.min.js"></script>
 	<script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.3.9/angular.min.js"></script>
 	<script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.3.9/angular-sanitize.min.js"></script>
-	<script src="js/ui-bootstrap-tpls-0.12.0.min.js"></script>
-	<script src="js/angular-ui-tree.min.js"></script>
-	<script src="//cdnjs.cloudflare.com/ajax/libs/q.js/0.9.6/q.min.js"></script>
-	<script src="js/papaparse.min.js"></script>
-	<script src="js/ng-csv.min.js"></script>
-	<!--<script src="js/clotho3API.js"></script>-->
-	<script src="js/doubleDutchApp.js"></script>
-	<script src="js/doubleDutchCtrl.js"></script>
-	<script src="js/featureWindowCtrl.js"></script>
-  <script src="js/alertWindowCtrl.js"></script>
-  <script src="js/assignmentWindowCtrl.js"></script>
-  <script src="js/targetWindowCtrl.js"></script>
-	<script src="js/fileInput.js"></script>
+  <script src="../angular/directive/io/fileInput.js"></script>
+	<script src="angular/controller/pathwayDesigner.js"></script>
+	<script src="angular/controller/moduleEditor.js"></script>
+  <script src="angular/controller/assignmentOptions.js"></script>
+  <script src="angular/controller/levelTargets.js"></script>
+  <script src="../angular/controller/alertMessenger.js"></script>
+  <script src="angular/module/pathwayDesignerApp.js"></script>
+  <script src="../../angular/directive/gui/ui-bootstrap-tpls-0.12.0.min.js"></script>
+  <script src="../angular/directive/gui/angular-ui-tree.min.js"></script>
+	<script src="../../angular/directive/io/ng-csv.min.js"></script>
+  
 
 	<script type="text/ng-template" id="fl_tree_renderer.html">
   	<div ui-tree-handle class="tree-node" style="{{node.backgroundColor}}">
@@ -176,7 +177,7 @@
   	</ol>
 	</script>
 
-	<script type="text/ng-template" id="featureWindow.html">
+	<script type="text/ng-template" id="moduleEditor.html">
       <div class="modal-header">
           <label style="font-size:20pt">Add/Remove Components</label>
       </div>
@@ -202,7 +203,7 @@
       </div>
   </script>
 
-  <script type="text/ng-template" id="targetWindow.html">
+  <script type="text/ng-template" id="levelTargets.html">
       <div class="modal-header">
           <label style="font-size:20pt">Levels</label>
       </div>
@@ -228,7 +229,7 @@
       </div>
   </script>
 
-  <script type="text/ng-template" id="alertWindow.html">
+  <script type="text/ng-template" id="alertMessenger.html">
       <div class="modal-header">
           <label style="font-size:20pt">{{alertType}}</label>
       </div>
@@ -240,7 +241,7 @@
       </div>
   </script>
 
-  <script type="text/ng-template" id="assignmentWindow.html">
+  <script type="text/ng-template" id="assignmentOptions.html">
       <div class="modal-header">
           <label style="font-size:20pt">Assignment Options</label>
       </div>

@@ -1,4 +1,4 @@
-app.controller('targetWindowCtrl', function ($scope, $modalInstance, items) {
+function levelTargets($scope, $modalInstance, items) {
   $scope.fNodes = items.fNodes;
   $scope.autoTarget = items.autoTarget;
   $scope.isAssigning = items.isAssigning;
@@ -70,4 +70,4 @@ app.controller('targetWindowCtrl', function ($scope, $modalInstance, items) {
     }
   }
 
-});
+}

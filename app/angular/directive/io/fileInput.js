@@ -1,4 +1,4 @@
-app.directive('fileInput', function ($parse) {
+function fileInput($parse) {
    return {
       restrict: 'A',
       link: function(scope, element, attrs) {
@@ -8,4 +8,4 @@ app.directive('fileInput', function ($parse) {
          });
       }
    };
-});
+}

@@ -1,4 +1,4 @@
-app.controller('featureWindowCtrl', function ($scope, $modalInstance, items) {
+function moduleEditor($scope, $modalInstance, items) {
   
   $scope.features = items.features;
   $scope.selected = [];
@@ -31,4 +31,4 @@ app.controller('featureWindowCtrl', function ($scope, $modalInstance, items) {
     }
   }
 
-});
+}

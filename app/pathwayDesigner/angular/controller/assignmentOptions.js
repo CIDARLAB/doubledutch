@@ -1,4 +1,4 @@
-app.controller('assignmentWindowCtrl', function ($scope, $modalInstance, items) {
+function assignmentOptions($scope, $modalInstance, items) {
 
   $scope.isAssigning = items.isAssigning;
 
@@ -84,4 +84,4 @@ app.controller('assignmentWindowCtrl', function ($scope, $modalInstance, items) 
     $modalInstance.dismiss('cancel');
   };
 
-});
+}

@@ -1,4 +1,4 @@
-app.controller('alertWindowCtrl', function ($scope, $modalInstance, items) {
+function alertMessenger($scope, $modalInstance, items) {
   
   $scope.alertType = items.alertType;
   $scope.alertMessage = items.alertMessage;
@@ -7,4 +7,4 @@ app.controller('alertWindowCtrl', function ($scope, $modalInstance, items) {
     $modalInstance.close();
   };
 
-});
+}

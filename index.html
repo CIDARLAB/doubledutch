@@ -1,88 +1,49 @@
 
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" ng-app = "indexApp">
 
   <head>
 
     <meta charset="utf-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <!-- <link rel="shortcut icon" href="img/eugene-favicon_small.png"> -->
 
     <title>Double Dutch</title>
 
     <!-- Bootstrap core CSS -->
     <link href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.1/css/bootstrap.min.css" rel="stylesheet">
 
-    <link href="css/eugene.css" rel="stylesheet">
-
     <!-- Custom styles for this template -->
-    <link href="css/jumbotron-narrow.css" rel="stylesheet">
+    <link href="style/custom.css" rel="stylesheet">
+    <link href="style/jumbotron-narrow.css" rel="stylesheet">
 
   </head>
 
   <body>
-    <div class="container">
-<header class="navbar navbar-static-top bs-docs-nav" id="top" role="banner" style = "position: absolute;top: 0px;">
-  <div class="container">
-    <div class="navbar-header">
-      <button class="navbar-toggle" type="button" data-toggle="collapse" data-target=".bs-navbar-collapse">
-        <span class="sr-only">Toggle navigation</span>
-        <span class="icon-bar"></span>
-        <span class="icon-bar"></span>
-        <span class="icon-bar"></span>
-      </button>
-<!--      <a href="" class="navbar-brand">Eugene</a> -->
-    </div>
-    <nav class="navbar-collapse bs-navbar-collapse" role="navigation">
-      <ul class="nav navbar-nav">
 
-        <li class = "active">
-          <a href="index.html" class = "nav">Home</a>
-        </li>
-		  
-        <li>
-          <a href="about.html" class = "nav">About</a>
-        </li>
+    <double-dutch-header></double-dutch-header>
 
-        <li>
-          <a href="downloads.html" class = "nav">Downloads</a>
-        </li>
+  <div class="container" style = "padding-top:40px;">
 
-        <li>
-          <a href="contact.html" class = "nav">Contact</a>
-        </li>
-
-      </ul>
-    </nav>
-  </div>
-</header>
-</div>
-
- <img src = "img/gradient.png" style = "width: 100%; height: 50px;position: absolute;
-top: 0px;">
-
-    <div class="container" style = "padding-top:40px;">
-
-      <div class="row"><div class="col-xs-12">
-      <div class="jumbotron">
-        <!-- <h1>Eugene</h1> -->
-        <img src="img/double_dutch_logo.png" style = "height: 40%; width:40%">
+    <div class="row">
+      <div class="col-xs-12">
+        <div class="jumbotron">
+          <img src="image/double_dutch_logo.png" style = "height: 40%; width:40%">
         
-        <p class="lead">        
-        A Tool for Designing Combinatorial Libraries of Biological Systems Using Response Surface Methodology
-        </p>
-        <!-- <p><a class="btn btn-lg btn-success" href="#" role="button">Sign up today</a></p> -->
-      </div></div></div>
+          <p class="lead">        
+          A Tool for Designing Combinatorial Libraries of Biological Systems Using Response Surface Methodology
+          </p>
+        </div>
+      </div>
+    </div>
 
-</div>
+  </div>
 	<div class="container">
     	<div class="row">
 	  
-	  		<!-- doubleDutch -->
       		<div class="col-xs-12">
-        		<img class = "tools" src = "img/biosynthetic_pathways.jpg">
-        		<h4><a href="doubleDutch.html" target="_blank">Pathway Designer</a></h4>
+        		<a href="app/pathwayDesigner/pathwayDesigner.html" target="_blank"><img class = "tools" src = "image/biosynthetic_pathways.jpg"></a>
+        		<h4><a href="app/pathwayDesigner/pathwayDesigner.html" target="_blank">Pathway Designer</a></h4>
         		<p>A tool for designing libraries of biosynthetic pathways</p>
       		</div>
 
@@ -91,38 +52,15 @@ top: 0px;">
           </div>
 
      	</div>
-     	
-	 <hr/>
 
-    </div> <!-- /container -->
+    </div>
 
-  	<div class="row">
-	  	<div class="col-xs-3">
-  	    	<a href="http://www.cidarlab.org" target="_blank"><img src = "img/cidar_logo.png" class = "org_icon"></a>
-      </div>
-      <div class="col-xs-3">
-          <img src = "img/boston_logo.png" class = "org_icon">
-      </div>
-      <div class="col-xs-3">
-          <img src = "img/mit_logo.png" class = "org_icon">
-      </div>
-      <div class="col-xs-3">
-          <a href="http://www.nonasoftware.org/" target="_blank"><img src = "img/nona_logo.png" class = "org_icon"></a>
-      </div>
-  	</div>
+    <double-dutch-footer></double-dutch-footer>
 
- 		<!--  Footer (License) -->
-		<div class="footer row text-center">
-	        <!--  Licencse -->
-			<a rel="license" href="http://creativecommons.org/licenses/by-sa/4.0/">
-				<img alt="Creative Commons License" style="border-width:0" src="http://i.creativecommons.org/l/by-sa/4.0/88x31.png" />
-			</a>
-			<br />
-			Double Dutch is licensed under a <a rel="license" href="http://creativecommons.org/licenses/by-sa/4.0/">Creative Commons Attribution-ShareAlike 4.0 International License</a>.
-		</div>
-
-	<!-- Google Analytics -->
-	<!-- <script type='text/javascript' src='js/sendediedaten.js'></script> -->
-	
+	 <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.3.9/angular.min.js"></script>
+   <script src="angular/directive/navigation/doubleDutchHeader.js"></script>
+   <script src="angular/directive/navigation/doubleDutchFooter.js"></script>
+   <script src="angular/module/indexApp.js"></script>
+   
   </body>
 </html>

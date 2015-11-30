@@ -15,8 +15,6 @@
     background-color: #666699;
   }
 
-
-
   .nav{
     color: white;
   }
@@ -68,6 +66,18 @@
           font-size: 22px;
           margin-top: 20px;
         }
+
+        .bod_link{
+          color:#555;
+          font-size: 22px;
+          margin-top: 20px;
+        }
+
+
+        .bod_link:hover{
+          color: #aaa;
+        }
+
         .head{
           color: #FF6E14;
           text-align: left;
