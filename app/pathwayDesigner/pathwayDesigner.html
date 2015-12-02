@@ -25,6 +25,7 @@
         <input type="file" file-input="featFiles" multiple ng-disabled="isAssigning">
         <br>
         <button type="button" class="btn btn-primary" ng-click="uploadFeatures()" ng-disabled="isAssigning">Upload Components</button>
+        <button type="button" class="btn btn-primary" ng-click="loadExampleModules() ng-disabled="isAssigning"">Load Example</button>
         <br><br>
         <p ng-show="isNumUploadsShown">{{numFeatsUploaded | number:0}} components uploaded into {{numModsUploaded | number:0}} modules.</p>
       </div>
@@ -39,7 +40,7 @@
         <button type="button" class="btn btn-primary" ng-csv="doeTemplater.serializeTemplate(selectedTemplateB)" filename="doe_template.csv" field-separator=",">Download Design</button>
       </div>
       <div class="col-sm-4" align="center">
-        <img src="../../image/double_dutch_logo.png" style="width:216px;height:198px;">
+        <a href="../../index.html" target="_blank"><img src="../../image/double_dutch_logo.png" style="width:216px;height:198px;"></a>
       </div>
     </div>
 
@@ -69,7 +70,7 @@
     		<label style="font-size:20pt" ng-hide="isAssigning">Factor Modules</label>
         <label style="font-size:20pt" ng-show="isAssigning">Assignment Cost</label>
         <div ng-hide="isAssigning">
-            <button type="button" class="btn btn-primary" ng-click="loadFactorExample()">Load Example</button>
+            <button type="button" class="btn btn-primary" ng-click="removeFNodes()">Remove All</button>
         </div>
         <br>
         <div ng-show="isAssigning">
@@ -124,7 +125,7 @@
   		<div class="col-sm-4">
     		<label style="font-size:20pt" ng-hide="isAssigning">Level Modules</label>
         <div ng-hide="isAssigning">
-            <button type="button" class="btn btn-primary" ng-click="loadLevelExample()">Load Example</button>
+            <button type="button" class="btn btn-primary" ng-click="removeLNodes()">Remove All</button>
         </div>
         <br>
     		<div ui-tree="flTreeOptions">

@@ -74,7 +74,7 @@ function pathwayDesigner($scope, $modal, $log) {
 			}
 			return name.substring(2);
 		};
-		this.name = this.role.substring(0, 1).toUpperCase() + this.role.substring(1) + " " + this.constructNameFromFeatures();
+		this.name = this.constructNameFromFeatures();
 	}
 
 	function bioDesign(mod, params) {
@@ -2082,45 +2082,40 @@ function pathwayDesigner($scope, $modal, $log) {
 			} else if (insulationFeats.length > 0) {
 				return new module(insulationFeats, [], modRole.INSULATION, "org.clothocad.model.BasicModule");
 			}
+			var expressMod;
 			var transcMod;
 			if (hasPromoter || hasTerminator) {
-				transcMod = new module(transcFeats, [], modRole.TRANSCRIPTION, "org.clothocad.model.BasicModule");
-			} else {
-				transcMod = null;
+				return new module(transcFeats, [], modRole.EXPRESSION, "org.clothocad.model.BasicModule");
 			}
 			var translMod;
 			if (hasRBS) {
-				translMod = new module(translFeats, [], modRole.TRANSLATION, "org.clothocad.model.BasicModule");
-			} else {
-				translMod = null;
+				return new module(translFeats, [], modRole.EXPRESSION, "org.clothocad.model.BasicModule");
 			}
-			var expressMod;
 			if (hasCDS) {
-				expressMod = new module(expressFeats, [], modRole.EXPRESSION, "org.clothocad.model.BasicModule");
-			} else {
-				expressMod = null;
+				return new module(expressFeats, [], modRole.EXPRESSION, "org.clothocad.model.BasicModule");
 			}
-			if ((hasCDS && (hasPromoter || hasTerminator || hasRBS)) || ((hasPromoter || hasTerminator) && hasRBS)) {
-				var subMods = [];
-				if (hasCDS) {
-					subMods.push(expressMod);
-				}
-				if (hasPromoter || hasTerminator) {
-					subMods.push(transcMod);
-				}
-				if (hasRBS) {
-					subMods.push(translMod);
-				}
-				return new module([], subMods, modRole.EXPRESSION, "org.clothocad.model.CompositeModule");
-			} else if (hasCDS) {
-				return expressMod;
-			} else if (hasPromoter || hasTerminator) {
-				return transcMod;
-			} else if (hasRBS) {
-				return translMod;
-			} else {
-				return null;
-			}
+			return null;
+			// if ((hasCDS && (hasPromoter || hasTerminator || hasRBS)) || ((hasPromoter || hasTerminator) && hasRBS)) {
+			// 	var subMods = [];
+			// 	if (hasCDS) {
+			// 		subMods.push(expressMod);
+			// 	}
+			// 	if (hasPromoter || hasTerminator) {
+			// 		subMods.push(transcMod);
+			// 	}
+			// 	if (hasRBS) {
+			// 		subMods.push(translMod);
+			// 	}
+			// 	return new module([], subMods, modRole.EXPRESSION, "org.clothocad.model.CompositeModule");
+			// } else if (hasCDS) {
+			// 	return expressMod;
+			// } else if (hasPromoter || hasTerminator) {
+			// 	return transcMod;
+			// } else if (hasRBS) {
+			// 	return translMod;
+			// } else {
+			// 	return null;
+			// }
 		}, inferVariable: function(mod) {
 			if (mod.role === modRole.EXPRESSION) {
 				return this.variables.EXPRESSION;
@@ -2183,6 +2178,8 @@ function pathwayDesigner($scope, $modal, $log) {
 							parsedParam = this.parseParameter(data[i][j], inferredMod);
 							if (parsedParam != null) {
 								bioDesigns.push(new bioDesign(inferredMod, parsedParam));
+							} else {
+								bioDesigns.push(new bioDesign(inferredMod, []));
 							}
 						}
 					}
@@ -2255,6 +2252,8 @@ function pathwayDesigner($scope, $modal, $log) {
 								parsedParam = this.parseParameter(data[i], inferredMod);
 								if (parsedParam != null) {
 									bioDesigns.push(new bioDesign(inferredMod, parsedParam));
+								} else {
+									bioDesigns.push(new bioDesign(inferredMod, []));
 								}
 							}
 						}
@@ -2881,12 +2880,20 @@ function pathwayDesigner($scope, $modal, $log) {
 		}
   	};
 
-  	$scope.loadFactorExample = function() {
-  		$scope.parseFileData(exampleFactorData);
+  	$scope.removeFNodes = function() {
+  		$scope.fNodes = [];
   	};
 
-  	$scope.loadLevelExample = function() {
+  	$scope.removeLNodes = function() {
+  		$scope.lNodes = [];
+  	};
+
+  	$scope.loadExampleModules = function() {
+  		$scope.numFeatsUploaded = 0;
+		$scope.numModsUploaded = 0;
+  		$scope.parseFileData(exampleFactorData);
   		$scope.parseFileData(exampleLevelData);
+  		$scope.isNumUploadsShown = true;
   	};
 
 	$scope.uploadFeatures = function() {
