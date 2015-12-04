@@ -25,7 +25,7 @@
         <input type="file" file-input="featFiles" multiple ng-disabled="isAssigning">
         <br>
         <button type="button" class="btn btn-primary" ng-click="uploadFeatures()" ng-disabled="isAssigning">Upload Components</button>
-        <button type="button" class="btn btn-primary" ng-click="loadExampleModules() ng-disabled="isAssigning"">Load Example</button>
+        <button type="button" class="btn btn-primary" ng-click="loadExampleModules()" ng-disabled="isAssigning">Load Example</button>
         <br><br>
         <p ng-show="isNumUploadsShown">{{numFeatsUploaded | number:0}} components uploaded into {{numModsUploaded | number:0}} modules.</p>
       </div>
