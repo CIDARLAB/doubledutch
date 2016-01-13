@@ -271,7 +271,10 @@
                     <input ng-disabled="isAssigning" type="number" step="{{inputStep}}" min="{{minInput}}" max="{{maxInput}}" style="height:25px; width:65px" ng-model="annealingOptions.iterPerAnnealing">
                     <br>
                     <label ng-disabled="isAssigning">Initial Temperature</label>
-                    <input ng-disabled="isAssigning" type="number" step="{{inputStep}}" min="{{minInput}}" max="{{maxInput}}" style="height:25px; width:65px" ng-model="annealingOptions.initialTemp">
+                    <input ng-disabled="isAssigning" type="number" step="{{inputStep}}" min="{{minInput}}" max="{{maxInput}}" style="height:25px; width:103px" ng-model="annealingOptions.initialTemp">
+                     <br>
+                    <label ng-disabled="isAssigning">Probability Decay Factor</label>
+                    <input ng-disabled="isAssigning" type="number" step="{{decimalInputStep}}" min="{{minDecimalInput}}" max="{{maxDecimalInput}}" style="height:25px; width:65px" ng-model="annealingOptions.probDecay">
                     <br><br>
                   </div>
                   <div>

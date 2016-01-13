@@ -15,7 +15,7 @@ function assignmentOptions($scope, $modalInstance, items) {
 
   $scope.initialAnnealingOptions = items.annealingOptions;
   $scope.annealingOptions = {numAnnealings: items.annealingOptions.numAnnealings, iterPerAnnealing: items.annealingOptions.iterPerAnnealing, 
-      initialTemp: items.annealingOptions.initialTemp, synthesisOption: items.annealingOptions.synthesisOption};
+      initialTemp: items.annealingOptions.initialTemp, probDecay: items.annealingOptions.probDecay, synthesisOption: items.annealingOptions.synthesisOption};
   $scope.defaultAnnealingOptions = items.defaultAnnealingOptions;
 
   $scope.initialWeights = items.weights;
@@ -32,6 +32,10 @@ function assignmentOptions($scope, $modalInstance, items) {
   $scope.maxInput = 1000000000;
   $scope.inputStep = 1;
 
+  $scope.minDecimalInput = 0.01;
+  $scope.maxDecimalInput = 100;
+  $scope.decimalInputStep = 0.01;
+
   $scope.minInputZero = 0;
 
   $scope.restoreDefaults = function() {
@@ -42,6 +46,7 @@ function assignmentOptions($scope, $modalInstance, items) {
       $scope.annealingOptions.numAnnealings = $scope.defaultAnnealingOptions.numAnnealings;
       $scope.annealingOptions.iterPerAnnealing = $scope.defaultAnnealingOptions.iterPerAnnealing;
       $scope.annealingOptions.initialTemp = $scope.defaultAnnealingOptions.initialTemp;
+      $scope.annealingOptions.probDecay = $scope.defaultAnnealingOptions.probDecay;
       $scope.annealingOptions.synthesisOption = $scope.defaultAnnealingOptions.synthesisOption;
       $scope.weights = {levelMatch: $scope.defaultWeights.levelMatch, homology: $scope.defaultWeights.homology, synthesis: $scope.defaultWeights.synthesis};
       $scope.clusteringOptions = {numClusterings: $scope.defaultClusteringOptions.numClusterings, autoTarget: $scope.defaultClusteringOptions.autoTarget};
@@ -59,6 +64,8 @@ function assignmentOptions($scope, $modalInstance, items) {
         $scope.initialAnnealingOptions.iterPerAnnealing);
     $scope.annealingOptions.initialTemp = validateNumericInput($scope.annealingOptions.initialTemp, $scope.minInput, $scope.maxInput, $scope.inputStep, 
         $scope.initialAnnealingOptions.initialTemp);
+    $scope.annealingOptions.probDecay = validateNumericInput($scope.annealingOptions.probDecay, $scope.minDecimalInput, $scope.maxDecimalInput, $scope.decimalInputStep, 
+        $scope.initialAnnealingOptions.probDecay);
     
     $scope.weights.levelMatch = validateNumericInput($scope.weights.levelMatch, $scope.minInputZero, $scope.maxInput, $scope.inputStep, 
         $scope.initialWeights.levelMatch); 

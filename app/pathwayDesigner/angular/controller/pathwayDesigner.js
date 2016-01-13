@@ -47,23 +47,21 @@ function pathwayDesigner($scope, $modal, $log) {
 		}
 		this.role = role;
 		this.getFeatures = function() {
-			var feats = [];
-			var mods = [];
-			mods.push(this);
-			var i;
-			while (mods.length > 0) {
-				var mod = mods.pop();
-				if (mod.schema === "org.clothocad.model.BasicModule") {
-					for (i = 0; i < mod.features.length; i++) {
-						feats.push(mod.features[i]);
-					}
-				} else if (mod.schema === "org.clothocad.model.CompositeModule") {
-					for (i = 0; i < mod.subModules.length; i++) {
-						mods.push(mod.subModules[i]);
+			var feats;
+			var i, f;
+			if (this.schema === "org.clothocad.model.BasicModule") {
+				return this.features;
+			} else {
+				var feats = [];
+				var subFeats;
+				for (i = 0; i < this.subModules.length; i++) {
+					subFeats = this.subModule[i].getFeatures();
+					for (f = 0; f < subFeats.length; f++) {
+						feats.push(subFeats[f]);
 					}
 				}
+				return feats;
 			}
-			return feats;
 		};
 		this.constructNameFromFeatures = function() {
 			var feats = this.getFeatures();
@@ -451,29 +449,20 @@ function pathwayDesigner($scope, $modal, $log) {
 		}
 		var calculateMaxSynthesisCost = function(clusterGrid) {
 			var maxSynthesisCost = 0;
-			var i, j;
+			var i;
 			for (i = 0; i < clusterGrid.length; i++) {
-				for (j = 0; j < clusterGrid[i].length; j++) {
-					maxSynthesisCost += clusterGrid[i][j].maxFeats;
-				}
+				maxSynthesisCost += clusterGrid[i].length*clusterGrid[i][0].lNodes[0].bioDesign.module.getFeatures().length;
 			}
 			return Math.min(maxSynthesisCost, clusterGrid.numUniqueFeats);
 		};
 		var calculateMinSynthesisCost = function(clusterGrid) {
 			var minSynthesisCost = 1;
-			var numFeatsPerModuleSize;
-			var i;
+			var minFeats;
+			var i, j;
 			for (i = 0; i < clusterGrid.length; i++) {
-				numFeatsPerModuleSize = [];
-				for (j = 0; j < clusterGrid[i].length; j++) {
-					if (numFeatsPerModuleSize[clusterGrid[i][j].minFeats]) {
-						numFeatsPerModuleSize[clusterGrid[i][j].minFeats]++;
-					} else {
-						numFeatsPerModuleSize[clusterGrid[i][j].minFeats] = clusterGrid[i][j].minFeats;
-					}
-					if (minSynthesisCost < numFeatsPerModuleSize[clusterGrid[i][j].minFeats]) {
-						minSynthesisCost = numFeatsPerModuleSize[clusterGrid[i][j].minFeats];
-					}
+				minFeats = clusterGrid[i].length - 1 + clusterGrid[i][0].lNodes[0].bioDesign.module.getFeatures().length;
+				if (minSynthesisCost < minFeats) {
+					minSynthesisCost = minFeats;
 				}
 			}
 			return minSynthesisCost;
@@ -521,25 +510,20 @@ function pathwayDesigner($scope, $modal, $log) {
 		};
 		var calculateFeatureFrequencies = function(levelSelections, clusterGrid, iBound, jBound, costModGrid, initializeFrequencies) {
 			var featFreqs = {};
-			var featRecord;
 			var feats;
 			var i, j, k, f;
 			for (i = 0; i <= iBound; i++) {
 				for (j = 0; j <= (i == iBound ? jBound : levelSelections[i].length - 1); j++) {
 					k = levelSelections[i][j];
-					featRecord = {};
 					feats = clusterGrid[i][j].lNodes[k].bioDesign.module.getFeatures();
 					for (f = 0; f < feats.length; f++) {
 						if (!featFreqs[hash(feats[f])]) {
 							featFreqs[hash(feats[f])] = initializeFrequencies(levelSelections.length);
 						}
-						if (!featRecord[hash(feats[f])]) {
-							featRecord[hash(feats[f])] = true;
-							if (costModGrid) {
-								featFreqs[hash(feats[f])][i] += costModGrid[i][j];
-							} else {
-								featFreqs[hash(feats[f])][i]++;
-							}
+						if (costModGrid) {
+							featFreqs[hash(feats[f])][i] += costModGrid[i][j];
+						} else {
+							featFreqs[hash(feats[f])][i]++;
 						}
 					}
 				}
@@ -552,8 +536,11 @@ function pathwayDesigner($scope, $modal, $log) {
 			var i, j, f;
 			for (i = 0; i < clusterGrid.length; i++) {
 				for (j = 0; j < clusterGrid[i].length; j++) {
-					for (f = 0; f < clusterGrid[i][j].maxFeats; f++) {
+					for (f = 0; f < clusterGrid[i][0].lNodes[0].bioDesign.module.getFeatures().length; f++) {
 						maxFeatHash = "maxFeat" + f;
+						if (f = clusterGrid[i][0].lNodes[0].bioDesign.module.getFeatures().length - 1) {
+							maxFeatHash += j;
+						}
 						if (!maxFeatFreqs[maxFeatHash]) {
 							maxFeatFreqs[maxFeatHash] = initializeFrequencies(clusterGrid.length);
 						}
@@ -581,7 +568,7 @@ function pathwayDesigner($scope, $modal, $log) {
 						} else {
 							costedFeats[i][j].cost = 1;
 						}
-						for (f = 0; f < clusterGrid[i][j].minFeats; f++) {
+						for (f = 0; f < clusterGrid[i][0].lNodes[0].bioDesign.module.getFeatures().length; f++) {
 							costedFeats[i][j].featHashes[f] = "minFeat" + featCount;
 							featCount++;
 						}
@@ -594,7 +581,7 @@ function pathwayDesigner($scope, $modal, $log) {
 				var i, j;
 				for (i = 0; i < clusterGrid.length; i++) {
 					for (j = 0; j < clusterGrid[i].length; j++) {
-						featCount += clusterGrid[i][j].minFeats;
+						featCount += clusterGrid[i][0].lNodes[0].bioDesign.module.getFeatures().length;
 					}
 				}
 				return featCount;
@@ -659,11 +646,7 @@ function pathwayDesigner($scope, $modal, $log) {
 						if (!minFeatFreqs[featHash]) {
 							minFeatFreqs[featHash] = initializeFrequencies(clusterGrid.length);
 						}
-						if (costModGrid) {
-							minFeatFreqs[featHash][i] += costModGrid[i][j];
-						} else {
-							minFeatFreqs[featHash][i]++;
-						}
+						minFeatFreqs[featHash][i] += costedFeats[i][j].cost;
 					}
 				}
 			}
@@ -690,7 +673,7 @@ function pathwayDesigner($scope, $modal, $log) {
 			var i;
 			for (featHash in featFreqs) {
 				if (featFreqs.hasOwnProperty(featHash)) {
-					featHomologyCost = 0
+					featHomologyCost = 0;
 					factorHomologyCount = 0;
 					for (i = 0; i < featFreqs[featHash].length; i++) {
 						if (featFreqs[featHash][i] > 0) {
@@ -706,7 +689,10 @@ function pathwayDesigner($scope, $modal, $log) {
 			}
 			if (homologousFeatCount > 1) {
 				if (costModGrid) {
-					totalHomologyCost -= (getMinCostMod(costModGrid)*(homologousFeatCount - 1));
+					if (!costModGrid.minCostMod) {
+						costModGrid.minCostMod = getMinCostMod(costModGrid);
+					}
+					totalHomologyCost -= (costModGrid.minCostMod*(homologousFeatCount - 1));
 				} else {
 					totalHomologyCost -= (homologousFeatCount - 1);
 				}
@@ -821,7 +807,7 @@ function pathwayDesigner($scope, $modal, $log) {
 						mutantSoln = this.mutateSolution(soln, i, j);
 						mutantCost = mutantSoln.calculateCost(weights, annealingOptions.synthesisOption, costModGrid);
 						if (mutantCost.weightedTotal <= solnCost.weightedTotal 
-								|| Math.random() <= Math.exp((solnCost.weightedTotal - mutantCost.weightedTotal)*0.1*annealingOptions.initTemp/temp)) {
+								|| Math.random() <= Math.exp((solnCost.weightedTotal - mutantCost.weightedTotal)*annealingOptions.probDecay*annealingOptions.initTemp/temp)) {
 							soln = mutantSoln;
 							solnCost = mutantCost;
 						}
@@ -2341,9 +2327,11 @@ function pathwayDesigner($scope, $modal, $log) {
 	$scope.defaultTimeout = 0;
 	$scope.timeout = $scope.defaultTimeout;
 
-	$scope.defaultAnnealingOptions = {numAnnealings: 100, iterPerAnnealing: 100, initialTemp: 1000, synthesisOption: $scope.FLSolution.prototype.synthesisOptions.MINIMIZE};
+	$scope.defaultAnnealingOptions = {numAnnealings: 1, iterPerAnnealing: 10000, initialTemp: 1000000000, probDecay: 0.1,
+			synthesisOption: $scope.FLSolution.prototype.synthesisOptions.MINIMIZE};
 	$scope.annealingOptions = {numAnnealings: $scope.defaultAnnealingOptions.numAnnealings, iterPerAnnealing: $scope.defaultAnnealingOptions.iterPerAnnealing, 
-			initialTemp: $scope.defaultAnnealingOptions.initialTemp, synthesisOption: $scope.defaultAnnealingOptions.synthesisOption};
+			initialTemp: $scope.defaultAnnealingOptions.initialTemp, probDecay: $scope.defaultAnnealingOptions.probDecay, 
+			synthesisOption: $scope.defaultAnnealingOptions.synthesisOption};
 
 	$scope.defaultWeights = {levelMatch: 1, homology: 1, synthesis: 1};
 	$scope.weights = {levelMatch: $scope.defaultWeights.levelMatch, homology: $scope.defaultWeights.homology, synthesis: $scope.defaultWeights.synthesis};
