@@ -1243,8 +1243,8 @@ function pathwayDesigner($scope, $modal, $log) {
 				clusterGrid[i].sort(function(a, b) {return a.target - b.target});
 				for (j = 0; j < clusterGrid[i].length; j++) {
 					clusterGrid[i][j].calculateLevelCosts();
-					clusterGrid[i][j].calculateMaxFeatures();
-					clusterGrid[i][j].calculateMinFeatures();
+					// clusterGrid[i][j].calculateMaxFeatures();
+					// clusterGrid[i][j].calculateMinFeatures();
 				}
 			}
 			return clusterGrid;
