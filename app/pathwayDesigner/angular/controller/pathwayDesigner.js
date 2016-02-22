@@ -633,7 +633,7 @@ function pathwayDesigner($scope, $modal, $log) {
 			var featCount = countFeatures(clusterGrid);
 			if (featCount > clusterGrid.numUniqueFeats) {
 				if (costModGrid) {
-					costedFeats = sortByFeaturesByCost(costedFeats);
+					costedFeats = sortFeaturesByCost(costedFeats);
 				}
 				costedFeats = consolidateFeatures(costedFeats, featCount - clusterGrid.numUniqueFeats)
 			}
@@ -2004,7 +2004,7 @@ function pathwayDesigner($scope, $modal, $log) {
 			outputData[0].push(template.name);
 			var i;
 			for (i = 0; i < template.rangeGrid.length; i++) {
-				outputData[0].push("Factor " + (i + 1));
+				outputData[0][i + 1] = "Factor " + i;
 			}
 			var k;
 			for (k = 0; k < template.designGrid.length; k++) {
@@ -2681,7 +2681,7 @@ function pathwayDesigner($scope, $modal, $log) {
 		}
   	};
 
-  	$scope.generateDesigns = function() {
+  	$scope.generateLibrary = function() {
   		var outputData = [[]];
   		if ($scope.areFLDNodesValid() && $scope.areFLNodesValid() && $scope.loadSelectedTemplate(true)) {
   			for (i = 0; i < $scope.fldNodes.length; i++) {
@@ -2694,6 +2694,25 @@ function pathwayDesigner($scope, $modal, $log) {
   				for (i = 0; i < $scope.selectedTemplateB.designGrid[k].length; i++) {
   					j = $scope.selectedTemplateB.indexDesignVsRange(k, i);
   					outputData[k + 1].push($scope.fldNodes[i].children[j].bioDesign.name);
+  				}
+  			}
+  		}
+  		return outputData;
+  	};
+
+  	$scope.generateLevelLibrary = function() {
+  		var outputData = [[]];
+  		if ($scope.areFLDNodesValid() && $scope.areFLNodesValid() && $scope.loadSelectedTemplate(true)) {
+  			for (i = 0; i < $scope.fldNodes.length; i++) {
+  				outputData[0].push($scope.fldNodes[i].bioDesign.name);
+  				$scope.fldNodes[i].children.sort(function(a, b) {return a.parameter.value - b.parameter.value});
+  			}
+  			var j, k;
+  			for (k = 0; k < $scope.selectedTemplateB.designGrid.length; k++) {
+  				outputData.push([]);
+  				for (i = 0; i < $scope.selectedTemplateB.designGrid[k].length; i++) {
+  					j = $scope.selectedTemplateB.indexDesignVsRange(k, i);
+  					outputData[k + 1].push($scope.fldNodes[i].children[j].parameter.value);
   				}
   			}
   		}

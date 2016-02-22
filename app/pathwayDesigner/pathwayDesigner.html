@@ -112,8 +112,11 @@
           <button type="button" ng-disabled="bestSoln.isOptimal" class="btn btn-primary" ng-click="editAssignmentOptions('md')">Edit Options</button>
            <button class="btn btn-warning" ng-click="quitAssigning()" ng-show="isAssigning">Done</button>
           <br><br>
-          <button type="button" class="btn btn-primary" ng-csv="downloadAssignment()" filename="level_assignment.csv" field-separator=",">Download Assignment</button>
-          <button type="button" class="btn btn-primary" ng-csv="generateDesigns()" filename="design_library.csv" field-separator=",">Download Library</button>
+          <div class="btn-group" role="group" aria-label="Basic example">
+            <button type="button" class="btn btn-primary" ng-csv="downloadAssignment()" filename="level_assignment.csv" field-separator=",">Download Assignment</button>
+            <button type="button" class="btn btn-primary" ng-csv="generateLibrary()" filename="library_design.csv" field-separator=",">Library</button>
+            <button type="button" class="btn btn-primary" ng-csv="generateLevelLibrary()" filename="library_design.csv" field-separator=",">Library Levels</button>
+          </div>
         </div>
         <br>
     		<div ui-tree="fldTreeOptions">
@@ -154,7 +157,6 @@
   <script src="../angular/directive/gui/angular-ui-tree.min.js"></script>
 	<script src="../../angular/directive/io/ng-csv.min.js"></script>
   
-
 	<script type="text/ng-template" id="fl_tree_renderer.html">
   	<div ui-tree-handle class="tree-node" style="{{node.backgroundColor}}">
   		<div class="tree-node-content">
