@@ -2864,6 +2864,13 @@ function pathwayDesigner($scope, $modal, $log) {
   		$scope.fNodes = [];
   	};
 
+  	$scope.addAllFNodes = function() {
+  		var i;
+  		for (i = 0; i < $scope.fNodes.length; i++) {
+  			$scope.fldNodes.push($scope.fNodes[i].copy());
+  		}
+  	};
+
   	$scope.removeLNodes = function() {
   		$scope.lNodes = [];
   	};
