@@ -31,13 +31,13 @@
       </div>
       <div class="col-sm-4">
         <label style="font-size:20pt">Factorial Design (.csv)</label>
-        <label ng-show="isTemplateSelectAShown">Factorial Design</label>
-        <select ng-show="isTemplateSelectAShown" ng-disabled="isTemplateSelectADisabled" ng-change="changeTemplate()" ng-init="selectedTemplateA = selectedTemplateA || defaultSelectedTemplate" ng-model="selectedTemplateA" ng-options="template as template.name for template in doeTemplates"></select>
-        <br ng-show="isTemplateSelectAShown">
+        <label>Factorial Design</label>
+        <select ng-disabled="isTemplateSelectADisabled" ng-change="changeTemplate()" ng-init="selectedTemplateA = selectedTemplateA || defaultSelectedTemplate" ng-model="selectedTemplateA" ng-options="template as template.name for template in doeTemplates"></select>
+        <br>
         <input type="file" file-input="templateFiles" ng-disabled="isAssigning">
         <br>
         <button type="button" class="btn btn-primary" ng-click="uploadTemplate()" ng-disabled="isAssigning">Upload Design</button>
-        <button type="button" class="btn btn-primary" ng-csv="doeTemplater.serializeTemplate(selectedTemplateB)" filename="doe_template.csv" field-separator=",">Download Design</button>
+        <button type="button" class="btn btn-primary" ng-csv="doeTemplater.serializeTemplate(selectedTemplateA)" filename="doe_template.csv" field-separator=",">Download Design</button>
       </div>
       <div class="col-sm-4" align="center">
         <a href="../../index.html" target="_blank"><img src="../../image/double_dutch_logo.png" style="width:216px;height:198px;"></a>
@@ -47,17 +47,6 @@
     <br>
 
     <div class="row" ng-hide="true">
-      <div class="col-sm-4">
-        <label style="font-size:20pt">Module Assignment</label>
-        
-      </div>
-      <div class="col-sm-4">
-        <label style="font-size:20pt">Pathway Variant Libary</label>
-        <br>
-        <label>Factorial Design</label>
-        <select ng-init="selectedTemplateB = selectedTemplateB || defaultSelectedTemplate" ng-model="selectedTemplateB" ng-options="template as template.name for template in doeTemplates"></select>
-        <br>
-      </div>
       <div class="col-sm-4" align="center">
         <button type="button" class="btn btn-primary" ng-csv="testMonteCarloSolvers([5, 10, 15, 20], [[6], [6], [6], [2, 3, 5, 6]], 100)" filename="test_results.csv" field-separator=",">Test Solvers</button>
       </div>
@@ -253,9 +242,6 @@
               <div class="col-sm-6">
                   <label style="font-size:20pt">Module Assignment</label>
                   <br>
-                  <label>Assign to Factorial Design</label>
-                  <input ng-disabled="isAssigning" ng-change="changeTemplateAssignment()" type="checkbox" ng-model="isTemplateAssignment">
-                  <br>
                   <label>Assign Exhaustively</label>
                   <input ng-disabled="isAssigning" type="checkbox" ng-model="isAssignmentExhaustive">
                   <div ng-show="isAssignmentExhaustive">
@@ -299,7 +285,7 @@
                   <label style="font-size:20pt">Level Calculation</label>
                   <br>
                   <label>Calculate with K-Means Clustering</label>
-                  <input ng-disabled="isTemplateAssignment" type="checkbox" ng-model="clusteringOptions.autoTarget">
+                  <input type="checkbox" ng-model="clusteringOptions.autoTarget">
                   <br>
                   <label ng-show="clusteringOptions.autoTarget"># of Trials</label>
                   <input ng-show="clusteringOptions.autoTarget" type="number" step="{{inputStep}}" min="{{minInput}}" max="{{maxInput}}" style="height:25px; width:50px" ng-model="clusteringOptions.numClusterings">

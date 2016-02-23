@@ -2,8 +2,8 @@ function assignmentOptions($scope, $modalInstance, items) {
 
   $scope.isAssigning = items.isAssigning;
 
-  $scope.isTemplateAssignment = items.isTemplateAssignment;
-  $scope.defaultIsTemplateAssignment = items.defaultIsTemplateAssignment;
+  // $scope.isTemplateAssignment = items.isTemplateAssignment;
+  // $scope.defaultIsTemplateAssignment = items.defaultIsTemplateAssignment;
 
   $scope.isAssignmentExhaustive = items.isAssignmentExhaustive;
   $scope.defaultIsAssignmentExhaustive = items.defaultIsAssignmentExhaustive;
@@ -40,7 +40,6 @@ function assignmentOptions($scope, $modalInstance, items) {
 
   $scope.restoreDefaults = function() {
     if (!$scope.isAssigning) {
-      $scope.isTemplateAssignment = $scope.defaultIsTemplateAssignment;
       $scope.isAssignmentExhaustive = $scope.defaultIsAssignmentExhaustive;
       $scope.timeout = $scope.defaultTimeout;
       $scope.annealingOptions.numAnnealings = $scope.defaultAnnealingOptions.numAnnealings;
@@ -77,14 +76,8 @@ function assignmentOptions($scope, $modalInstance, items) {
     $scope.clusteringOptions.numClusterings = validateNumericInput($scope.clusteringOptions.numClusterings, $scope.minInput, $scope.maxInput, $scope.inputStep, 
         $scope.initialNumClusterings);
     
-    $modalInstance.close({isTemplateAssignment: $scope.isTemplateAssignment, isAssignmentExhaustive: $scope.isAssignmentExhaustive, 
+    $modalInstance.close({isAssignmentExhaustive: $scope.isAssignmentExhaustive, 
       timeout: $scope.timeout, annealingOptions: $scope.annealingOptions, weights: $scope.weights, clusteringOptions: $scope.clusteringOptions});
-  };
-
-  $scope.changeTemplateAssignment = function() {
-    if ($scope.isTemplateAssignment) {
-      $scope.clusteringOptions.autoTarget = true;
-    }
   };
 
   $scope.cancel = function() {

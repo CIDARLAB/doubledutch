@@ -2318,9 +2318,6 @@ function pathwayDesigner($scope, $modal, $log) {
 	$scope.homologyCost = 0;
 	$scope.synthesisCost = 0;
 
-	$scope.defaultIsTemplateAssignment = true;
-	$scope.isTemplateAssignment = $scope.defaultIsTemplateAssignment;
-
 	$scope.defaultIsAssignmentExhaustive = false;
 	$scope.isAssignmentExhaustive = $scope.defaultIsAssignmentExhaustive;
 
@@ -2347,7 +2344,7 @@ function pathwayDesigner($scope, $modal, $log) {
 			$scope.doeTemplater.makeFullFactorial([]),
 			$scope.doeTemplater.makePlackettBurman(0)];
 	$scope.defaultSelectedTemplate = $scope.doeTemplates[4];
-	$scope.isTemplateSelectAShown = $scope.defaultIsTemplateAssignment;
+	// $scope.isTemplateSelectAShown = true;
 	$scope.isTemplateSelectADisabled = false;
 
 	$scope.defaultNumLevelsPerFactor = 2;
@@ -2355,8 +2352,7 @@ function pathwayDesigner($scope, $modal, $log) {
 	$scope.minLevelsPerFactor = 1;
 	$scope.maxLevelsPerFactor = 100;
 	$scope.numLevelsPerFactorStep = 1;
-	$scope.isNumLevelsPerFactorShown = ($scope.defaultIsTemplateAssignment && $scope.defaultSelectedTemplate.isEmpty() 
-			&& $scope.defaultSelectedTemplate.type === $scope.doeTemplater.doeTypes.fullFactorial) || $scope.defaultClusteringOptions.autoTarget;
+	$scope.isNumLevelsPerFactorShown = ($scope.defaultSelectedTemplate.isEmpty() && $scope.defaultSelectedTemplate.type === $scope.doeTemplater.doeTypes.fullFactorial);
 
 	$scope.isAssigning = false;
 	$scope.assignmentCount = 0;
@@ -2429,7 +2425,6 @@ function pathwayDesigner($scope, $modal, $log) {
 		    resolve: {
 	        	items: function() {
 	          		return {isAssigning: $scope.isAssigning,
-	          				isTemplateAssignment: $scope.isTemplateAssignment, defaultIsTemplateAssignment: $scope.defaultIsTemplateAssignment,
 		          			isAssignmentExhaustive: $scope.isAssignmentExhaustive, defaultIsAssignmentExhaustive: $scope.defaultIsAssignmentExhaustive,
 		          			timeout: $scope.timeout, defaultTimeout: $scope.defaultTimeout,
 		          			annealingOptions: $scope.annealingOptions, defaultAnnealingOptions: $scope.defaultAnnealingOptions,  
@@ -2440,7 +2435,6 @@ function pathwayDesigner($scope, $modal, $log) {
 	      	}
 	    });
 	    modalInstance.result.then(function(items) {
-	    	$scope.isTemplateAssignment = items.isTemplateAssignment;
 	    	$scope.isAssignmentExhaustive = items.isAssignmentExhaustive;
 	    	$scope.timeout = items.timeout;
 	    	$scope.annealingOptions = items.annealingOptions;
@@ -2454,18 +2448,13 @@ function pathwayDesigner($scope, $modal, $log) {
 					$scope.fldNodes[i].isTargetShown = false;
 				}
 			}
-			if ($scope.isTemplateAssignment) {
-				if ($scope.selectedTemplateA.isEmpty() 
-			  			&& $scope.selectedTemplateA.type === $scope.doeTemplater.doeTypes.fullFactorial) {
-					$scope.isNumLevelsPerFactorShown = true;
-				} else {
-					$scope.isNumLevelsPerFactorShown = false;
-				}
-				$scope.isTemplateSelectAShown = true;
+			if ($scope.selectedTemplateA.isEmpty() 
+		  			&& $scope.selectedTemplateA.type === $scope.doeTemplater.doeTypes.fullFactorial) {
+				$scope.isNumLevelsPerFactorShown = true;
 			} else {
-				$scope.isNumLevelsPerFactorShown = $scope.clusteringOptions.autoTarget;
-				$scope.isTemplateSelectAShown = false;
+				$scope.isNumLevelsPerFactorShown = false;
 			}
+			$scope.isTemplateSelectAShown = true;
 	    });
 	};
 
@@ -2531,7 +2520,6 @@ function pathwayDesigner($scope, $modal, $log) {
   			} else {
   				$scope.isNumLevelsPerFactorShown = false;
   			}
-  			$scope.selectedTemplateB = $scope.selectedTemplateA;
   	};
 
   	$scope.downloadAssignment = function() {
@@ -2647,30 +2635,19 @@ function pathwayDesigner($scope, $modal, $log) {
 				$scope.numLevelsPerFactor = validateNumericInput($scope.numLevelsPerFactor, $scope.minLevelsPerFactor, $scope.maxLevelsPerFactor, 
 					$scope.numLevelsPerFactorStep, $scope.defaultNumLevelsPerFactor);
 			}
-			if ($scope.areFLDNodesValid() && $scope.areFLNodesValid() && (!$scope.clusteringOptions.autoTarget || $scope.areLNodesValid())
-					&& (!$scope.isTemplateAssignment || $scope.loadSelectedTemplate(false))) {
+			if ($scope.areFLDNodesValid() && $scope.areFLNodesValid() 
+					&& $scope.loadSelectedTemplate(false)) {
 				var clusterer = new lClusterer();
 				var clusterGrid; 
 				if ($scope.clusteringOptions.autoTarget) {
-					if ($scope.isTemplateAssignment) {
-						clusterGrid = clusterer.templateCluster($scope.fldNodes, $scope.lNodes, $scope.selectedTemplateA, 
-								$scope.clusteringOptions.numClusterings);
-					} else {
-		  				clusterGrid = clusterer.lfMeansCluster($scope.fldNodes, $scope.lNodes, calculateNumsClusters($scope.fldNodes), 
-								$scope.clusteringOptions.numClusterings);
-		  				$scope.targetFLDNodes(clusterGrid);
-		  			}
+					clusterGrid = clusterer.templateCluster($scope.fldNodes, $scope.lNodes, $scope.selectedTemplateA, 
+							$scope.clusteringOptions.numClusterings);
 	  			}
 	  			clusterGrid = targetedClusterByDesign($scope.fldNodes, $scope.lNodes, clusterer);
 	  			if (validateClusterGrid(clusterGrid)) {
 	  				var soln = new $scope.FLSolution(clusterGrid);
-					var solnCost;
-					if ($scope.isTemplateAssignment) {
-						solnCost = soln.calculateCost($scope.weights, $scope.annealingOptions.synthesisOption, $scope.selectedTemplateA.rangeFreqGrid);
-						$scope.isNumLevelsPerFactorShown = false;
-					} else {
-						solnCost = soln.calculateCost($scope.weights, $scope.annealingOptions.synthesisOption);
-					}
+					var solnCost = soln.calculateCost($scope.weights, $scope.annealingOptions.synthesisOption, $scope.selectedTemplateA.rangeFreqGrid);
+					$scope.isNumLevelsPerFactorShown = false;
 					return makeOutputData($scope.fldNodes, 0, 0, $scope.weights, solnCost, $scope.isAssignmentExhaustive);
 	  			} else {
 	  				return [[]];
@@ -2689,10 +2666,10 @@ function pathwayDesigner($scope, $modal, $log) {
   				$scope.fldNodes[i].children.sort(function(a, b) {return a.parameter.value - b.parameter.value});
   			}
   			var j, k;
-  			for (k = 0; k < $scope.selectedTemplateB.designGrid.length; k++) {
+  			for (k = 0; k < $scope.selectedTemplateA.designGrid.length; k++) {
   				outputData.push([]);
-  				for (i = 0; i < $scope.selectedTemplateB.designGrid[k].length; i++) {
-  					j = $scope.selectedTemplateB.indexDesignVsRange(k, i);
+  				for (i = 0; i < $scope.selectedTemplateA.designGrid[k].length; i++) {
+  					j = $scope.selectedTemplateA.indexDesignVsRange(k, i);
   					outputData[k + 1].push($scope.fldNodes[i].children[j].bioDesign.name);
   				}
   			}
@@ -2708,10 +2685,10 @@ function pathwayDesigner($scope, $modal, $log) {
   				$scope.fldNodes[i].children.sort(function(a, b) {return a.parameter.value - b.parameter.value});
   			}
   			var j, k;
-  			for (k = 0; k < $scope.selectedTemplateB.designGrid.length; k++) {
+  			for (k = 0; k < $scope.selectedTemplateA.designGrid.length; k++) {
   				outputData.push([]);
-  				for (i = 0; i < $scope.selectedTemplateB.designGrid[k].length; i++) {
-  					j = $scope.selectedTemplateB.indexDesignVsRange(k, i);
+  				for (i = 0; i < $scope.selectedTemplateA.designGrid[k].length; i++) {
+  					j = $scope.selectedTemplateA.indexDesignVsRange(k, i);
   					outputData[k + 1].push($scope.fldNodes[i].children[j].parameter.value);
   				}
   			}
@@ -2797,7 +2774,7 @@ function pathwayDesigner($scope, $modal, $log) {
   		var selectedTemplate;
   		var numsLevelsPerFactor;
   		if (isDownloading) {
-  			selectedTemplate = $scope.selectedTemplateB;
+  			selectedTemplate = $scope.selectedTemplateA;
   			numsLevelsPerFactor = extractNumsLevelsPerFactorFromDesign($scope.fldNodes);
   			if (selectedTemplate.isEmpty()) {
   				selectedTemplate = loadTemplate(selectedTemplate, $scope.fldNodes.length,
@@ -2815,7 +2792,7 @@ function pathwayDesigner($scope, $modal, $log) {
 	  	if (selectedTemplate.isGridValidVsDesign($scope.fldNodes.length)) {
 		  	if (isDownloading) {
 	  			if (selectedTemplate.isRangeValidVsDesign(numsLevelsPerFactor)) {
-		  			$scope.selectedTemplateB = selectedTemplate;
+		  			$scope.selectedTemplateA = selectedTemplate;
 		  			return true;
 		  		} else {
 		  			var errorMessage = "The ranges of values for each column in the factorial design are not equal in size to the numbers of level modules "
@@ -2830,7 +2807,6 @@ function pathwayDesigner($scope, $modal, $log) {
 		  		}
 	  		} else {
 	  			$scope.selectedTemplateA = selectedTemplate;
-	  			$scope.selectedTemplateB = selectedTemplate;
 	  			return true;
 	  		}
   		} else {
@@ -2862,10 +2838,7 @@ function pathwayDesigner($scope, $modal, $log) {
 									+ "per column.");
 						} else {
 							$scope.doeTemplates.push(template);
-							if (!$scope.isAssigning) {
-								$scope.selectedTemplateA = template;
-							}
-							$scope.selectedTemplateB = template;		
+							$scope.selectedTemplateA = template;		
 							var sortByName = function(a, b) {
 								var name1 = a.name;
 								var name2 = b.name;
@@ -3399,6 +3372,27 @@ function pathwayDesigner($scope, $modal, $log) {
 				return true;
 			}
 		};
+		var validateLevelTargets = function(fNodes, doeTemplate) {
+			var numsLevelsPerFactor = [];
+			var i;
+			for (i = 0; i < fNodes.length; i++) {
+				if (fNodes[i].levelTargets.length == 0) {
+					alertUser("md", "Error", "One or more factor modules lack(s) level targets. Select level targets for each factor module "
+						+ "(click blue target icons).");
+					return false;
+				} else {
+					numsLevelsPerFactor[i] = fNodes[i].levelTargets.length;
+				}
+			}
+			if (doeTemplate.isRangeValidVsDesign(numsLevelsPerFactor)) {
+				return true;
+			} else {
+				alertUser("md", "Error", "The numbers of level targets per factor module do not match the numbers of levels per factors in the selected "
+					+ "factorial design. Adjust the numbers of levels per factor (click blue target icons) or select new factorial design.");
+				return false;
+			}
+			
+		};
 		var isStarting = false;
 		var clusterGrid;
 		if ($scope.isAssigning) {
@@ -3409,30 +3403,20 @@ function pathwayDesigner($scope, $modal, $log) {
 				$scope.numLevelsPerFactor = validateNumericInput($scope.numLevelsPerFactor, $scope.minLevelsPerFactor, $scope.maxLevelsPerFactor, 
 					$scope.numLevelsPerFactorStep, $scope.defaultNumLevelsPerFactor);
 			}
-			if ($scope.areFLDNodesValid() && (!$scope.clusteringOptions.autoTarget || $scope.areLNodesValid())
-					&& (!$scope.isTemplateAssignment || $scope.loadSelectedTemplate(false))) {
+			if ($scope.areFLDNodesValid() && $scope.loadSelectedTemplate(false)) {
 				var clusterer = new lClusterer();
 				if ($scope.clusteringOptions.autoTarget) {
-					if ($scope.isTemplateAssignment) {
 						clusterGrid = clusterer.templateCluster($scope.fldNodes, $scope.lNodes, $scope.selectedTemplateA, 
 								$scope.clusteringOptions.numClusterings);
-					} else {
-						clusterGrid = clusterer.lfMeansCluster($scope.fldNodes, $scope.lNodes, $scope.numLevelsPerFactor, 
-								$scope.clusteringOptions.numClusterings);
-					}
-				} else {
+				} else if (validateLevelTargets($scope.fldNodes, $scope.selectedTemplateA)) {
 					clusterGrid = clusterer.targetedCluster($scope.fldNodes, $scope.lNodes);
 				}
-				if (validateClusterGrid(clusterGrid)) {
+				if (clusterGrid && validateClusterGrid(clusterGrid)) {
 					if ($scope.clusteringOptions.autoTarget) {
-						if ($scope.isTemplateAssignment) {
-							$scope.isTemplateSelectADisabled = true;
-							$scope.isNumLevelsPerFactorShown = false;
-						} else {
-							$scope.targetFLDNodes(clusterGrid);
-						}
-						$scope.showFLDNodesTargets();
+						$scope.isNumLevelsPerFactorShown = false;
 					}
+					$scope.isTemplateSelectADisabled = true;
+					$scope.showFLDNodesTargets();
 					$scope.isAssigning = true;
 					isStarting = true;
 				}
@@ -3444,34 +3428,19 @@ function pathwayDesigner($scope, $modal, $log) {
 			var timer = new Timer($scope.timeout);
 			if ($scope.isAssignmentExhaustive) {
 				if (isStarting) {
-					if ($scope.isTemplateAssignment) {
-						soln = solver.boundSolve(clusterGrid, $scope.annealingOptions, $scope.weights, timer, $scope.selectedTemplateA.rangeFreqGrid);
-					} else {
-						soln = solver.boundSolve(clusterGrid, $scope.annealingOptions, $scope.weights, timer);
-					}
+					soln = solver.boundSolve(clusterGrid, $scope.annealingOptions, $scope.weights, timer, $scope.selectedTemplateA.rangeFreqGrid);
 				} else {
-					if ($scope.isTemplateAssignment) {
-						soln = solver.boundSolve(clusterGrid, $scope.annealingOptions, $scope.weights, timer, $scope.selectedTemplateA.rangeFreqGrid, 
-								$scope.bestSoln.levelSelections);
-					} else {
-						soln = solver.boundSolve(clusterGrid, $scope.annealingOptions, $scope.weights, timer, null, $scope.bestSoln.levelSelections);
-					}
+					soln = solver.boundSolve(clusterGrid, $scope.annealingOptions, $scope.weights, timer, $scope.selectedTemplateA.rangeFreqGrid, 
+							$scope.bestSoln.levelSelections);
 				}
-			} else if ($scope.isTemplateAssignment) {
-				soln = solver.annealSolve(clusterGrid, $scope.annealingOptions, $scope.weights, $scope.selectedTemplateA.rangeFreqGrid);
 			} else {
-				soln = solver.annealSolve(clusterGrid, $scope.annealingOptions, $scope.weights);
+				soln = solver.annealSolve(clusterGrid, $scope.annealingOptions, $scope.weights, $scope.selectedTemplateA.rangeFreqGrid);
 			}
 			$scope.assignmentTime += timer.getElapsedTime();
 			if (!$scope.isAssignmentExhaustive) {
 				$scope.assignmentCount += $scope.annealingOptions.numAnnealings;
 			}
-			var solnCost;
-			if ($scope.isTemplateAssignment) {
-				solnCost = soln.calculateCost($scope.weights, $scope.annealingOptions.synthesisOption, $scope.selectedTemplateA.rangeFreqGrid);
-			} else {
-				solnCost = soln.calculateCost($scope.weights, $scope.annealingOptions.synthesisOption);
-			}
+			var solnCost = soln.calculateCost($scope.weights, $scope.annealingOptions.synthesisOption, $scope.selectedTemplateA.rangeFreqGrid);
 			if (isStarting || solnCost.weightedTotal <= $scope.bestSolnCost.weightedTotal) {
 				$scope.bestSoln = soln;
 				$scope.bestSolnCost = solnCost;
