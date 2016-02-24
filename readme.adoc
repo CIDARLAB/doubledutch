@@ -1,0 +1,5 @@
+= Double Dutch - A Tool for Designing Combinatorial Libraries of Biological Systems
+
+== Licensing
+
+The Double Dutch website is licensed under a Creative Commons Attribution-ShareAlike 4.0 International License and consists of all files in this respository except those contained by the app directory. The Double Dutch Pathway Designer web application is licensed under a BSD 3-Clause License and consists of the files contained by the app directory.
