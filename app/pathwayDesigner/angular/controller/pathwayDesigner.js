@@ -2352,7 +2352,9 @@ function pathwayDesigner($scope, $modal, $log) {
 	$scope.minLevelsPerFactor = 1;
 	$scope.maxLevelsPerFactor = 100;
 	$scope.numLevelsPerFactorStep = 1;
-	$scope.isNumLevelsPerFactorShown = ($scope.defaultSelectedTemplate.isEmpty() && $scope.defaultSelectedTemplate.type === $scope.doeTemplater.doeTypes.fullFactorial);
+	$scope.isNumLevelsPerFactorShown = ($scope.defaultSelectedTemplate.isEmpty() 
+		&& $scope.defaultSelectedTemplate.type === $scope.doeTemplater.doeTypes.fullFactorial
+		&& $scope.defaultClusteringOptions.autoTarget);
 
 	$scope.isAssigning = false;
 	$scope.assignmentCount = 0;
@@ -2449,7 +2451,8 @@ function pathwayDesigner($scope, $modal, $log) {
 				}
 			}
 			if ($scope.selectedTemplateA.isEmpty() 
-		  			&& $scope.selectedTemplateA.type === $scope.doeTemplater.doeTypes.fullFactorial) {
+		  			&& $scope.selectedTemplateA.type === $scope.doeTemplater.doeTypes.fullFactorial
+		  			&& $scope.clusteringOptions.autoTarget) {
 				$scope.isNumLevelsPerFactorShown = true;
 			} else {
 				$scope.isNumLevelsPerFactorShown = false;
@@ -2514,12 +2517,13 @@ function pathwayDesigner($scope, $modal, $log) {
   	}
 
   	$scope.changeTemplate = function() {
-  			if ($scope.selectedTemplateA.isEmpty() 
-		  			&& $scope.selectedTemplateA.type === $scope.doeTemplater.doeTypes.fullFactorial) {
-  				$scope.isNumLevelsPerFactorShown = true;
-  			} else {
-  				$scope.isNumLevelsPerFactorShown = false;
-  			}
+		if ($scope.selectedTemplateA.isEmpty() 
+	  			&& $scope.selectedTemplateA.type === $scope.doeTemplater.doeTypes.fullFactorial
+	  			&& $scope.clusteringOptions.autoTarget) {
+			$scope.isNumLevelsPerFactorShown = true;
+		} else {
+			$scope.isNumLevelsPerFactorShown = false;
+		}
   	};
 
   	$scope.downloadAssignment = function() {
@@ -2705,30 +2709,37 @@ function pathwayDesigner($scope, $modal, $log) {
   			}
 	  		return numsLevelsPerFactor;
   		};
-  		var inferNumsLevelsPerFactorFromType = function(doeType, doeTemplater, numFactors, numLevelsPerFactor) {
+  		var inferNumsLevelsPerFactorFromType = function(doeType, doeTemplater, fNodes, numLevelsPerFactor, isAutoTarget) {
   			var numsLevelsPerFactor = [];
   			var i;
   			if (doeType === doeTemplater.doeTypes.fullFactorial) { 
-			  	for (i = 0; i < numFactors; i++) {
-	  				numsLevelsPerFactor[i] = numLevelsPerFactor;
-	  			}
+  				if (isAutoTarget) {
+				  	for (i = 0; i < fNodes.length; i++) {
+		  				numsLevelsPerFactor[i] = numLevelsPerFactor;
+		  			}
+		  		} else {
+		  			for (i = 0; i < fNodes.length; i++) {
+		  				numsLevelsPerFactor[i] = fNodes[i].levelTargets.length;
+		  			}
+		  		}
 	  		} else if (doeType === doeTemplater.doeTypes.fractionalFactorial
 		  			|| doeType === doeTemplater.doeTypes.plackettBurman) {
-	  			for (i = 0; i < numFactors; i++) {
+	  			for (i = 0; i < fNodes.length; i++) {
 	  				numsLevelsPerFactor[i] = 2;
 	  			}
 	  		} else if (doeType === doeTemplater.doeTypes.boxBehnken) {
-	  			for (i = 0; i < numFactors; i++) {
+	  			for (i = 0; i < fNodes.length; i++) {
 	  				numsLevelsPerFactor[i] = 3;
 	  			}
 	  		} 
 	  		return numsLevelsPerFactor;
   		};
   		var loadTemplate = function(metaTemplate, numFactors, numsLevelsPerFactor, doeTemplates, doeTemplater) {
-  			var findTemplate = function(doeType, numFactors, numsLevelsPerFactor, doeTemplates) {
+  			var findTemplate = function(metaTemplate, numFactors, numsLevelsPerFactor, doeTemplates) {
 				var n;
 	  			for (n = 0; n < doeTemplates.length; n++) {
-	  				if (doeTemplates[n].type === doeType && doeTemplates[n].isGridValidVsDesign(numFactors) 
+	  				if (doeTemplates[n].type === metaTemplate.type && (!doeTemplates[n].resolution || doeTemplates[n].resolution == metaTemplate.resolution) 
+		  					&& doeTemplates[n].isGridValidVsDesign(numFactors) 
 		  					&& doeTemplates[n].isRangeValidVsDesign(numsLevelsPerFactor)) {
 	  					return n;
 	  				}
@@ -2759,7 +2770,7 @@ function pathwayDesigner($scope, $modal, $log) {
 					return 0;
 				}
 			};
-  			var n = findTemplate(metaTemplate.type, numFactors, numsLevelsPerFactor, doeTemplates);
+  			var n = findTemplate(metaTemplate, numFactors, numsLevelsPerFactor, doeTemplates);
 			if (n < 0) {
 				var doeTemplate = makeTemplate(metaTemplate, numFactors, numsLevelsPerFactor, doeTemplater);
 				if (!doeTemplate.isEmpty()) {
@@ -2784,7 +2795,7 @@ function pathwayDesigner($scope, $modal, $log) {
   			selectedTemplate = $scope.selectedTemplateA;
   			if (selectedTemplate.isEmpty()) {
 				numsLevelsPerFactor = inferNumsLevelsPerFactorFromType(selectedTemplate.type, $scope.doeTemplater, 
-	  					$scope.fldNodes.length, $scope.numLevelsPerFactor);
+	  					$scope.fldNodes, $scope.numLevelsPerFactor, $scope.clusteringOptions.autoTarget);
 				selectedTemplate = loadTemplate(selectedTemplate, $scope.fldNodes.length,
 			  			numsLevelsPerFactor, $scope.doeTemplates, $scope.doeTemplater);
 			}
@@ -3419,9 +3430,7 @@ function pathwayDesigner($scope, $modal, $log) {
 					clusterGrid = clusterer.targetedCluster($scope.fldNodes, $scope.lNodes);
 				}
 				if (clusterGrid && validateClusterGrid(clusterGrid)) {
-					if ($scope.clusteringOptions.autoTarget) {
-						$scope.isNumLevelsPerFactorShown = false;
-					}
+					$scope.isNumLevelsPerFactorShown = false;
 					$scope.isTemplateSelectADisabled = true;
 					$scope.showFLDNodesTargets();
 					$scope.isAssigning = true;
