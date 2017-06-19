@@ -1,9 +1,17 @@
 function pathwayDesigner($scope, $modal, $log) {
+	/*
+	Section 1 - Enumerated types
+	*/
+
 	seqType = {DNA: "DNA", schema: "org.clothocad.model.SequenceType"};
 	featRole = {PROMOTER: "promoter", RBS: "ribosome binding site", UTR: "untranslated region", CDS: "coding sequence", TERMINATOR: "terminator", 
 			SPACER: "spacer", SCAR: "scar", VECTOR: "vector", schema: "org.clothocad.model.FeatureRole"};
 	modRole = {TRANSCRIPTION: "transcription", TRANSLATION: "translation", EXPRESSION: "expression", INSULATION: "insulation", 
 			REPLICATION: "replication", schema: "org.clothocad.model.ModuleRole"};
+
+	/*
+	Section 2 - Biodesign classes from the Clotho data model
+	*/
 	
 	function variable(name) {
 		this.name = name;
@@ -108,23 +116,10 @@ function pathwayDesigner($scope, $modal, $log) {
 		this.schema = "org.clothocad.model.Feature";
 	}
 
-	function level(param, bioDesign) {
-		this.parameter = param;
-		this.bioDesign = bioDesign;
-		this.schema = "org.clothocad.model.Level";
-	}
-
-	function factor(varia, bioDesign) {
-		this.variable = varia;
-		this.bioDesign = bioDesign;
-		this.levels = [];
-		this.schema = "org.clothocad.model.Factor";
-	}
-
-	function experimentalDesign(factors) {
-		this.factors = factors;
-		this.schema = "org.clothocad.model.ExperimentalDesign";
-	}
+	/*
+	Section 3 - GUI classes and associated utility functions. fNodes are GUI instances of a factor in an experimental design, 
+	while lNodes are GUI instances of a level that a factor takes on.
+	*/
 
 	function fNode(bioDesign) {
 		this.bioDesign = bioDesign;
@@ -238,6 +233,16 @@ function pathwayDesigner($scope, $modal, $log) {
 		return true;
 	};
 
+	/*
+	Section 4 - Application classes for clustering and assigning lNodes to the target levels for the currently fNodes.
+	The target levels are either computed during clustering by default (as cluster means) or are set on the fNodes manually beforehand.
+	*/
+
+	/*
+	An lCluster groups a set of lNodes for assignment to one of the target levels for a fNode and provides functions to compute how well
+	the parameters on these lNodes match the target level. 
+	*/
+
 	function lCluster(lNodes, target) {
 		this.lNodes = lNodes;
 		this.target = target;
@@ -339,6 +344,12 @@ function pathwayDesigner($scope, $modal, $log) {
 			return this.minFeats;
 		};
 	}
+
+	/*
+	An FLSolution represents an assignment of lNodes to the target levels for the currently selected fNodes and provides functions
+	for computing the cost of the assignment as the weighted sum of three design concerns: level matching, pathway homology, 
+	and DNA synthesis
+	*/
 
 	$scope.FLSolution = function(clusterGrid) {
 		this.levelSelections = [];
@@ -742,6 +753,12 @@ function pathwayDesigner($scope, $modal, $log) {
 		return solnCopy;
 	};
 
+	/*
+	flSolver includes functions for assigning clustered lNodes (in clusterGrid) to the target levels for the currently
+	selected fNodes. These include functions for randomly assigning nodes and assigning nodes according to a simulated
+	annealing heuristic or branch-and-bound heuristic.
+	*/ 
+
 	function flSolver() {
 		this.randomSolve = function(clusterGrid, weights, synthesisOption, numTrials, costModGrid, timer) {
 			if (arguments.length < 6) {
@@ -878,46 +895,13 @@ function pathwayDesigner($scope, $modal, $log) {
     	};
 	}
 
-	Timer = function(timeout) {
-		if (arguments.length < 1) {
-			timeout = 0;
-		}
-		this.timeout = timeout;
-		this.start();
-	};
-
-	Timer.prototype.start = function() {
-		this.startTime = new Date().getTime();
-	};
-
-	Timer.prototype.startSec = function() {
-		this.startTime = new Date().getTime();
-	};
-
-	Timer.prototype.getElapsedTime = function() {
-		if (this.startTime) {
-			return (new Date().getTime() - this.startTime)/60000;
-		} else {
-			return 0;
-		}
-	};
-
-	Timer.prototype.getElapsedTimeSec = function() {
-		if (this.startTime) {
-			return (new Date().getTime() - this.startTime)/1000;
-		} else {
-			return 0;
-		}
-	};
-
-	Timer.prototype.hasTimedOut = function() {
-		if (this.startTime) {
-			return this.timeout > 0 && this.getElapsedTime() >= this.timeout; 
-		} else {
-			return false;
-		}
-		
-	};
+	/*
+	lClusterer can cluster lNodes for assignment to each of the currently selected fNodes by either performing
+	K-means clustering or by simply clustering the lNodes around pre-set targets on the fNodes.
+	If a fNode already has a lNode assigned to it as a constraint, then lClusterer will treat the cluster containing
+	that lNode as having a fixed mean equal to the lNode's parameter. The lfMeansCluster function includes checks
+	to avoid repeating K-means clustering for fNodes with the same constraints and number of lNodes to be assigned.
+	*/ 
 
 	function lClusterer() {
 		this.templateCluster = function(fNodes, lNodes, doeTemplate, numClusterings) {
@@ -1295,6 +1279,51 @@ function pathwayDesigner($scope, $modal, $log) {
 		};
 	}
 
+	/*
+	Section 5 - Utility classes for timing code, doing combinatorial calculations, stats, etc.
+	*/ 
+
+	Timer = function(timeout) {
+		if (arguments.length < 1) {
+			timeout = 0;
+		}
+		this.timeout = timeout;
+		this.start();
+	};
+
+	Timer.prototype.start = function() {
+		this.startTime = new Date().getTime();
+	};
+
+	Timer.prototype.startSec = function() {
+		this.startTime = new Date().getTime();
+	};
+
+	Timer.prototype.getElapsedTime = function() {
+		if (this.startTime) {
+			return (new Date().getTime() - this.startTime)/60000;
+		} else {
+			return 0;
+		}
+	};
+
+	Timer.prototype.getElapsedTimeSec = function() {
+		if (this.startTime) {
+			return (new Date().getTime() - this.startTime)/1000;
+		} else {
+			return 0;
+		}
+	};
+
+	Timer.prototype.hasTimedOut = function() {
+		if (this.startTime) {
+			return this.timeout > 0 && this.getElapsedTime() >= this.timeout; 
+		} else {
+			return false;
+		}
+		
+	};
+
 	factorialStore = [];
 	factorial = function(n) {
 		if (n == 0 || n == 1)
@@ -1440,6 +1469,10 @@ function pathwayDesigner($scope, $modal, $log) {
 		}
     };
 
+    /*
+	Section 6 - Hardcoded factorial design templates and example data
+	*/ 
+
 	plackettBurmanSeeds = {};
 	plackettBurmanSeeds[hash(4)] = [1, 1, -1];
 	plackettBurmanSeeds[hash(8)] = [1, 1, 1, -1, 1, -1, -1];
@@ -1582,6 +1615,11 @@ function pathwayDesigner($scope, $modal, $log) {
 	["t28",1063,4153,1089,723,1395,789,560,475,478,530,467,468,433,413,403,397,463,389,367,351,146,144,104,94.1,101,106,102,131,110,91.6,95.6,92.1,94.2,86.5,78.4,90.2,77.6],
 	["t3",1447,719,1614,975,960,614,796,884,570,613,942,473,427,494,524,426,438,458,352,394,334,94.4,149,122,406,131,114,127,104,90.3,97.1,115,99.4,94,149,81.5,76.2],
 	["t29",770,542,970,459,3435,480,418,393,350,331,476,340,410,324,345,321,349,326,323,168,117,78.5,80.8,96.5,90.5,88.9,88.6,79.6,94.4,80.3,94.2,93,96.6,87.2,79.5,87.8,76.5]];								
+
+	/*
+	Section 7 - Classes for representing and creating new factorial designs. These include Plackett Burman designs,
+	Box Behnken designs, and both fractional (resolution III-V) and full factorial designs.
+	*/
 
 	function doeTemplate(name, designGrid, type, resolution, generators) {
 		this.name = name;
@@ -2027,6 +2065,10 @@ function pathwayDesigner($scope, $modal, $log) {
 		};
 	}
 
+	/*
+	Section 8 - Classes for parsing csv data into biodesign classes (see Section 2)
+	*/
+
 	expressGrammar = {
 		name: "Expression Grammar",
 		variables: {TRANSCRIPTION: new variable("Transcription Strength"), TRANSLATION: new variable("Translation Strength"),
@@ -2297,6 +2339,10 @@ function pathwayDesigner($scope, $modal, $log) {
 			}
 		}
 	};
+
+	/*
+	Section 9 - Variables and functions bound to GUI (pathwayDesigner.html)
+	*/
 
 	$scope.lNodes = [];
 	$scope.fNodes = [];
@@ -2886,6 +2932,7 @@ function pathwayDesigner($scope, $modal, $log) {
   		$scope.lNodes = [];
   	};
 
+  	
   	$scope.loadExampleModules = function() {
   		$scope.numFeatsUploaded = 0;
 		$scope.numModsUploaded = 0;
@@ -3111,7 +3158,164 @@ function pathwayDesigner($scope, $modal, $log) {
 		}
     };
 
-    $scope.testMonteCarloSolvers = function(numsFactors, levelGrid, numTrials) {
+  	$scope.targetFLDNodes = function(clusterGrid) {
+  		var i;
+		for (i = 0; i < clusterGrid.length; i++) {
+			$scope.fldNodes[i].levelTargets = [];
+			for (j = 0; j < clusterGrid[i].length; j++) {
+				$scope.fldNodes[i].levelTargets[j] = parseFloat(clusterGrid[i][j].target.toFixed(2));
+			}
+		}
+  	};
+
+  	$scope.showFLDNodesTargets = function() {
+  		var i;
+		for (i = 0; i < $scope.fldNodes.length; i++) {
+			$scope.fldNodes[i].isTargetShown = true;
+			$scope.fldNodes[i].isToggleShown = true;
+		}
+  	};
+
+	$scope.assignLevels = function() {
+		var validateClusterGrid = function(clusterGrid) {
+			var invalidClusters = [];
+			var i, j;
+			for (i = 0; i < clusterGrid.length; i++) {
+				for (j = 0; j < clusterGrid[i].length; j++) {
+					if (clusterGrid[i][j].isEmpty()) {
+						invalidClusters.push(clusterGrid[i][j]);
+					}
+				}
+			}
+			if (invalidClusters.length > 0) {
+				var clusterErrorMessage = "";
+				for (j = 0; j < invalidClusters.length; j++) {
+					clusterErrorMessage += ", " + invalidClusters[j].target.toFixed(2);
+				}
+				clusterErrorMessage = clusterErrorMessage.substring(2);
+				clusterErrorMessage += "<br><br>There are no available level modules that cluster around the above targets. Change these targets "
+						+ "or upload additional DNA components with parameters that are close to them in magnitude.";
+				alertUser("md", "Error", clusterErrorMessage);
+				return false;
+			} else {
+				return true;
+			}
+		};
+		var validateLevelTargets = function(fNodes, doeTemplate) {
+			var numsLevelsPerFactor = [];
+			var i;
+			for (i = 0; i < fNodes.length; i++) {
+				if (fNodes[i].levelTargets.length == 0) {
+					alertUser("md", "Error", "One or more factor modules lack(s) level targets. Select level targets for each factor module "
+						+ "(click blue target icons).");
+					return false;
+				} else {
+					numsLevelsPerFactor[i] = fNodes[i].levelTargets.length;
+				}
+			}
+			if (doeTemplate.isRangeValidVsDesign(numsLevelsPerFactor)) {
+				return true;
+			} else {
+				alertUser("md", "Error", "The numbers of level targets per factor module do not match the numbers of levels per factors in the selected "
+					+ "factorial design. Adjust the numbers of levels per factor (click blue target icons) or select new factorial design.");
+				return false;
+			}
+			
+		};
+		var isStarting = false;
+		var clusterGrid;
+		if ($scope.isAssigning) {
+			clusterGrid = $scope.bestSoln.clusterGrid;
+		} else {
+			$scope.reconcileFLNodes();
+			if ($scope.clusteringOptions.autoTarget) {
+				$scope.numLevelsPerFactor = validateNumericInput($scope.numLevelsPerFactor, $scope.minLevelsPerFactor, $scope.maxLevelsPerFactor, 
+					$scope.numLevelsPerFactorStep, $scope.defaultNumLevelsPerFactor);
+			}
+			if ($scope.areFLDNodesValid() && $scope.loadSelectedTemplate(false)) {
+				var clusterer = new lClusterer();
+				if ($scope.clusteringOptions.autoTarget) {
+						clusterGrid = clusterer.templateCluster($scope.fldNodes, $scope.lNodes, $scope.selectedTemplateA, 
+								$scope.clusteringOptions.numClusterings);
+				} else if (validateLevelTargets($scope.fldNodes, $scope.selectedTemplateA)) {
+					clusterGrid = clusterer.targetedCluster($scope.fldNodes, $scope.lNodes);
+				}
+				if (clusterGrid && validateClusterGrid(clusterGrid)) {
+					$scope.isNumLevelsPerFactorShown = false;
+					$scope.isTemplateSelectADisabled = true;
+					$scope.showFLDNodesTargets();
+					$scope.isAssigning = true;
+					isStarting = true;
+				}
+			}
+		}
+		if ($scope.isAssigning) {
+			var solver = new flSolver();
+			var soln;
+			var timer = new Timer($scope.timeout);
+			if ($scope.isAssignmentExhaustive) {
+				if (isStarting) {
+					soln = solver.boundSolve(clusterGrid, $scope.annealingOptions, $scope.weights, timer, $scope.selectedTemplateA.rangeFreqGrid);
+				} else {
+					soln = solver.boundSolve(clusterGrid, $scope.annealingOptions, $scope.weights, timer, $scope.selectedTemplateA.rangeFreqGrid, 
+							$scope.bestSoln.levelSelections);
+				}
+			} else {
+				soln = solver.annealSolve(clusterGrid, $scope.annealingOptions, $scope.weights, $scope.selectedTemplateA.rangeFreqGrid);
+			}
+			$scope.assignmentTime += timer.getElapsedTime();
+			if (!$scope.isAssignmentExhaustive) {
+				$scope.assignmentCount += $scope.annealingOptions.numAnnealings;
+			}
+			var solnCost = soln.calculateCost($scope.weights, $scope.annealingOptions.synthesisOption, $scope.selectedTemplateA.rangeFreqGrid);
+			if (isStarting || solnCost.weightedTotal <= $scope.bestSolnCost.weightedTotal) {
+				$scope.bestSoln = soln;
+				$scope.bestSolnCost = solnCost;
+				var i;
+				for (i = 0; i < $scope.fldNodes.length; i++) {
+					$scope.fldNodes[i].children = [];
+				}
+				var j, k;
+				for (i = 0; i < $scope.bestSoln.levelSelections.length; i++) {
+					for (j = 0; j < $scope.bestSoln.levelSelections[i].length; j++) {
+						k = $scope.bestSoln.levelSelections[i][j];
+						if ($scope.bestSoln.clusterGrid[i][j].lNodes[k].isConstraint) {
+							$scope.fldNodes[i].children[j] = $scope.bestSoln.clusterGrid[i][j].lNodes[k];
+						} else {
+							$scope.fldNodes[i].children[j] = $scope.bestSoln.clusterGrid[i][j].lNodes[k].copy();
+							$scope.fldNodes[i].children[j].isConstraintShown = true;
+							$scope.fldNodes[i].children[j].isMoveTopShown = false;
+						}
+					}
+				}
+			}
+		} 
+	};
+
+	$scope.quitAssigning = function() {
+		$scope.isAssigning = false;
+		if ($scope.isAssignmentExhaustive) {
+			$scope.bestSoln.isOptimal = false;
+		} else {
+			$scope.assignmentCount = 0;
+		}
+		$scope.assignmentTime = 0;
+		var i;
+		for (i = 0; i < $scope.fldNodes.length; i++) {
+			if ($scope.clusteringOptions.autoTarget) {
+				$scope.fldNodes[i].isTargetShown = false;
+			} else {
+				$scope.fldNodes[i].isTargetShown = true;
+			}
+		}
+		$scope.isTemplateSelectADisabled = false;
+	};
+
+	/*
+	Section 10 - Code for testing random assignment and simulated annealing assignment methods of flSolver
+	*/
+
+	$scope.testMonteCarloSolvers = function(numsFactors, levelGrid, numTrials) {
     	var testCluster = function(numFactors, numLevels) {
     		var makeDummyFNodes = function(numFactors) {
     			var fNodes = [];
@@ -3346,157 +3550,4 @@ function pathwayDesigner($scope, $modal, $log) {
 		}
 		return makeOutputData(numsFactors, levelGrid, clusterGrids, annealResults, randomResults, numTrials);
     };
-
-  	$scope.targetFLDNodes = function(clusterGrid) {
-  		var i;
-		for (i = 0; i < clusterGrid.length; i++) {
-			$scope.fldNodes[i].levelTargets = [];
-			for (j = 0; j < clusterGrid[i].length; j++) {
-				$scope.fldNodes[i].levelTargets[j] = parseFloat(clusterGrid[i][j].target.toFixed(2));
-			}
-		}
-  	};
-
-  	$scope.showFLDNodesTargets = function() {
-  		var i;
-		for (i = 0; i < $scope.fldNodes.length; i++) {
-			$scope.fldNodes[i].isTargetShown = true;
-			$scope.fldNodes[i].isToggleShown = true;
-		}
-  	};
-
-	$scope.assignLevels = function() {
-		var validateClusterGrid = function(clusterGrid) {
-			var invalidClusters = [];
-			var i, j;
-			for (i = 0; i < clusterGrid.length; i++) {
-				for (j = 0; j < clusterGrid[i].length; j++) {
-					if (clusterGrid[i][j].isEmpty()) {
-						invalidClusters.push(clusterGrid[i][j]);
-					}
-				}
-			}
-			if (invalidClusters.length > 0) {
-				var clusterErrorMessage = "";
-				for (j = 0; j < invalidClusters.length; j++) {
-					clusterErrorMessage += ", " + invalidClusters[j].target.toFixed(2);
-				}
-				clusterErrorMessage = clusterErrorMessage.substring(2);
-				clusterErrorMessage += "<br><br>There are no available level modules that cluster around the above targets. Change these targets "
-						+ "or upload additional DNA components with parameters that are close to them in magnitude.";
-				alertUser("md", "Error", clusterErrorMessage);
-				return false;
-			} else {
-				return true;
-			}
-		};
-		var validateLevelTargets = function(fNodes, doeTemplate) {
-			var numsLevelsPerFactor = [];
-			var i;
-			for (i = 0; i < fNodes.length; i++) {
-				if (fNodes[i].levelTargets.length == 0) {
-					alertUser("md", "Error", "One or more factor modules lack(s) level targets. Select level targets for each factor module "
-						+ "(click blue target icons).");
-					return false;
-				} else {
-					numsLevelsPerFactor[i] = fNodes[i].levelTargets.length;
-				}
-			}
-			if (doeTemplate.isRangeValidVsDesign(numsLevelsPerFactor)) {
-				return true;
-			} else {
-				alertUser("md", "Error", "The numbers of level targets per factor module do not match the numbers of levels per factors in the selected "
-					+ "factorial design. Adjust the numbers of levels per factor (click blue target icons) or select new factorial design.");
-				return false;
-			}
-			
-		};
-		var isStarting = false;
-		var clusterGrid;
-		if ($scope.isAssigning) {
-			clusterGrid = $scope.bestSoln.clusterGrid;
-		} else {
-			$scope.reconcileFLNodes();
-			if ($scope.clusteringOptions.autoTarget) {
-				$scope.numLevelsPerFactor = validateNumericInput($scope.numLevelsPerFactor, $scope.minLevelsPerFactor, $scope.maxLevelsPerFactor, 
-					$scope.numLevelsPerFactorStep, $scope.defaultNumLevelsPerFactor);
-			}
-			if ($scope.areFLDNodesValid() && $scope.loadSelectedTemplate(false)) {
-				var clusterer = new lClusterer();
-				if ($scope.clusteringOptions.autoTarget) {
-						clusterGrid = clusterer.templateCluster($scope.fldNodes, $scope.lNodes, $scope.selectedTemplateA, 
-								$scope.clusteringOptions.numClusterings);
-				} else if (validateLevelTargets($scope.fldNodes, $scope.selectedTemplateA)) {
-					clusterGrid = clusterer.targetedCluster($scope.fldNodes, $scope.lNodes);
-				}
-				if (clusterGrid && validateClusterGrid(clusterGrid)) {
-					$scope.isNumLevelsPerFactorShown = false;
-					$scope.isTemplateSelectADisabled = true;
-					$scope.showFLDNodesTargets();
-					$scope.isAssigning = true;
-					isStarting = true;
-				}
-			}
-		}
-		if ($scope.isAssigning) {
-			var solver = new flSolver();
-			var soln;
-			var timer = new Timer($scope.timeout);
-			if ($scope.isAssignmentExhaustive) {
-				if (isStarting) {
-					soln = solver.boundSolve(clusterGrid, $scope.annealingOptions, $scope.weights, timer, $scope.selectedTemplateA.rangeFreqGrid);
-				} else {
-					soln = solver.boundSolve(clusterGrid, $scope.annealingOptions, $scope.weights, timer, $scope.selectedTemplateA.rangeFreqGrid, 
-							$scope.bestSoln.levelSelections);
-				}
-			} else {
-				soln = solver.annealSolve(clusterGrid, $scope.annealingOptions, $scope.weights, $scope.selectedTemplateA.rangeFreqGrid);
-			}
-			$scope.assignmentTime += timer.getElapsedTime();
-			if (!$scope.isAssignmentExhaustive) {
-				$scope.assignmentCount += $scope.annealingOptions.numAnnealings;
-			}
-			var solnCost = soln.calculateCost($scope.weights, $scope.annealingOptions.synthesisOption, $scope.selectedTemplateA.rangeFreqGrid);
-			if (isStarting || solnCost.weightedTotal <= $scope.bestSolnCost.weightedTotal) {
-				$scope.bestSoln = soln;
-				$scope.bestSolnCost = solnCost;
-				var i;
-				for (i = 0; i < $scope.fldNodes.length; i++) {
-					$scope.fldNodes[i].children = [];
-				}
-				var j, k;
-				for (i = 0; i < $scope.bestSoln.levelSelections.length; i++) {
-					for (j = 0; j < $scope.bestSoln.levelSelections[i].length; j++) {
-						k = $scope.bestSoln.levelSelections[i][j];
-						if ($scope.bestSoln.clusterGrid[i][j].lNodes[k].isConstraint) {
-							$scope.fldNodes[i].children[j] = $scope.bestSoln.clusterGrid[i][j].lNodes[k];
-						} else {
-							$scope.fldNodes[i].children[j] = $scope.bestSoln.clusterGrid[i][j].lNodes[k].copy();
-							$scope.fldNodes[i].children[j].isConstraintShown = true;
-							$scope.fldNodes[i].children[j].isMoveTopShown = false;
-						}
-					}
-				}
-			}
-		} 
-	};
-
-	$scope.quitAssigning = function() {
-		$scope.isAssigning = false;
-		if ($scope.isAssignmentExhaustive) {
-			$scope.bestSoln.isOptimal = false;
-		} else {
-			$scope.assignmentCount = 0;
-		}
-		$scope.assignmentTime = 0;
-		var i;
-		for (i = 0; i < $scope.fldNodes.length; i++) {
-			if ($scope.clusteringOptions.autoTarget) {
-				$scope.fldNodes[i].isTargetShown = false;
-			} else {
-				$scope.fldNodes[i].isTargetShown = true;
-			}
-		}
-		$scope.isTemplateSelectADisabled = false;
-	};
 }
